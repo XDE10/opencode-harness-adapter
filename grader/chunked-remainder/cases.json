@@ -1,0 +1,11 @@
+{
+  "function": "chunked_list",
+  "cases": [
+    {"id": "short_tail_default", "args": [[1, 2, 3, 4, 5], 2], "value": [[1, 2], [3, 4], [5]]},
+    {"id": "exact_strict", "args": [["a", "b", "c", "d"], 2, true], "value": [["a", "b"], ["c", "d"]]},
+    {"id": "no_items_strict", "args": [[], 3, true], "value": []},
+    {"id": "strict_remainder", "args": [[9, 2, 7], 2, true], "raises": "ValueError"},
+    {"id": "zero_size", "args": [[], 0], "raises": "ValueError"},
+    {"id": "negative_size", "args": [[7], -1, false], "raises": "ValueError"}
+  ]
+}

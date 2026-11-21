@@ -1,0 +1,365 @@
+{
+  "id": "first-batch-v3",
+  "cpu_baseline": "1af63ce",
+  "base_batch_sha256": "d2133751a60c41be1fc5d3681b79281bd4454101a73a477b061cb4bdea4bb100",
+  "method": "append locally authored, independent mini-project snapshots; keep all v2 tasks",
+  "model_screening": "not_run",
+  "tasks": [
+    {
+      "id": "chunked-remainder",
+      "split": "train",
+      "repo": "more-itertools/more-itertools",
+      "revision": "e3f79f4fde5f7c107f70a20730b17240a05ba99b",
+      "upstream_path": "more_itertools/more.py",
+      "upstream_symbol": "chunked",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/chunked-remainder/TASK.md": "af593e2639690e86ec0bbcb198bf17047258b911e2bb3c217c6308e095b57412",
+        "tasks/chunked-remainder/solution.py": "4934146f94a566875507d7ca054b5fc3a25050c9c291925e7e25f1103c37b96f",
+        "grader/chunked-remainder/cases.json": "beb116360960faae7609ba59a22e63fee7c71cee0373721b2d8370ef37e5dd7a",
+        "grader/chunked-remainder/partial.py": "5a92a2e80a79362ed3fba998669b57c0243f703976ecc2529e86ecca41f5ce47",
+        "grader/chunked-remainder/reference.py": "1cc3f10a4e2dcb01a279965290c8acf47a4372d4d6df1feae89fa69f22d7ade3"
+      }
+    },
+    {
+      "id": "optional-choice",
+      "split": "train",
+      "repo": "python-attrs/attrs",
+      "revision": "2a1fb86d44816afcc60e86d57956ce3604820326",
+      "upstream_path": "src/attr/validators.py",
+      "upstream_symbol": "optional, in_",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/optional-choice/TASK.md": "fc10f535ee91d4098e086df137e6f594a7412729db27d3fb1255bfe660e61636",
+        "tasks/optional-choice/solution.py": "26c5a00e07c61ef209c2916261b523e8bd6fdeafbf8abd47aa73109496026558",
+        "grader/optional-choice/cases.json": "4d9b5255bbee21244673d273f2454425555b89aac383c7af5f215eb145c6c6a7",
+        "grader/optional-choice/partial.py": "ef2bcfa858b08f79e221ede7cdb97eb0ef1b6f4a1f938abb983353e8ae971e4a",
+        "grader/optional-choice/reference.py": "b674bb69df9ff1de5b44c20b9ab138f55bedf417d1e4c66ef65323aa2fcf4ce3"
+      }
+    },
+    {
+      "id": "unicode-unique",
+      "split": "train",
+      "repo": "mahmoud/boltons",
+      "revision": "d31d821d56c8f7756af9c30a864077f2e5855321",
+      "upstream_path": "boltons/iterutils.py",
+      "upstream_symbol": "unique_iter",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/unicode-unique/TASK.md": "6b5c23bf6be0185c2ec335dbb26f38f77a192bb857915a74e83ddce977c3772c",
+        "tasks/unicode-unique/solution.py": "dff847a5f47036cd208100bce915776a692e944eadd4d443cfccc9d797605d22",
+        "grader/unicode-unique/cases.json": "4092b957852ff7119d72248857766752e157a3b482fd98674104641177749e5c",
+        "grader/unicode-unique/partial.py": "c1d26a7dd316232f70ef1a0a9c18bce3f34fd0e3ccd3df2ab4f2dc0bd75caa24",
+        "grader/unicode-unique/reference.py": "2f197b20ed20fb5a007d35f1c16f539c2fe95e1499985ef82eec3c20d13d5e70"
+      }
+    },
+    {
+      "id": "option-summary",
+      "split": "train",
+      "repo": "pallets/click",
+      "revision": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "upstream_path": "src/click/formatting.py",
+      "upstream_symbol": "join_options",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/option-summary/TASK.md": "7df9a94bebf9cb9f361a6dd33f3f96631cd5468fdceb8a36486f707a9e87e61f",
+        "tasks/option-summary/solution.py": "d3ad5321cef5f445675fa407bbccce074871e8f8533961442f45d33a1b8a4c4e",
+        "grader/option-summary/cases.json": "801fa373600676cd1c52763c27e3ea869b9eb27dd31eaea2dccec5ce00db7d10",
+        "grader/option-summary/partial.py": "6b80f72ed7904044cbf5573c7d560809ed4c1e63909a710a9891768757235161",
+        "grader/option-summary/reference.py": "06f965c0b7ddae2be51a0a64fca14b37fa9e438186f153e484059d9136f1bf1d"
+      }
+    },
+    {
+      "id": "cell-alignment",
+      "split": "train",
+      "repo": "prettytable/prettytable",
+      "revision": "49c0ecbd0c9edd083081788df68f124dae7fab5d",
+      "upstream_path": "src/prettytable/prettytable.py",
+      "upstream_symbol": "PrettyTable._justify",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/cell-alignment/TASK.md": "f282f80472e3871a4f05cb33abb3a95d7c33cb1b7a5054833fcbc7763e4186c4",
+        "tasks/cell-alignment/solution.py": "b755ac51bf69d9b2758d90e2ed8c8f96a9badf6d9f63f9b26c3837e4756d84cb",
+        "grader/cell-alignment/cases.json": "3f60ed50f20bbe374a62a991e783cf1ba27e8e79dfc06ecf92f3d316ce4b2282",
+        "grader/cell-alignment/partial.py": "bae860adf0c345d388ceb8de8355b385608255440e8b546c0d83ade64a6ed39f",
+        "grader/cell-alignment/reference.py": "5e8dea9ae37f528c9ec9343c5563d505bb8af082a371457859e9ead2e6a196b1"
+      }
+    },
+    {
+      "id": "size-prefix",
+      "split": "train",
+      "repo": "python-humanize/humanize",
+      "revision": "a95004512dde4e8f0269946bb4af754382347441",
+      "upstream_path": "src/humanize/filesize.py",
+      "upstream_symbol": "naturalsize",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/size-prefix/TASK.md": "26cd26961b60af36f52b3c2c6299cb2df08a61dca60906f1ea515d4e8353b03e",
+        "tasks/size-prefix/solution.py": "ee2fe747aedf8e0976dbc3efcb9820d01e9c8001153245ade2860ee42f5e101e",
+        "grader/size-prefix/cases.json": "f0434a27610bc9cfc8dfd5f6730198d01f906d8cbcfb9c3c5ab4c054f1f58b2b",
+        "grader/size-prefix/partial.py": "8241decfb70cb9c75ea86ae76dcab9503215de3e1d3dc006af54917c4389e3f6",
+        "grader/size-prefix/reference.py": "b8dc7d58057f6969e32f0f8cdbf29eb0d2ab6da4715c498b6560681164679444"
+      }
+    },
+    {
+      "id": "locale-case",
+      "split": "heldout",
+      "repo": "python-babel/babel",
+      "revision": "aeca9fa259ad50e790b51a8475bfa415888932ee",
+      "upstream_path": "babel/core.py",
+      "upstream_symbol": "parse_locale",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/locale-case/TASK.md": "218fa593b32710af74689d2d0c711c871094558977eacc6be92f214b508445b4",
+        "tasks/locale-case/solution.py": "eb4d393191eb72aba52e24a5ce97195b75deed63cf1feeb285594488b0bb102a",
+        "grader/locale-case/cases.json": "6391f8707e778d1a69d87f56b5f1b142cef3adbf73ab4787f47c38260be9609d",
+        "grader/locale-case/partial.py": "ada900089c8586a313f65c04e680a76a9614f9b19d73b1ac74aab3ae00a57904",
+        "grader/locale-case/reference.py": "3e0abfffe6d0ffab8f096f987aa08aefa5a83d4984327076213bdb100119e145"
+      }
+    },
+    {
+      "id": "month-clamp",
+      "split": "heldout",
+      "repo": "dateutil/dateutil",
+      "revision": "261e2913961865300032cf30df1d59f4f0ff6f1a",
+      "upstream_path": "src/dateutil/relativedelta.py",
+      "upstream_symbol": "relativedelta.__add__",
+      "metadata_license": "Apache-2.0 and BSD-3-Clause (upstream notices)",
+      "files": {
+        "tasks/month-clamp/TASK.md": "9c727732f9ddedde2964019759096da650117ae7281e6f55ece5c505c8a8968b",
+        "tasks/month-clamp/solution.py": "e0779bf347ad9ed9eb53f977b1411fafe0088ea7379f74138a8e901d3745d294",
+        "grader/month-clamp/cases.json": "f02a2a4fd8066bbb9d961e3e5e522a9bdcc7ce6f6146e08792e78dc7ee51c20e",
+        "grader/month-clamp/partial.py": "cb5cc5fab873734845161f4376ce7a9c1466b61a8f7e93099a5e11c29bc4738d",
+        "grader/month-clamp/reference.py": "652d56e067327317ebbcc4988626af3fd5c9b62b45db7e4d9b11fdd88972b0e6"
+      }
+    },
+    {
+      "id": "elapsed-label",
+      "split": "heldout",
+      "repo": "tqdm/tqdm",
+      "revision": "9cf5a12b1f955468a17f0ba3c59092b23e4258ac",
+      "upstream_path": "tqdm/std.py",
+      "upstream_symbol": "format_interval",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/elapsed-label/TASK.md": "3b692a1a4c45b75b8fa6122a104aaae30540989548355782f15d9824aabec1ab",
+        "tasks/elapsed-label/solution.py": "02bc948bcd7d837dcb6ec18ec2b0a66d63ab2cb85fbf9138e724565c85561279",
+        "grader/elapsed-label/cases.json": "8b12cf2676bd04eed0cb7e692bca4a01cdf17a0c5384de03d087c53865855eb1",
+        "grader/elapsed-label/partial.py": "297fc72fb5903347c1b058b51747da7b56c5839efaf1e98b13369aa4b70de728",
+        "grader/elapsed-label/reference.py": "e5f192f48e04c554df8aaa002584fae5397cf78fca8d8d49ec0cf615ab60dd69"
+      }
+    },
+    {
+      "id": "sorted-interval",
+      "split": "heldout",
+      "repo": "grantjenks/python-sortedcontainers",
+      "revision": "3ac358631f58c1347f1d6d2d92784117db0f38ed",
+      "upstream_path": "src/sortedcontainers/sortedlist.py",
+      "upstream_symbol": "SortedList.irange",
+      "metadata_license": "Apache-2.0",
+      "files": {
+        "tasks/sorted-interval/TASK.md": "baafd216cd04072ab00d8c2f43ed61fb75d005d598b38a75322b288e8a47bf7c",
+        "tasks/sorted-interval/solution.py": "98f6a93196f6a972a1d253de5337f31a9116f8ce0bfe98f1cd1825cfa9b88dae",
+        "grader/sorted-interval/cases.json": "5bc51f3d459abaae4d9c996836040dd853b7e50193f05c7e1f742c976921153c",
+        "grader/sorted-interval/partial.py": "275c8120ed61aab88b6cd1370a1a870be40f699d91c02a6dc99c7705abadc798",
+        "grader/sorted-interval/reference.py": "1ea4061798462d7af6a00507c165838dfc4b2d0439ed1db8e06f41542c948803"
+      }
+    },
+    {
+      "id": "ledger-projection",
+      "split": "train",
+      "repo": "oca-fixtures/ledger-table",
+      "source": "local_mini_repo",
+      "revision": "ae2ca5ef43a093f5a9313cff08b0fef03d7b936bf140982725defa47ac5b305f",
+      "files": {
+        "tasks/ledger-projection/TASK.md": "830f5c029bebd1ba6e0c14bf4cc661cac66f604aea28148c1c4e53c78471d900",
+        "tasks/ledger-projection/solution.py": "b5105690db2949bc09de323b4ced225ac92c3e7f8d0fbb4dbe18c7db0899126e",
+        "grader/ledger-projection/cases.json": "6a1048bada6cf4b9d81a5effa1d8cdb41cdac96d71d0c04b144ba7cd47d14459",
+        "grader/ledger-projection/partial.py": "3ebe94fe32920cdd54a967240242c83c291193e9bd443ce5cd41609456417643",
+        "grader/ledger-projection/reference.py": "1387f9d24d21d26d92624caee0ee8afff44239d65f7004db2db6e66396b80bd3"
+      }
+    },
+    {
+      "id": "compact-release-label",
+      "split": "train",
+      "repo": "oca-fixtures/release-notes",
+      "source": "local_mini_repo",
+      "revision": "8bac03ac04db7e3cf4e55a4859e132657d933ff67ccd7d57d9829b131d05307a",
+      "files": {
+        "tasks/compact-release-label/TASK.md": "f6dc0c45a4beafede903a5de0cd668f1bf7ec9b7df2af7efb26a318bf3abe82b",
+        "tasks/compact-release-label/solution.py": "1dfa75eac0e0e0a0dc9a23ba407392e92222371428843593e3edb99151557354",
+        "grader/compact-release-label/cases.json": "b969f8834e10609151ba513365d797c0453caa1b8a6918bea898f2011725fac9",
+        "grader/compact-release-label/partial.py": "2a5c5b8738c9684cc236e6779f5d1e6f5a2cdd770fdec2041cf61c9998213976",
+        "grader/compact-release-label/reference.py": "2b9dd6783e711a12bf6b38a344727c6af3f5cd171513bef10c5b6ba6395ef4d5"
+      }
+    },
+    {
+      "id": "daily-wait",
+      "split": "train",
+      "repo": "oca-fixtures/day-planner",
+      "source": "local_mini_repo",
+      "revision": "cf683fe4aa884d82462b9c062e98047abd253022abff09cd4dedbe67990891f3",
+      "files": {
+        "tasks/daily-wait/TASK.md": "5d83389f83d6284ea20b0510cd87132e9e6aecdd66a027553d9e2246681464e6",
+        "tasks/daily-wait/solution.py": "99c0af645e6014b97b60b434100fa7444183aeb86628fa81789ae2e54b139651",
+        "grader/daily-wait/cases.json": "9972f94ff123848cb846c74743e86f4ed3cfc4ec57124e117e77d9bb6b25cbea",
+        "grader/daily-wait/partial.py": "8884bbf47e59f40d9c31b098ed07fc1d5e6d5f0a30fbaf1fe20424becdc01948",
+        "grader/daily-wait/reference.py": "3d0f7cb5ae0610ac0617ab16985910b83671a41bedb6ad2540897d26eca25d04"
+      }
+    },
+    {
+      "id": "last-window-index",
+      "split": "train",
+      "repo": "oca-fixtures/window-search",
+      "source": "local_mini_repo",
+      "revision": "8916c0dca6c14a655ad4d10f0f391a73ff2a94d4ad833ed3bed8bf770f6b16aa",
+      "files": {
+        "tasks/last-window-index/TASK.md": "cccf73917755042f671348c8ed07208b44042f072661f96e5fae5cd9ae413110",
+        "tasks/last-window-index/solution.py": "041d44230d3f056903ee75320189dc37c72583b800eb1cfff3cc86e92cb8744d",
+        "grader/last-window-index/cases.json": "0ee674775c6e492e294ba92fb8c7a26b5b9a7688914cf506fcf29ecd80eb2acc",
+        "grader/last-window-index/partial.py": "a27d66aaebd696de852bc888fac45e973320a740c532eae5de8190995fe16b05",
+        "grader/last-window-index/reference.py": "01d9e6191b244e404e3d7dd37ff629e26a3e6e510d289ea7fd49d89c680710b4"
+      }
+    },
+    {
+      "id": "dotted-config-key",
+      "split": "train",
+      "repo": "oca-fixtures/nested-config",
+      "source": "local_mini_repo",
+      "revision": "2080c07803a330f0f0762227dc3d7777b944819094013d439b7c1a88e8ec56e6",
+      "files": {
+        "tasks/dotted-config-key/TASK.md": "00a2007580202d5f705de607af4e9e9fb3125e2beb20151fbb41cdddb90d245f",
+        "tasks/dotted-config-key/solution.py": "36c02678548549bc381b79ada6f9489f7a6d12cffd607ac1db32c9c0dad46584",
+        "grader/dotted-config-key/cases.json": "ac3768d50a12a07d38f90036f489aaf0e4500dc825ef0b2ac26b031588c8a3ab",
+        "grader/dotted-config-key/partial.py": "50c5b090ada96f4200216890f13bda3d793e76480464570a9b97017aa64a2401",
+        "grader/dotted-config-key/reference.py": "c078d9cca2d7e2e138191e130b60708a987b5a352363eacd28de37c80c87e848"
+      }
+    },
+    {
+      "id": "padded-transpose",
+      "split": "train",
+      "repo": "oca-fixtures/ragged-grid",
+      "source": "local_mini_repo",
+      "revision": "30a583abd049125c14be397664bdd89385f31fb47275f8ba0de5d7f3a426941a",
+      "files": {
+        "tasks/padded-transpose/TASK.md": "95dc78701234182ceb4ea921d8be249f8b3e2893007642d43cdf6a56004b4400",
+        "tasks/padded-transpose/solution.py": "c16caca6d1e8bd1d2bfa8342b50a901eabb8b103bb3c6df4eaf39050c68e950e",
+        "grader/padded-transpose/cases.json": "d5d7f9b9c7a6069c23c55fa48958c37978b5475b64c688c842654180f6213029",
+        "grader/padded-transpose/partial.py": "14e2ac3b2237ecf801883a044779f140b2ace237e385ec899cb036d89ed24ec5",
+        "grader/padded-transpose/reference.py": "ab5caeaa88226d36f693b01ef31b37af2abdbffa30c976f9082a8fcea0bddfd5"
+      }
+    },
+    {
+      "id": "capped-wait-series",
+      "split": "heldout",
+      "repo": "oca-fixtures/backoff-budget",
+      "source": "local_mini_repo",
+      "revision": "b3be3a79ba6a7961dd9326d5fed6349afccc2ad7114afc8f22d7521ee761c3ae",
+      "files": {
+        "tasks/capped-wait-series/TASK.md": "5ede647d998c568ed1f9c22ab18ae36f6caca875bc4345d9691cad4d4afad9fc",
+        "tasks/capped-wait-series/solution.py": "762e0f86c1d7ae2a096ca4a3540505c0acad4788e891de0ef76bdba1a8e3bcae",
+        "grader/capped-wait-series/cases.json": "07813f1bdadccad322d6c61023c018779c751fad7e7972e5e4ebf91d6c01ff7d",
+        "grader/capped-wait-series/partial.py": "f1358feec3540eb4523c1e9fa97b71f7944c1006b914db8d97fc02090a5d53d0",
+        "grader/capped-wait-series/reference.py": "7c0b55166c2cfa5143b3424b03edd5c166f112456c79155e5137547a49279ba2"
+      }
+    },
+    {
+      "id": "simultaneous-event-rename",
+      "split": "heldout",
+      "repo": "oca-fixtures/event-mapper",
+      "source": "local_mini_repo",
+      "revision": "56f402cf1089f5b1f2c42350936eac18a42831edc41b5613dddd4ad2ced5d275",
+      "files": {
+        "tasks/simultaneous-event-rename/TASK.md": "da585f2f12fdb9b45ae30c5f8c17d67c5092f544c31456dacede79b27755e7cc",
+        "tasks/simultaneous-event-rename/solution.py": "0f521f280319f360942deb24af67278f73d3426defe1c64a42770921af5fffab",
+        "grader/simultaneous-event-rename/cases.json": "daca13769da9698499df9b413033b738f89fe2764c8e4b51df963d91c167502e",
+        "grader/simultaneous-event-rename/partial.py": "77452ee789d8d15f0e449b4a37e65a943fd0d56fe1f0c320dbcfba8f0c87a028",
+        "grader/simultaneous-event-rename/reference.py": "3456350b485e4ec836693067ca554eee334285c6ec2e60a690feaa327a89e271"
+      }
+    },
+    {
+      "id": "ranked-encoding-choice",
+      "split": "heldout",
+      "repo": "oca-fixtures/encoding-vote",
+      "source": "local_mini_repo",
+      "revision": "49aa0e8a7cc753b04eedcee29074c6f9a8c72bc3e7dbe436faa43af7d4cefd60",
+      "files": {
+        "tasks/ranked-encoding-choice/TASK.md": "bab01467ba73f8c478f8f9824a8d068923db3a77ca6a0fe9c1bc877c41efaa59",
+        "tasks/ranked-encoding-choice/solution.py": "9fc0926c502644a5e9d4b0032fcd0b9a8795efa2e21a47a50cf27cff27afbb11",
+        "grader/ranked-encoding-choice/cases.json": "00dc67887574113a6a1cc8f94148437ea61bf218a38696c96eac67d851795415",
+        "grader/ranked-encoding-choice/partial.py": "6042df8a7ff1417098b6c743fc2a9013b008bee883130b9e384051472707c897",
+        "grader/ranked-encoding-choice/reference.py": "75ce85c81552a513ff467c58ce05ab73df351f16a29c01abf430cddb957c254b"
+      }
+    },
+    {
+      "id": "wrap-explicit-lines",
+      "split": "heldout",
+      "repo": "oca-fixtures/paragraph-wrap",
+      "source": "local_mini_repo",
+      "revision": "bcb0d17b6b4766f1e3c126f67140b65a3fdbde813bec83ba584c7ba680cd6c63",
+      "files": {
+        "tasks/wrap-explicit-lines/TASK.md": "b6eb5ceecf21efb90b936b15926f191131233365cbd8423664a769dea51dc025",
+        "tasks/wrap-explicit-lines/solution.py": "13379641e91a7af6f600b71d3b26d21c532b0d437e69452de5aca8c0f06e4926",
+        "grader/wrap-explicit-lines/cases.json": "c6735f9b5e78623dd2c036711e1ed744b8803ce4352dc18f3c135ad2c95a3eab",
+        "grader/wrap-explicit-lines/partial.py": "fd243b15b757d119c554a44f9073c8b08dc998aea72ee8ae0577b057ae20a8a7",
+        "grader/wrap-explicit-lines/reference.py": "bd8c0a2af37fcb0c4f0c1e9d87da7c226760173186772f27836178ec8a7a5678"
+      }
+    },
+    {
+      "id": "dotted-import-category",
+      "split": "heldout",
+      "repo": "oca-fixtures/import-buckets",
+      "source": "local_mini_repo",
+      "revision": "112cf3b523c539d2e6426ff50ee11ea44f2b67f04da63a02913cb96f908a4a25",
+      "files": {
+        "tasks/dotted-import-category/TASK.md": "adadec850b38a619f1c65a26acac859771088a4ec3580bd9cddb89062c0d4720",
+        "tasks/dotted-import-category/solution.py": "8bc2fd2c4f572309d638642decff76dd70432efd58d71d8f9a18237f25d7dfcf",
+        "grader/dotted-import-category/cases.json": "e05d7176263a9ab3551e0660ac1566f6e25ea6ccb3a88cc5208cd270f7cedd93",
+        "grader/dotted-import-category/partial.py": "75a2308b25f8d362ec2f1e9cd5304dcf9a1ec41e48ee82a04b21887af11e3656",
+        "grader/dotted-import-category/reference.py": "0587051cfd06c6a758fc37f28c3609f398e826cc1aea10f85c873cb37662c809"
+      }
+    },
+    {
+      "id": "unique-action-prefix",
+      "split": "heldout",
+      "repo": "oca-fixtures/command-palette",
+      "source": "local_mini_repo",
+      "revision": "8e6ccc0008544ec8c7382679c79c49fe0933c15ca171874be020490418076ca5",
+      "files": {
+        "tasks/unique-action-prefix/TASK.md": "0b687119b40c5745915144f719d088c71c05e2e50981f3b6993fb46eed271cdf",
+        "tasks/unique-action-prefix/solution.py": "5141af6c2f87e1039205a2e14c8ce9a32fac1227dbdc1c6555cf54cc6a68c993",
+        "grader/unique-action-prefix/cases.json": "eb2fc518b45017504d602926d5ec2a3e5bd7ba09e7923652ecda07925cc5a67c",
+        "grader/unique-action-prefix/partial.py": "e2429ef2a54894080298461cf256c11bdbe6f825e894c91b0853762ba8b60f01",
+        "grader/unique-action-prefix/reference.py": "64eb53ff4544fbbf682926cdb71f9be4812f8510319fde94053759a1f8aa91b2"
+      }
+    },
+    {
+      "id": "integer-field-issues",
+      "split": "heldout",
+      "repo": "oca-fixtures/sample-schema",
+      "source": "local_mini_repo",
+      "revision": "8e36b7aecfb04fc4e467e7b9b14699823c60cfc09a60c3c56be29000ca7f927d",
+      "files": {
+        "tasks/integer-field-issues/TASK.md": "152b1e86170a7b663b7b08d3a063fddf0a79886fa95baeb4528335ed9fd9583f",
+        "tasks/integer-field-issues/solution.py": "06f967b5abdf07dc37595e4803f81f948908f8a591f7aae9dced2aa2ac42cb0f",
+        "grader/integer-field-issues/cases.json": "4a56286c874e9c7489ce96f3226f5db14a71336d8479deaf07c9f9cca3e99e08",
+        "grader/integer-field-issues/partial.py": "1f4ebb8a183701d280baa3eb82c5164369ae2a1e428ef4361387b4f094afebaa",
+        "grader/integer-field-issues/reference.py": "4f749140c80a2b200637f1d8a9fde49114989e740bf2bb5022fc8967a5dfd32f"
+      }
+    },
+    {
+      "id": "ordered-subscription-plan",
+      "split": "heldout",
+      "repo": "oca-fixtures/signal-plan",
+      "source": "local_mini_repo",
+      "revision": "3ddb90e77914e217a489b3989e81d3a9624aa871cc8fa3d2cc8e3e4219ef9a3b",
+      "files": {
+        "tasks/ordered-subscription-plan/TASK.md": "bca8f94f62478dfe41ed86801e2030d687380020a3103556335fbf3ee24f9e8e",
+        "tasks/ordered-subscription-plan/solution.py": "294881b95c3dfaee45e1db0b4086599867a81c88d1b474abbbc303e51ea24300",
+        "grader/ordered-subscription-plan/cases.json": "9edca2fa14eea71ea9d216a52b763fdc3a4276df6e41eb69bc64735820de09f3",
+        "grader/ordered-subscription-plan/partial.py": "34c267dd140048f7ff0342f684103f4731116ed6813214c1fccae952d9a740ec",
+        "grader/ordered-subscription-plan/reference.py": "3fe219a5ce1c0c84807c6a05645ce67e1d0eaeccc28f10b24adf014f7229c50f"
+      }
+    }
+  ]
+}

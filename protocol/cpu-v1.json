@@ -1,0 +1,50 @@
+{
+  "id": "oca-cpu-v1",
+  "fixture_baseline": "b7d939a",
+  "tasks": [
+    "boundary",
+    "parsing",
+    "serialization"
+  ],
+  "cli_version": "2.2.7",
+  "image": "python:3.13.9-slim-trixie@sha256:326df678c20c78d465db501563f3492d17c42a4afe33a1f2bf5406a1d56b0e86",
+  "limits": {
+    "smoke_wall_s": 45,
+    "pilot_wall_s": 180,
+    "grade_wall_s": 8,
+    "context_tokens_configured": 16384,
+    "output_tokens_configured": 1024
+  },
+  "agent_config": {
+    "permission": {
+      "*": "deny",
+      "read": "allow",
+      "edit": "allow"
+    },
+    "autoupdate": false,
+    "share": "disabled",
+    "lsp": false
+  },
+  "controls": {
+    "original": "fail",
+    "reference": "pass",
+    "partial": "fail"
+  },
+  "fixture_sha256": {
+    "tasks/boundary/TASK.md": "951504049358a2706a4dcf254faee094c54ac3fdf8cec48a472357882dfddc6e",
+    "tasks/boundary/solution.py": "6e0baf1f4d5195bf72640d448c48c896dd4f2a6395837aaf414dde9c0dcbd6d6",
+    "grader/boundary/cases.json": "1ed61f01c8473e4b41948dbdf2bd9602ba879efc39724755dd2627a99705c926",
+    "grader/boundary/reference.py": "38e024a20d8064666aea2d14278101d8a2bbe058d33d143933e877f60bcf050e",
+    "grader/boundary/partial.py": "c528fa94aba41f3f9bb8bd4f0efde54a9c7192408560ba3ab88efa5901e9ca10",
+    "tasks/parsing/TASK.md": "35af17dfe097359602aff745d8af83b22bc7e011fc68408bfff6a2f509d7f3fe",
+    "tasks/parsing/solution.py": "4b60f805a73e458a96206fa998d0ba79b495f58e26e8f442bd5128415c5bca1a",
+    "grader/parsing/cases.json": "dfef51c98ea8034e4e7c7349d8842dc337feea1c98ba203cfb807c0156040c1b",
+    "grader/parsing/reference.py": "00dbb435f4bb26410269e8810b2db9e6fb94e7922b643bf8989cb366ababe6f7",
+    "grader/parsing/partial.py": "e61bac8033810a337b8f6fa9a154f500b70768ab8feb3a7700f832e6233fa4a0",
+    "tasks/serialization/TASK.md": "9ec9b11a3ecd4cb9a049c75c732394148207dfbbbe999a76d59b69b22065430d",
+    "tasks/serialization/solution.py": "08dfebf0693fef121b3c28c9c455050562469ef7e8ce56179498073d10453b67",
+    "grader/serialization/cases.json": "887f49d54e0811616e10679be4775a8f1c29ded6fb1285a336597cca4bed7da7",
+    "grader/serialization/reference.py": "8c39294796a2715597656baf0210b4f82d08b13bfa4a230862cfedcdfd8de45d",
+    "grader/serialization/partial.py": "619ad938ef97db33ac5b012cf01dae8f05620573f1b4ad7dc8fabd3a719fda3c"
+  }
+}

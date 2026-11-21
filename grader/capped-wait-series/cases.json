@@ -1,0 +1,12 @@
+{
+  "function": "wait_schedule",
+  "cases": [
+    {"id": "capped_growth", "args": [5, 2, 5, 30], "value": [2, 4, 5, 5, 5]},
+    {"id": "clipped_tail", "args": [5, 2, 7, 9], "value": [2, 4, 3]},
+    {"id": "clipped_first", "args": [3, 8, 5, 2], "value": [2]},
+    {"id": "exact_exhaustion", "args": [4, 2, 5, 6], "value": [2, 4]},
+    {"id": "zero_cap", "args": [3, 8, 0, 2], "value": [0, 0, 0]},
+    {"id": "zero_budget", "args": [3, 0, 5, 0], "value": []},
+    {"id": "no_entries", "args": [0, 2, 7, 8], "value": []}
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "status": "partial_cpu_candidate_batch",
+  "pilot_excluded": [
+    "boundary",
+    "parsing",
+    "serialization"
+  ],
+  "pilot_attempts_per_task": 1,
+  "difficulty_attempts_per_train_candidate": 4,
+  "difficulty_pass_counts_to_keep": [
+    1,
+    2,
+    3
+  ],
+  "heldout_attempts_per_policy": 1,
+  "train": [
+    {
+      "repo": "more-itertools/more-itertools",
+      "revision": "e3f79f4fde5f7c107f70a20730b17240a05ba99b",
+      "count": 12,
+      "scope": "iterator boundaries and batching"
+    },
+    {
+      "repo": "python-attrs/attrs",
+      "revision": "2a1fb86d44816afcc60e86d57956ce3604820326",
+      "count": 12,
+      "scope": "field defaults, converters and equality"
+    },
+    {
+      "repo": "mahmoud/boltons",
+      "revision": "d31d821d56c8f7756af9c30a864077f2e5855321",
+      "count": 12,
+      "scope": "collection and sequence helpers"
+    },
+    {
+      "repo": "pallets/click",
+      "revision": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "count": 12,
+      "scope": "local CLI argument parsing and help formatting"
+    },
+    {
+      "repo": "prettytable/prettytable",
+      "revision": "49c0ecbd0c9edd083081788df68f124dae7fab5d",
+      "count": 12,
+      "scope": "text table alignment, sorting and rendering"
+    },
+    {
+      "repo": "python-humanize/humanize",
+      "revision": "a95004512dde4e8f0269946bb4af754382347441",
+      "count": 12,
+      "scope": "numeric rounding and duration formatting"
+    }
+  ],
+  "heldout": [
+    {
+      "repo": "python-babel/babel",
+      "revision": "aeca9fa259ad50e790b51a8475bfa415888932ee",
+      "count": 6,
+      "scope": "offline locale and number formatting"
+    },
+    {
+      "repo": "dateutil/dateutil",
+      "revision": "261e2913961865300032cf30df1d59f4f0ff6f1a",
+      "count": 6,
+      "scope": "date ranges, times and parser normalization"
+    },
+    {
+      "repo": "tqdm/tqdm",
+      "revision": "9cf5a12b1f955468a17f0ba3c59092b23e4258ac",
+      "count": 6,
+      "scope": "progress formatting and iterator accounting"
+    },
+    {
+      "repo": "grantjenks/python-sortedcontainers",
+      "revision": "3ac358631f58c1347f1d6d2d92784117db0f38ed",
+      "count": 6,
+      "scope": "offline sorted collection range and ordering"
+    }
+  ],
+  "id": "dataset-plan-v2",
+  "base_plan_sha256": "60f00782bbd30b813c748fb8743deea805507b02efda23b13a2c4fb8979275af"
+}

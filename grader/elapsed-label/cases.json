@@ -1,0 +1,11 @@
+{
+  "function": "elapsed_label",
+  "cases": [
+    {"id": "zero", "args": [0], "value": "00:00"},
+    {"id": "truncate_positive", "args": [61.9], "value": "01:01"},
+    {"id": "one_hour", "args": [3600], "value": "1:00:00"},
+    {"id": "negative_under_one_second", "args": [-0.75], "value": "-00:00"},
+    {"id": "negative_interval", "args": [-62.9], "value": "-01:02"},
+    {"id": "negative_hours", "args": [-3600.9], "value": "-1:00:00"}
+  ]
+}

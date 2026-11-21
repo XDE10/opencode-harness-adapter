@@ -1,0 +1,11 @@
+{
+  "function": "listener_order",
+  "cases": [
+    {"id": "local_priority", "args": [["counter", "history"], ["view", "counter"]], "value": ["view", "counter", "history"]},
+    {"id": "muted_both", "args": [["history", "audio"], ["audio", "view"], ["audio", "missing"]], "value": ["view", "history"]},
+    {"id": "repeat_in_scope", "args": [["left", "left"], ["right", "right"]], "value": ["right", "left"]},
+    {"id": "case_sensitive", "args": [["Preview"], ["preview"], ["Preview"]], "value": ["preview"]},
+    {"id": "all_muted", "args": [["view"], ["view"], ["view"]], "value": []},
+    {"id": "empty", "args": [[], []], "value": []}
+  ]
+}

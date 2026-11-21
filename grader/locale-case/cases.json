@@ -1,0 +1,47 @@
+{
+  "function": "canonical_locale",
+  "cases": [
+    {
+      "id": "language",
+      "args": [
+        "DE"
+      ],
+      "value": "de"
+    },
+    {
+      "id": "region",
+      "args": [
+        "EN-us"
+      ],
+      "value": "en_US"
+    },
+    {
+      "id": "script",
+      "args": [
+        "SR-lATN"
+      ],
+      "value": "sr_Latn"
+    },
+    {
+      "id": "mixed_separators",
+      "args": [
+        "zH_hANS-cn"
+      ],
+      "value": "zh_Hans_CN"
+    },
+    {
+      "id": "numeric_region",
+      "args": [
+        "es-419"
+      ],
+      "value": "es_419"
+    },
+    {
+      "id": "script_and_digits",
+      "args": [
+        "uz-cyRL_001"
+      ],
+      "value": "uz_Cyrl_001"
+    }
+  ]
+}

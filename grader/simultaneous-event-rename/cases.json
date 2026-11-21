@@ -1,0 +1,11 @@
+{
+  "function": "rename_fields",
+  "cases": [
+    {"id": "normal", "args": [{"level": "info", "text": "done"}, {"text": "message"}], "value": {"level": "info", "message": "done"}},
+    {"id": "swap", "args": [{"a": 1, "b": 2}, {"a": "b", "b": "a"}], "value": {"b": 1, "a": 2}},
+    {"id": "cycle", "args": [{"a": 1, "b": 2, "c": 3}, {"a": "b", "b": "c", "c": "a"}], "value": {"b": 1, "c": 2, "a": 3}},
+    {"id": "explicit_destination", "args": [{"msg": "raw", "message": null}, {"msg": "message"}], "value": {"message": null}},
+    {"id": "absent_source", "args": [{"a": 3, "b": 0}, {"x": "a", "b": "c"}], "value": {"a": 3, "c": 0}},
+    {"id": "identity", "args": [{"a": false}, {"a": "a"}], "value": {"a": false}}
+  ]
+}

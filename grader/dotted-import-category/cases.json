@@ -1,0 +1,11 @@
+{
+  "function": "module_category",
+  "cases": [
+    {"id": "longest", "args": ["app.data.table", {"app": "local", "app.data": "dataset", "app.data.table": "index"}], "value": "index"},
+    {"id": "nested_prefix", "args": ["app.data.csv", {"app": "local", "app.data": "dataset"}], "value": "dataset"},
+    {"id": "dot_boundary", "args": ["app.database.csv", {"app": "local", "app.data": "dataset"}], "value": "local"},
+    {"id": "top_level_boundary", "args": ["apps.main", {"app": "local"}, "misc"], "value": "misc"},
+    {"id": "missing", "args": ["app", {"app.data": "dataset"}], "value": "other"},
+    {"id": "empty_rules", "args": ["item", {}, "unknown"], "value": "unknown"}
+  ]
+}

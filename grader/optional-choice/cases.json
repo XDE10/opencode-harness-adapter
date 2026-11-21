@@ -1,0 +1,75 @@
+{
+  "function": "optional_choice",
+  "cases": [
+    {
+      "id": "none_empty",
+      "args": [
+        null,
+        []
+      ],
+      "value": true
+    },
+    {
+      "id": "empty_string_absent",
+      "args": [
+        "",
+        [
+          "a"
+        ]
+      ],
+      "value": false
+    },
+    {
+      "id": "empty_string_present",
+      "args": [
+        "",
+        [
+          ""
+        ]
+      ],
+      "value": true
+    },
+    {
+      "id": "false_is_not_zero",
+      "args": [
+        false,
+        [
+          0
+        ]
+      ],
+      "value": false
+    },
+    {
+      "id": "zero_is_not_false",
+      "args": [
+        0,
+        [
+          false
+        ]
+      ],
+      "value": false
+    },
+    {
+      "id": "integer_match",
+      "args": [
+        4,
+        [
+          "4",
+          4
+        ]
+      ],
+      "value": true
+    },
+    {
+      "id": "ordinary_miss",
+      "args": [
+        "z",
+        [
+          "a",
+          "b"
+        ]
+      ],
+      "value": false
+    }
+  ]
+}

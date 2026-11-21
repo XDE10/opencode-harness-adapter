@@ -1,0 +1,12 @@
+{
+  "function": "parse_settings",
+  "cases": [
+    {"id": "plain", "args": ["a=1\nb=2"], "value": {"a": "1", "b": "2"}},
+    {"id": "space_comment_blank", "args": [" # note=hidden\r\n\r\n  a = hi  "], "value": {"a": "hi"}},
+    {"id": "first_equals", "args": ["link=a=b=c"], "value": {"link": "a=b=c"}},
+    {"id": "empty_value", "args": ["a =  "], "value": {"a": ""}},
+    {"id": "duplicate", "args": ["a=1\n a =2"], "raises": "ValueError"},
+    {"id": "missing_equals", "args": ["orphan"], "raises": "ValueError"},
+    {"id": "empty_key", "args": [" =x"], "raises": "ValueError"}
+  ]
+}

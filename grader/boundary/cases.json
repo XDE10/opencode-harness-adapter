@@ -1,0 +1,11 @@
+{
+  "function": "is_within",
+  "cases": [
+    {"id": "first", "args": [0, 4], "value": true},
+    {"id": "last", "args": [3, 4], "value": true},
+    {"id": "at_length", "args": [4, 4], "value": false},
+    {"id": "negative_index", "args": [-1, 4], "value": false},
+    {"id": "empty", "args": [0, 0], "value": false},
+    {"id": "negative_length", "args": [0, -4], "value": false}
+  ]
+}

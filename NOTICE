@@ -1,0 +1,13 @@
+OpenCode Harness Adapter
+
+colab/trl_reward.py includes an adaptation of the tool_efficiency function
+from Hugging Face TRL, examples/async_grpo_harbor/async_grpo_harbor.py,
+revision b2686bf5c300756cdf878b84f83a48f794e2fb94.
+Copyright 2020-2026 The HuggingFace Team. All rights reserved.
+Licensed under the Apache License, Version 2.0.
+The local adaptation passes the tool budget as an argument.
+See LICENSES/Apache-2.0.txt and docs/upstream.md for source and scope.
+
+OpenEnv and Harbor are separately installed dependencies. This snapshot
+does not redistribute their implementations, the referenced model card,
+or any model weights. This notice does not assign a project-wide license.

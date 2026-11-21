@@ -1,0 +1,12 @@
+{
+  "function": "encode_record",
+  "cases": [
+    {"id": "empty", "args": [{}], "value": "{}"},
+    {"id": "key_order_unicode", "args": [{"z": "雪", "a": 1}], "value": "{\"a\":1,\"z\":\"雪\"}"},
+    {"id": "nested_order", "args": [{"z": [{"b": 2, "a": 1}, false, null]}], "value": "{\"z\":[{\"a\":1,\"b\":2},false,null]}"},
+    {"id": "required_escapes", "args": [{"s": "a\nb\"c"}], "value": "{\"s\":\"a\\nb\\\"c\"}"},
+    {"id": "nan", "args": [{"x": [{"$float": "nan"}]}], "raises": "ValueError"},
+    {"id": "positive_infinity", "args": [{"x": {"$float": "inf"}}], "raises": "ValueError"},
+    {"id": "negative_infinity", "args": [{"x": {"$float": "-inf"}}], "raises": "ValueError"}
+  ]
+}

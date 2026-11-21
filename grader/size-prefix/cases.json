@@ -1,0 +1,11 @@
+{
+  "function": "compact_size",
+  "cases": [
+    {"id": "small_negative_bytes", "args": [-9], "value": "-9 B"},
+    {"id": "decimal", "args": [1500], "value": "1.5 kB"},
+    {"id": "binary", "args": [1536, true], "value": "1.5 KiB"},
+    {"id": "decimal_rounds_up", "args": [999999], "value": "1.0 MB"},
+    {"id": "negative_binary_rounds_up", "args": [-1048575, true], "value": "-1.0 MiB"},
+    {"id": "no_larger_unit", "args": [1000000000000], "value": "1000.0 GB"}
+  ]
+}

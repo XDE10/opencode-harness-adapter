@@ -1,0 +1,11 @@
+{
+  "function": "transpose_padded",
+  "cases": [
+    {"id": "rectangular", "args": [[[1, 2], [3, 4]]], "value": [[1, 3], [2, 4]]},
+    {"id": "short_tail", "args": [[[1, 2], [3]], "-"], "value": [[1, 3], [2, "-"]]},
+    {"id": "long_tail", "args": [[[1], [2, 3], []], 0], "value": [[1, 2, 0], [0, 3, 0]]},
+    {"id": "empty_first_actual_null", "args": [[[], [null]], "missing"], "value": [["missing", null]]},
+    {"id": "all_empty", "args": [[[], []]], "value": []},
+    {"id": "no_rows", "args": [[]], "value": []}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "function": "resolve_action",
+  "cases": [
+    {"id": "exact_over_prefix", "args": ["SORT", {"sort-desc": "Descending", "sort": "Ascending"}], "value": "Ascending"},
+    {"id": "same_destination", "args": ["du", {"duplicate": "Copy", "dupe": "Copy", "drop": "Remove"}], "value": "Copy"},
+    {"id": "ambiguous", "args": ["s", {"save": "Save", "sort": "Sort"}], "value": null},
+    {"id": "casefold", "args": ["STRASS", {"Straße": "Street View"}], "value": "Street View"},
+    {"id": "missing", "args": ["open", {"close": "Close"}], "value": null},
+    {"id": "empty", "args": ["", {"save": "Save"}], "value": null}
+  ]
+}

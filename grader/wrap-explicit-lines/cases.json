@@ -1,0 +1,12 @@
+{
+  "function": "wrap_lines",
+  "cases": [
+    {"id": "wrap_and_exact_fit", "args": ["one   two three", 7], "value": ["one two", "three"]},
+    {"id": "explicit_break", "args": ["one\ntwo", 9], "value": ["one", "two"]},
+    {"id": "blank_interior", "args": ["a\n  \nb", 2], "value": ["a", "", "b"]},
+    {"id": "trailing_break", "args": ["\na\n", 2], "value": ["", "a", ""]},
+    {"id": "whole_long_word", "args": ["a overlong bb", 3], "value": ["a", "overlong", "bb"]},
+    {"id": "characters_not_bytes", "args": ["北\t京 夜", 3], "value": ["北 京", "夜"]},
+    {"id": "empty_input_line", "args": ["", 4], "value": [""]}
+  ]
+}

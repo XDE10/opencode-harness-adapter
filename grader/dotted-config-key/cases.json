@@ -1,0 +1,11 @@
+{
+  "function": "lookup",
+  "cases": [
+    {"id": "root_literal_wins", "args": [{"a.b": 2, "a": {"b": 3}}, "a.b"], "value": 2},
+    {"id": "nested_literal_wins", "args": [{"a": {"b.c": 4, "b": {"c": 8}}}, "a.b.c"], "value": 4},
+    {"id": "plain_descent", "args": [{"a": {"b": 0}}, "a.b", 10], "value": 0},
+    {"id": "null", "args": [{"a": null}, "a", "fallback"], "value": null},
+    {"id": "scalar_blocks", "args": [{"a": 5}, "a.b", "fallback"], "value": "fallback"},
+    {"id": "missing_leaf", "args": [{"a": {"b": 3}}, "a.c", -1], "value": -1}
+  ]
+}

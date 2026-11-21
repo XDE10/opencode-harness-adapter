@@ -1,0 +1,10 @@
+{
+  "function": "minutes_until",
+  "cases": [
+    {"id": "same_day", "args": [480, 540], "value": 60},
+    {"id": "overnight", "args": [1380, 60], "value": 120},
+    {"id": "equal_next_day", "args": [540, 540], "value": 1440},
+    {"id": "equal_include_now", "args": [540, 540, true], "value": 0},
+    {"id": "minute_to_midnight", "args": [1439, 0], "value": 1}
+  ]
+}

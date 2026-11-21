@@ -1,0 +1,71 @@
+{
+  "function": "option_summary",
+  "cases": [
+    {
+      "id": "empty",
+      "args": [
+        []
+      ],
+      "value": [
+        "",
+        false
+      ]
+    },
+    {
+      "id": "mixed_stable",
+      "args": [
+        [
+          "--alpha",
+          "-z",
+          "/d",
+          "--beta",
+          "-a"
+        ]
+      ],
+      "value": [
+        "-z, /d, -a, --alpha, --beta",
+        true
+      ]
+    },
+    {
+      "id": "slash_in_name",
+      "args": [
+        [
+          "--with/path",
+          "-q"
+        ]
+      ],
+      "value": [
+        "-q, --with/path",
+        false
+      ]
+    },
+    {
+      "id": "only_slash",
+      "args": [
+        [
+          "/v"
+        ]
+      ],
+      "value": [
+        "/v",
+        true
+      ]
+    },
+    {
+      "id": "duplicate",
+      "args": [
+        [
+          "--a",
+          "-x",
+          "-x",
+          "--a"
+        ]
+      ],
+      "value": [
+        "-x, -x, --a, --a",
+        false
+      ]
+    }
+  ]
+}

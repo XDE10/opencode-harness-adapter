@@ -1,0 +1,87 @@
+{
+  "function": "unique_labels",
+  "cases": [
+    {
+      "id": "empty",
+      "args": [
+        [],
+        true
+      ],
+      "value": []
+    },
+    {
+      "id": "sensitive_default",
+      "args": [
+        [
+          "A",
+          "a",
+          "A"
+        ]
+      ],
+      "value": [
+        "A",
+        "a"
+      ]
+    },
+    {
+      "id": "first_spelling",
+      "args": [
+        [
+          "Beta",
+          "ALPHA",
+          "beta",
+          "Alpha"
+        ],
+        true
+      ],
+      "value": [
+        "Beta",
+        "ALPHA"
+      ]
+    },
+    {
+      "id": "sharp_s",
+      "args": [
+        [
+          "Maße",
+          "MASSE",
+          "x"
+        ],
+        true
+      ],
+      "value": [
+        "Maße",
+        "x"
+      ]
+    },
+    {
+      "id": "final_sigma",
+      "args": [
+        [
+          "ς",
+          "σ",
+          "Σ"
+        ],
+        true
+      ],
+      "value": [
+        "ς"
+      ]
+    },
+    {
+      "id": "spaces_unchanged",
+      "args": [
+        [
+          " A",
+          "a",
+          " A"
+        ],
+        true
+      ],
+      "value": [
+        " A",
+        "a"
+      ]
+    }
+  ]
+}

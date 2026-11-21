@@ -1,0 +1,10 @@
+{
+  "function": "project_rows",
+  "cases": [
+    {"id": "reorder_repeat", "args": [[[7, 8, 9]], [2, 0, 2]], "value": [[9, 7, 9]]},
+    {"id": "ragged_rows", "args": [[[1], [], [3, 4]], [0, 1], "-"], "value": [[1, "-"], ["-", "-"], [3, 4]]},
+    {"id": "present_empty_values", "args": [[[0, false, "", null]], [0, 1, 2, 3, 4], "missing"], "value": [[0, false, "", null, "missing"]]},
+    {"id": "no_columns", "args": [[[1], []], []], "value": [[], []]},
+    {"id": "no_rows", "args": [[], [3]], "value": []}
+  ]
+}

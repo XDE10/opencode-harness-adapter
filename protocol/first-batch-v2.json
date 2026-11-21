@@ -1,0 +1,170 @@
+{
+  "id": "first-batch-v2",
+  "cpu_baseline": "4c2c093",
+  "source_plan_sha256": "f853df5584d67db1f89d9a4b7f7c33da91ad601729f5f69e2ff00b1c6f4c2174",
+  "method": "locally authored behavioral adaptations; public reference functions; not blind to upstream",
+  "model_screening": "not_run",
+  "tasks": [
+    {
+      "id": "chunked-remainder",
+      "split": "train",
+      "repo": "more-itertools/more-itertools",
+      "revision": "e3f79f4fde5f7c107f70a20730b17240a05ba99b",
+      "upstream_path": "more_itertools/more.py",
+      "upstream_symbol": "chunked",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/chunked-remainder/TASK.md": "af593e2639690e86ec0bbcb198bf17047258b911e2bb3c217c6308e095b57412",
+        "tasks/chunked-remainder/solution.py": "4934146f94a566875507d7ca054b5fc3a25050c9c291925e7e25f1103c37b96f",
+        "grader/chunked-remainder/cases.json": "beb116360960faae7609ba59a22e63fee7c71cee0373721b2d8370ef37e5dd7a",
+        "grader/chunked-remainder/partial.py": "5a92a2e80a79362ed3fba998669b57c0243f703976ecc2529e86ecca41f5ce47",
+        "grader/chunked-remainder/reference.py": "1cc3f10a4e2dcb01a279965290c8acf47a4372d4d6df1feae89fa69f22d7ade3"
+      }
+    },
+    {
+      "id": "optional-choice",
+      "split": "train",
+      "repo": "python-attrs/attrs",
+      "revision": "2a1fb86d44816afcc60e86d57956ce3604820326",
+      "upstream_path": "src/attr/validators.py",
+      "upstream_symbol": "optional, in_",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/optional-choice/TASK.md": "fc10f535ee91d4098e086df137e6f594a7412729db27d3fb1255bfe660e61636",
+        "tasks/optional-choice/solution.py": "26c5a00e07c61ef209c2916261b523e8bd6fdeafbf8abd47aa73109496026558",
+        "grader/optional-choice/cases.json": "4d9b5255bbee21244673d273f2454425555b89aac383c7af5f215eb145c6c6a7",
+        "grader/optional-choice/partial.py": "ef2bcfa858b08f79e221ede7cdb97eb0ef1b6f4a1f938abb983353e8ae971e4a",
+        "grader/optional-choice/reference.py": "b674bb69df9ff1de5b44c20b9ab138f55bedf417d1e4c66ef65323aa2fcf4ce3"
+      }
+    },
+    {
+      "id": "unicode-unique",
+      "split": "train",
+      "repo": "mahmoud/boltons",
+      "revision": "d31d821d56c8f7756af9c30a864077f2e5855321",
+      "upstream_path": "boltons/iterutils.py",
+      "upstream_symbol": "unique_iter",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/unicode-unique/TASK.md": "6b5c23bf6be0185c2ec335dbb26f38f77a192bb857915a74e83ddce977c3772c",
+        "tasks/unicode-unique/solution.py": "dff847a5f47036cd208100bce915776a692e944eadd4d443cfccc9d797605d22",
+        "grader/unicode-unique/cases.json": "4092b957852ff7119d72248857766752e157a3b482fd98674104641177749e5c",
+        "grader/unicode-unique/partial.py": "c1d26a7dd316232f70ef1a0a9c18bce3f34fd0e3ccd3df2ab4f2dc0bd75caa24",
+        "grader/unicode-unique/reference.py": "2f197b20ed20fb5a007d35f1c16f539c2fe95e1499985ef82eec3c20d13d5e70"
+      }
+    },
+    {
+      "id": "option-summary",
+      "split": "train",
+      "repo": "pallets/click",
+      "revision": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+      "upstream_path": "src/click/formatting.py",
+      "upstream_symbol": "join_options",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/option-summary/TASK.md": "7df9a94bebf9cb9f361a6dd33f3f96631cd5468fdceb8a36486f707a9e87e61f",
+        "tasks/option-summary/solution.py": "d3ad5321cef5f445675fa407bbccce074871e8f8533961442f45d33a1b8a4c4e",
+        "grader/option-summary/cases.json": "801fa373600676cd1c52763c27e3ea869b9eb27dd31eaea2dccec5ce00db7d10",
+        "grader/option-summary/partial.py": "6b80f72ed7904044cbf5573c7d560809ed4c1e63909a710a9891768757235161",
+        "grader/option-summary/reference.py": "06f965c0b7ddae2be51a0a64fca14b37fa9e438186f153e484059d9136f1bf1d"
+      }
+    },
+    {
+      "id": "cell-alignment",
+      "split": "train",
+      "repo": "prettytable/prettytable",
+      "revision": "49c0ecbd0c9edd083081788df68f124dae7fab5d",
+      "upstream_path": "src/prettytable/prettytable.py",
+      "upstream_symbol": "PrettyTable._justify",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/cell-alignment/TASK.md": "f282f80472e3871a4f05cb33abb3a95d7c33cb1b7a5054833fcbc7763e4186c4",
+        "tasks/cell-alignment/solution.py": "b755ac51bf69d9b2758d90e2ed8c8f96a9badf6d9f63f9b26c3837e4756d84cb",
+        "grader/cell-alignment/cases.json": "3f60ed50f20bbe374a62a991e783cf1ba27e8e79dfc06ecf92f3d316ce4b2282",
+        "grader/cell-alignment/partial.py": "bae860adf0c345d388ceb8de8355b385608255440e8b546c0d83ade64a6ed39f",
+        "grader/cell-alignment/reference.py": "5e8dea9ae37f528c9ec9343c5563d505bb8af082a371457859e9ead2e6a196b1"
+      }
+    },
+    {
+      "id": "size-prefix",
+      "split": "train",
+      "repo": "python-humanize/humanize",
+      "revision": "a95004512dde4e8f0269946bb4af754382347441",
+      "upstream_path": "src/humanize/filesize.py",
+      "upstream_symbol": "naturalsize",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/size-prefix/TASK.md": "26cd26961b60af36f52b3c2c6299cb2df08a61dca60906f1ea515d4e8353b03e",
+        "tasks/size-prefix/solution.py": "ee2fe747aedf8e0976dbc3efcb9820d01e9c8001153245ade2860ee42f5e101e",
+        "grader/size-prefix/cases.json": "f0434a27610bc9cfc8dfd5f6730198d01f906d8cbcfb9c3c5ab4c054f1f58b2b",
+        "grader/size-prefix/partial.py": "8241decfb70cb9c75ea86ae76dcab9503215de3e1d3dc006af54917c4389e3f6",
+        "grader/size-prefix/reference.py": "b8dc7d58057f6969e32f0f8cdbf29eb0d2ab6da4715c498b6560681164679444"
+      }
+    },
+    {
+      "id": "locale-case",
+      "split": "heldout",
+      "repo": "python-babel/babel",
+      "revision": "aeca9fa259ad50e790b51a8475bfa415888932ee",
+      "upstream_path": "babel/core.py",
+      "upstream_symbol": "parse_locale",
+      "metadata_license": "BSD-3-Clause",
+      "files": {
+        "tasks/locale-case/TASK.md": "218fa593b32710af74689d2d0c711c871094558977eacc6be92f214b508445b4",
+        "tasks/locale-case/solution.py": "eb4d393191eb72aba52e24a5ce97195b75deed63cf1feeb285594488b0bb102a",
+        "grader/locale-case/cases.json": "6391f8707e778d1a69d87f56b5f1b142cef3adbf73ab4787f47c38260be9609d",
+        "grader/locale-case/partial.py": "ada900089c8586a313f65c04e680a76a9614f9b19d73b1ac74aab3ae00a57904",
+        "grader/locale-case/reference.py": "3e0abfffe6d0ffab8f096f987aa08aefa5a83d4984327076213bdb100119e145"
+      }
+    },
+    {
+      "id": "month-clamp",
+      "split": "heldout",
+      "repo": "dateutil/dateutil",
+      "revision": "261e2913961865300032cf30df1d59f4f0ff6f1a",
+      "upstream_path": "src/dateutil/relativedelta.py",
+      "upstream_symbol": "relativedelta.__add__",
+      "metadata_license": "Apache-2.0 and BSD-3-Clause (upstream notices)",
+      "files": {
+        "tasks/month-clamp/TASK.md": "9c727732f9ddedde2964019759096da650117ae7281e6f55ece5c505c8a8968b",
+        "tasks/month-clamp/solution.py": "e0779bf347ad9ed9eb53f977b1411fafe0088ea7379f74138a8e901d3745d294",
+        "grader/month-clamp/cases.json": "f02a2a4fd8066bbb9d961e3e5e522a9bdcc7ce6f6146e08792e78dc7ee51c20e",
+        "grader/month-clamp/partial.py": "cb5cc5fab873734845161f4376ce7a9c1466b61a8f7e93099a5e11c29bc4738d",
+        "grader/month-clamp/reference.py": "652d56e067327317ebbcc4988626af3fd5c9b62b45db7e4d9b11fdd88972b0e6"
+      }
+    },
+    {
+      "id": "elapsed-label",
+      "split": "heldout",
+      "repo": "tqdm/tqdm",
+      "revision": "9cf5a12b1f955468a17f0ba3c59092b23e4258ac",
+      "upstream_path": "tqdm/std.py",
+      "upstream_symbol": "format_interval",
+      "metadata_license": "MIT",
+      "files": {
+        "tasks/elapsed-label/TASK.md": "3b692a1a4c45b75b8fa6122a104aaae30540989548355782f15d9824aabec1ab",
+        "tasks/elapsed-label/solution.py": "02bc948bcd7d837dcb6ec18ec2b0a66d63ab2cb85fbf9138e724565c85561279",
+        "grader/elapsed-label/cases.json": "8b12cf2676bd04eed0cb7e692bca4a01cdf17a0c5384de03d087c53865855eb1",
+        "grader/elapsed-label/partial.py": "297fc72fb5903347c1b058b51747da7b56c5839efaf1e98b13369aa4b70de728",
+        "grader/elapsed-label/reference.py": "e5f192f48e04c554df8aaa002584fae5397cf78fca8d8d49ec0cf615ab60dd69"
+      }
+    },
+    {
+      "id": "sorted-interval",
+      "split": "heldout",
+      "repo": "grantjenks/python-sortedcontainers",
+      "revision": "3ac358631f58c1347f1d6d2d92784117db0f38ed",
+      "upstream_path": "src/sortedcontainers/sortedlist.py",
+      "upstream_symbol": "SortedList.irange",
+      "metadata_license": "Apache-2.0",
+      "files": {
+        "tasks/sorted-interval/TASK.md": "baafd216cd04072ab00d8c2f43ed61fb75d005d598b38a75322b288e8a47bf7c",
+        "tasks/sorted-interval/solution.py": "98f6a93196f6a972a1d253de5337f31a9116f8ce0bfe98f1cd1825cfa9b88dae",
+        "grader/sorted-interval/cases.json": "5bc51f3d459abaae4d9c996836040dd853b7e50193f05c7e1f742c976921153c",
+        "grader/sorted-interval/partial.py": "275c8120ed61aab88b6cd1370a1a870be40f699d91c02a6dc99c7705abadc798",
+        "grader/sorted-interval/reference.py": "1ea4061798462d7af6a00507c165838dfc4b2d0439ed1db8e06f41542c948803"
+      }
+    }
+  ],
+  "base_batch_sha256": "0ab5e5d69598d7aa9c44133d7c014b34c531d6f805c81feef2d45ebf25ac550b"
+}

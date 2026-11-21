@@ -1,0 +1,11 @@
+{
+  "function": "release_label",
+  "cases": [
+    {"id": "trim", "args": [[4, 2, 0, 0]], "value": "4.2"},
+    {"id": "preserve_internal_zero", "args": [[4, 0, 6, 0]], "value": "4.0.6"},
+    {"id": "minimum_one", "args": [[7, 0], 1], "value": "7"},
+    {"id": "pad", "args": [[3], 3], "value": "3.0.0"},
+    {"id": "empty", "args": [[], 2], "value": "0.0"},
+    {"id": "keep_long", "args": [[2, 5, 9], 1], "value": "2.5.9"}
+  ]
+}

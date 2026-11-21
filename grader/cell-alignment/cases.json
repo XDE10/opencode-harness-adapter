@@ -1,0 +1,68 @@
+{
+  "function": "align_cell",
+  "cases": [
+    {
+      "id": "left",
+      "args": [
+        "abc",
+        5,
+        "l"
+      ],
+      "value": "abc  "
+    },
+    {
+      "id": "right",
+      "args": [
+        "abc",
+        5,
+        "r"
+      ],
+      "value": "  abc"
+    },
+    {
+      "id": "center_even",
+      "args": [
+        "AB",
+        6,
+        "c"
+      ],
+      "value": "  AB  "
+    },
+    {
+      "id": "center_odd",
+      "args": [
+        "X",
+        4,
+        "c"
+      ],
+      "value": " X  "
+    },
+    {
+      "id": "center_odd_even_text",
+      "args": [
+        "AB",
+        5,
+        "c"
+      ],
+      "value": " AB  "
+    },
+    {
+      "id": "already_wide",
+      "args": [
+        "abc",
+        1,
+        "r"
+      ],
+      "value": "abc"
+    },
+    {
+      "id": "empty",
+      "args": [
+        "",
+        3,
+        "c"
+      ],
+      "value": "   "
+    }
+  ]
+}

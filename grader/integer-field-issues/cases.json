@@ -1,0 +1,11 @@
+{
+  "function": "invalid_integer_positions",
+  "cases": [
+    {"id": "normal_integers", "args": [[0, -4, 90]], "value": []},
+    {"id": "mixed_nonnullable", "args": [[true, 0, null, 3.0, "7", false]], "value": [0, 2, 3, 4, 5]},
+    {"id": "nullable_booleans", "args": [[null, true, null, -1, false], true], "value": [1, 4]},
+    {"id": "nullable_without_boolean", "args": [[1, null, "0", 0.25], true], "value": [2, 3]},
+    {"id": "nested_values_invalid", "args": [[[], {}, 3]], "value": [0, 1]},
+    {"id": "empty", "args": [[]], "value": []}
+  ]
+}
