@@ -37,7 +37,7 @@
     "concurrency": 32
   },
   "grade": {
-    "timeout_seconds": 15
+    "timeout_seconds": 45
   },
   "train": {
     "group_size": 8,

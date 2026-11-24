@@ -22,7 +22,7 @@ from oca.eval import (
 )
 from oca.grade import controls, grade_repo
 from oca.harnesses import get_harness
-from oca.plots import render_failure_taxonomy, render_logprob_hist, render_training_curve
+from oca.plots import render_failure_taxonomy, render_logprob_hist, render_training_curve, render_transfer_matrix
 from oca.proxy import _selftest as proxy_selftest
 from oca.reward import compute_reward
 from oca.tasks import by_id, load
@@ -38,14 +38,24 @@ class TestOcaV4(unittest.TestCase):
         self.assertTrue(all(r["ok"] for r in res))
 
     def test_cleaned_dataset_domain_disjoint(self):
-        gen = [t for t in load() if t.source.startswith("tasks-")]
-        if not gen:
-            self.skipTest("No generated single-file tasks present")
-        train_doms = {t.domain for t in gen if t.split == "train"}
-        held_doms = {t.domain for t in gen if t.split == "heldout"}
-        self.assertTrue(len(train_doms) >= 5 and len(held_doms) >= 3)
-        self.assertEqual(train_doms & held_doms, set(), f"Domain leakage: {train_doms & held_doms}")
-        self.assertTrue(all(t.split in ("train", "heldout") for t in gen))
+        all_t = load()
+        gen = [t for t in all_t if t.source.startswith("tasks-")]
+        if gen:
+            train_doms = {t.domain for t in gen if t.split == "train"}
+            held_doms = {t.domain for t in gen if t.split == "heldout"}
+            self.assertTrue(len(train_doms) >= 5 and len(held_doms) >= 3)
+            self.assertEqual(train_doms & held_doms, set(), f"L1 domain leakage: {train_doms & held_doms}")
+            self.assertTrue(all(t.split in ("train", "heldout") for t in gen))
+
+        repos = [t for t in all_t if t.source.startswith("repo_")]
+        if repos:
+            r_tr = {t.domain for t in repos if t.split == "train"}
+            r_ho = {t.domain for t in repos if t.split == "heldout"}
+            self.assertEqual(r_tr & r_ho, set(), f"L2 domain leakage: {r_tr & r_ho}")
+
+        ood = [t for t in all_t if t.source.startswith("ood_")]
+        if ood:
+            self.assertTrue(all(t.split == "heldout" and t.kind == "repo_pytest" for t in ood))
 
     def test_validator_catches_partial_invariant(self):
         t = by_id()["sorted-interval"]
@@ -235,12 +245,22 @@ class TestOcaV4(unittest.TestCase):
                     "lora": {"failure_taxonomy": {"solved": 32, "wrong_logic": 8}},
                 }}
             }), encoding="utf-8")
+            mx = p / "matrix.json"
+            mx.write_text(json.dumps({
+                "harnesses": ["OpenCode", "Pi"],
+                "models": [
+                    {"name": "Base", "scores": [0.20, 0.18]},
+                    {"name": "Super-Adapter", "scores": [0.58, 0.54]},
+                ],
+            }), encoding="utf-8")
             render_training_curve(hist, p / "curve.svg")
             render_logprob_hist(hist, p / "div.svg")
             render_failure_taxonomy(ev, p / "tax.svg")
+            render_transfer_matrix(mx, p / "mx.svg")
             self.assertTrue((p / "curve.svg").is_file())
             self.assertTrue((p / "div.svg").is_file())
             self.assertTrue((p / "tax.svg").is_file())
+            self.assertTrue((p / "mx.svg").is_file())
 
 
 if __name__ == "__main__":

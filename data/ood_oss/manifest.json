@@ -1,0 +1,279 @@
+{
+  "tasks": [
+    {
+      "id": "ood-click-90a2973-add-context-settings-parameter-t",
+      "split": "heldout",
+      "domain": "oss_click",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pallets/click.git",
+      "commit": "90a2973f85fffc4d8a20effb2bcdff3f394c5e62",
+      "license": "BSD-3-Clause",
+      "src_files": [
+        "src/click/testing.py"
+      ],
+      "passed": {
+        "original": "301/325",
+        "reference": "325/325"
+      }
+    },
+    {
+      "id": "ood-click-c4dd0cd-stop-passing-a-deprecated-comman",
+      "split": "heldout",
+      "domain": "oss_click",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pallets/click.git",
+      "commit": "c4dd0cd968f61d0ee7a163af810bd695ed893ec3",
+      "license": "BSD-3-Clause",
+      "src_files": [
+        "src/click/core.py"
+      ],
+      "passed": {
+        "original": "103/104",
+        "reference": "104/104"
+      }
+    },
+    {
+      "id": "ood-click-c53d373-fix-show-envvar-output-for-a-seq",
+      "split": "heldout",
+      "domain": "oss_click",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pallets/click.git",
+      "commit": "c53d3732b98c764932e146c007146ad402acb229",
+      "license": "BSD-3-Clause",
+      "src_files": [
+        "src/click/core.py"
+      ],
+      "passed": {
+        "original": "667/676",
+        "reference": "676/676"
+      }
+    },
+    {
+      "id": "ood-click-f67c2bb-fix-short-help-abbreviation",
+      "split": "heldout",
+      "domain": "oss_click",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pallets/click.git",
+      "commit": "f67c2bb6c2f055c1c7a57cd46c3697fc26a7742e",
+      "license": "BSD-3-Clause",
+      "src_files": [
+        "src/click/utils.py"
+      ],
+      "passed": {
+        "original": "30/36",
+        "reference": "36/36"
+      }
+    },
+    {
+      "id": "ood-click-f8c5a8e-print-x04-and-x1a-input-bytes-as",
+      "split": "heldout",
+      "domain": "oss_click",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pallets/click.git",
+      "commit": "f8c5a8efc17d01a9fb10bba961def4c3215ce369",
+      "license": "BSD-3-Clause",
+      "src_files": [
+        "src/click/testing.py"
+      ],
+      "passed": {
+        "original": "36/43",
+        "reference": "43/43"
+      }
+    },
+    {
+      "id": "ood-more_itertools-2b8d5cd-issue-1284-don-t-let-a-bucket-lo",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "2b8d5cddce4ea01f88a973551cd50479cf5fa45f",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "609/613",
+        "reference": "613/613"
+      }
+    },
+    {
+      "id": "ood-more_itertools-67fcf64-fix-honour-a-falsey-validator-in",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "67fcf640477c78605580f5ee703a54c73c1e7a8a",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "619/620",
+        "reference": "620/620"
+      }
+    },
+    {
+      "id": "ood-more_itertools-71e070b-fix-honour-a-falsey-key-in-all-u",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "71e070b35d8c136484e91189719c2a4eccd36fc3",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "620/621",
+        "reference": "621/621"
+      }
+    },
+    {
+      "id": "ood-more_itertools-ce676d2-do-not-yield-an-empty-list-for-a",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "ce676d24136e6efa932df8a4f3bf4801b89e1dd0",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "595/598",
+        "reference": "598/598"
+      }
+    },
+    {
+      "id": "ood-more_itertools-e6ce1b0-fix-peekable-slice-with-negative",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "e6ce1b0f65a57c459fc5004ad84158447b65b0ac",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "620/621",
+        "reference": "621/621"
+      }
+    },
+    {
+      "id": "ood-more_itertools-f89d7a3-issue-1304-make-ichunked-match-c",
+      "split": "heldout",
+      "domain": "oss_more_itertools",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/more-itertools/more-itertools.git",
+      "commit": "f89d7a3331ba6b5421273e556c0a738e3dd1dd35",
+      "license": "MIT",
+      "src_files": [
+        "more_itertools/more.py"
+      ],
+      "passed": {
+        "original": "617/619",
+        "reference": "619/619"
+      }
+    },
+    {
+      "id": "ood-packaging-0efe21a-feat-expose-syntax-error-details",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "0efe21aa398df645c259ee31e54a8a4400b1fc6b",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/markers.py",
+        "src/packaging/requirements.py"
+      ],
+      "passed": {
+        "original": "7915/7921",
+        "reference": "7921/7921"
+      }
+    },
+    {
+      "id": "ood-packaging-5a7d338-fix-requirements-parse-followed",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "5a7d3386d2777180a381eb947f21293124ce8df5",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/_parser.py"
+      ],
+      "passed": {
+        "original": "5407/5411",
+        "reference": "5411/5411"
+      }
+    },
+    {
+      "id": "ood-packaging-7d0611d-feat-allow-set-of-extras-1438",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "7d0611d420c80d4da99eb5c254e7c4acdbabbe30",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/markers.py"
+      ],
+      "passed": {
+        "original": "2422/2484",
+        "reference": "2484/2484"
+      }
+    },
+    {
+      "id": "ood-packaging-8efde60-fix-dependency-groups-report-sel",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "8efde605cc2666f4ab75e028b578b395ba288401",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/dependency_groups.py"
+      ],
+      "passed": {
+        "original": "46/50",
+        "reference": "50/50"
+      }
+    },
+    {
+      "id": "ood-packaging-b8ecefd-perf-ranges-reuse-the-least-vers",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "b8ecefd3f425c09d0e843b9263314a5d51a3e276",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/_ranges.py",
+        "src/packaging/ranges.py"
+      ],
+      "passed": {
+        "original": "1612/1613",
+        "reference": "1613/1613"
+      }
+    },
+    {
+      "id": "ood-packaging-f91ea79-fix-defer-formatting-parse-excep",
+      "split": "heldout",
+      "domain": "oss_packaging",
+      "kind": "repo_pytest",
+      "source_repo": "https://github.com/pypa/packaging.git",
+      "commit": "f91ea7931fa551eb498ca2cdf5644dbbf20bcbc6",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "src_files": [
+        "src/packaging/markers.py",
+        "src/packaging/requirements.py"
+      ],
+      "passed": {
+        "original": "7921/7923",
+        "reference": "7923/7923"
+      }
+    }
+  ]
+}

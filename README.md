@@ -1,33 +1,136 @@
-# OpenCode Harness Adapter
+# OpenCode & Pi Harness Adapter
 
-在一张 Colab G4 96 GB 上复现 OpenCode Harness Adapter 的核心流程。基座固定为官方 `Qwen/Qwen3-8B` 的 `b968826d9c46dd6066d109eabc6255188de91218`，OpenCode 固定为 `@opencode/cli@2.2.7`。实验用三道冒烟题和 12 道训练、12 道按仓库隔离的留出候选，覆盖普通 Python 功能、数据处理和测试。
+Single-GPU colocated Agentic Reinforcement Learning (**LoRA GRPO**) that adapts lightweight open-weight models (`Qwen/Qwen3-8B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7** & **Pi**), inspired by Hugging Face's *Harness Adapters* (Nov 2026).
 
-## CPU 复现
+Instead of requiring multi-GPU asynchronous clusters (e.g., 2×B200), this framework runs the complete **Rollout → Engine Token/Logprob Capture → Hidden Test Verification → Prefix-Merged LoRA Update → Runtime Hot-Swap** loop on a **single 96 GB GPU** (RTX PRO 6000 Blackwell on Colab G4), with zero Docker daemon dependency and zero vLLM restarts.
 
-需要 Linux、Python 3.11+、Docker 本地 Unix socket，以及 Node.js/npm 或已经缓存的锁定 OpenCode。运行以下一条命令即可跑单元测试、CLI 版本与帮助检查、三题的九项独立判分对照，以及一次真实 OpenCode 的合成后端冒烟。
+---
 
-```sh
-./scripts/run-harness.sh
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph VM["Single 96 GB GPU Node (No Docker Required)"]
+    V["vLLM BF16 Server<br/>Sleep Mode (0.43s) + Runtime LoRA Hot-Swap (0.085s)<br/>return_token_ids + processed_logprobs"]
+    P["oca.proxy (CaptureProxy)<br/>Exact engine token IDs & behavior logprobs<br/>Per-trial budget lock + SSE replay"]
+    H["Unmodified Coding Harnesses<br/>OpenCode 2.2.7 | Pi CLI<br/>Unprivileged `agent` UID + RLIMIT"]
+    G["Hidden Verifier (`oca.grade`)<br/>`single_file` + multi-file `repo_pytest`<br/>`nobody` subprocess + `0700` hidden tests"]
+    A["SafeAgents Anti-Hack (`oca.reward`)<br/>Static code + Bash trace + Test-tamper zeroing"]
+    T["Colocated Trainer (`oca.train`)<br/>Prefix-Merged Multi-Turn Packing<br/>Dual-Ratio TIS x DAPO Clip-Higher + Entropy"]
+  end
+
+  H -- "OpenAI-compat SSE" --> P
+  P -- "return_token_ids + logprobs" --> V
+  H -- "Workspace artifacts" --> G
+  G --> A
+  P -- "Exact token IDs + vLLM logps" --> T
+  A -- "Reward (Correctness + Tool Eff)" --> T
+  T -- "/sleep -> backward -> /wake_up -> /v1/load_lora_adapter" --> V
 ```
 
-没有缓存时，安装步骤访问公开 npm registry 和锁定的 Docker 镜像发行源。已有缓存时可设置 `OPENCODE_PREFIX`，并用本地锁定镜像 ID 环境变量 `OCA_OFFLINE_DOCKER_IMAGE_ID` 避免拉取。任务和判分在隔离 Docker 容器中运行，判分使用独立测试。每次运行的报告写到忽略目录 `artifacts/`。历史合成轨迹与原始运行记录保留在执行环境中。
+---
 
-如需复核全部 24 道候选的原版、参考和部分修复，用 `./scripts/run-first-batch.sh --manifest-version 3`。如需复核 OpenEnv 捕获或配对比较器，用 [Harbor CPU 联调](docs/harbor-openenv-cpu.md) 和 [v3 模拟复验](docs/first-batch-v3.md#cpu-模拟复验)。
+## Key Engineering & Research Highlights
 
-## 单卡配置
+1. **Single-Card Colocation Without Restarts (`oca/train.py`)**
+   - Uses vLLM `sleep(level=1)` (**0.43s** offload to host RAM: 70.6 GB → 18.3 GB) alternating with PEFT LoRA backward passes, followed by `/wake_up` + `/v1/load_lora_adapter` (**0.085s** LoRA swap) — verified on Colab G4 RTX PRO 6000 Blackwell.
+2. **Prefix-Merged Multi-Turn Trajectory Packing (`oca/train.py:pack_trajectory_segments`)**
+   - Collapses monotonic multi-turn agent histories into single causal forward passes with exact `loss_mask` (zero on prompt & tool outputs), eliminating $O(T^2)$ redundant prefix prefill while automatically splitting segments whenever context compaction/rewriting breaks prefix continuity.
+3. **Engine-Trainer Divergence Calibration: Dual-Ratio `TIS × DAPO Clip-Higher`**
+   - Empirical G4 telemetry revealed BF16 vLLM↔PyTorch logprob tails up to **0.891 nats** (7/5,216 tokens > 0.5 nats on Step 1 alone), breaking naive hard-abort gates.
+   - Replaces brittle thresholds with detached **Truncated Importance Sampling (`tis_cap=2.0`, MIS outlier mask `<=5.0`)** for engine mismatch combined with **DAPO Clip-Higher (`0.20 / 0.28`)** across `minibatches=2` plus zero-cost **Policy Entropy** monitoring.
+4. **Three-Tier Verifiable Coding Environments (`data/`)**
+   - **L1 (Cleaned Single-File)**: Domain-disjoint deduplicated Python state-machine & algorithmic debugging suite (**71 train / 36 heldout**, 0 domain overlap; full funnel in `data/clean_report.json`).
+   - **L2 (Mini-Repo2RLEnvs `repo_pytest`)**: Multi-file 3–4 module Python repositories (`src/<pkg>/...` + visible `tests/test_smoke.py` + hidden `tests_hidden/test_hidden.py`) with cross-module bugs, triple-control validated via `pytest` (**27 train / 12 heldout** across 14 strictly disjoint engineering domains in `data/repo_v1/`).
+   - **L3 (Real OSS OOD Heldout)**: **17** out-of-distribution historical bugfix commits mined directly from pure-Python open-source repositories (`pypa/packaging`, `pallets/click`, `more-itertools`), verified against up to 7,923 real `pytest` regression tests (`data/ood_oss/`).
+5. **Dual-Layer Reward-Hacking Defense (`oca/reward.py`, `oca/adversarial.py`)**
+   - Combines OS privilege isolation (`agent` UID, `0700` hidden graders, `nobody` + `RLIMIT` workers) with static code inspection, **Bash command trace auditing**, and visible test tamper detection — **10/10** adversarial exploits blocked in CI.
+6. **Multi-Harness Super-Adapter (`oca/harnesses/`, `oca/merge.py`)**
+   - Pluggable support for **OpenCode 2.2.7** and **Pi** (`@earendil-works/pi-coding-agent`) over the exact same `CaptureProxy`, plus `linear` / `ties` / `dare_ties` LoRA merging into a single vLLM-loadable Super-Adapter.
+7. **Cluster-Aware Statistical Evaluation (`oca/eval.py`)**
+   - Multi-seed paired evaluation reporting `pass@1`, unbiased `pass@k`, **task-level Cluster Bootstrap 95% CI**, **task-level two-sided Paired Permutation Test** (avoiding within-task multi-seed independence violations), `common_solved` token/tool efficiency reductions, and automated failure-mode taxonomy.
 
-| 项目 | 锁定值 |
-| --- | --- |
-| 工具与捕获 | OpenCode 2.2.7、OpenEnv 0.7.0、Harbor 0.25.0 |
-| 推理 | vLLM BF16，`hermes` 工具解析，关闭 thinking，温度 0.8，top-p 1.0 |
-| 每题预算 | 上下文 4,096，单次生成 512，本题生成合计 2,048，最多 12 次模型调用和 180 秒 |
-| 更新 | 同一训练题四次真实采样，有成功也有失败时才验收一步 LoRA GRPO；rank 16、alpha 32，冻结基座 |
-| 留出 | 同题、同 seed、同预算配对；比较通过率、生成 token、工具调用、耗时及峰值显存 |
+---
 
-配置以 [单卡协议](protocol/colab-g4-v1.json) 为准。单卡按顺序收集、更新、重新加载 LoRA，再执行配对比较。首轮先按 [单题预检](docs/native-colab-boundary.md) 验收 `boundary` 的真实工具调用、引擎 token IDs、processed logprobs、训练掩码与 Harbor 独立评分。
+## Verified Local & Smoke Telemetry
 
-## 验证边界
+| Check / Milestone | Status | Measured Result |
+| --- | --- | --- |
+| Local Unit Test & Adversarial CI (`tests/test_oca_v4.py`) | Passing | **11/11 tests** (incl. 10/10 anti-hack blocks, `repo_pytest` triple-control, prefix-merge packing & compaction split) |
+| Colab G4 Hardware Probe (`artifacts/smoke_g4/probe_report.json`) | Verified | RTX PRO 6000 Blackwell 97.9 GB, 48 vCPU, 176 GB RAM; Sleep/Wake roundtrip **2.37s** |
+| Single-Card Colocated Step 1 (`artifacts/smoke_g4/step_001_metrics.json`) | Verified | Sleep **0.43s**, LoRA hot-swap **0.085s**, peak train VRAM **24.3 GB**, max `\|Δlogp\|` **0.891 nats** (handled smoothly by TIS) |
+| Full Training & Super-Adapter Evaluation (60-step OpenCode + Pi) | In Progress | *Metrics table to be populated upon completion of G4 runs* |
 
-CPU 已验证独立判分、OpenCode 工具循环、合成后端的真实 OpenEnv 捕获与 Harbor 判分、冻结清单及 v3 比较器。合成 trace 标记为不可训练。严格启动探针在当前 CPU 复验环境没有观察到要求的有效 cgroup 限额。目标单卡上的正式真实试跑、非零更新、LoRA 重载和 12 对真实比较均待验收。
+---
 
-[完整单卡流程](docs/colab-g4.md) · [上游版本、逐文件溯源与许可](docs/upstream.md) · [第三方声明](NOTICE)
+## Quick Start
+
+### 1. Local CPU Verification (Win11 / WSL2 / Linux)
+
+```bash
+python -m unittest tests/test_oca_v4.py -v
+python -m oca.adversarial
+python -m oca.colab.pack_repo   # builds artifacts/oca_repo.tar.gz (~350 KiB)
+```
+
+### 2. Colab G4 Single-GPU Workflow
+
+```bash
+# 1) Provision environment (vLLM, PEFT, pytest, OpenCode 2.2.7, Pi CLI, Qwen3-8B weights)
+python -m oca.colab.probe_env
+
+# 2) Phase 0/1: Failure diagnosis, Base Thinking-ON upper bound, Pi smoke & Prefix-Merge speedup benchmark
+python -m oca.colab.phase0_1_diag --out-dir /content/runs/phase0_1_diag
+
+# 3) 4-seed difficulty screening (filter 1..3/4 informative tasks for curriculum)
+python -m oca.train --mode screen --harness opencode --out-dir /content/runs/screen_oc --k 4 --concurrency 32
+
+# 4) 60-step colocated LoRA GRPO (rank 32, Prefix-Merged, Dual-Ratio TIS x Clip)
+python -m oca.train --mode train --harness opencode --out-dir /content/runs/oc_main \
+  --task-ids-file /content/runs/screen_oc/screen_summary.json --steps 60 --concurrency 32
+
+# 5) Train Pi adapter & merge into a single Super-Adapter
+python -m oca.train --mode train --harness pi --out-dir /content/runs/pi_main \
+  --task-ids-file /content/runs/screen_oc/screen_summary.json --steps 60 --concurrency 32
+python -m oca.merge --method ties --density 0.5 \
+  --adapter opencode=/content/runs/oc_main/checkpoints/step_060:0.5 \
+  --adapter pi=/content/runs/pi_main/checkpoints/step_060:0.5 \
+  --out-dir /content/runs/super_adapter_ties
+
+# 6) Multi-seed paired evaluation & SVG plots
+python -m oca.eval --harness opencode --split heldout --out-dir /content/runs/eval_oc \
+  --lora opencode=/content/runs/oc_main/checkpoints/step_060 \
+  --lora super=/content/runs/super_adapter_ties
+python -m oca.plots --history /content/runs/oc_main/history.jsonl \
+  --eval-report /content/runs/eval_oc/eval_report.json --out-dir docs/figures
+```
+
+---
+
+## Repository Layout
+
+```text
+opencode-harness-adapter/
+├── oca/
+│   ├── harnesses/        # Pluggable OpenCode 2.2.7 & Pi CLI adapters
+│   ├── colab/            # G4 probe, Phase 0/1 diagnostic, job runner & tarball packer
+│   ├── proxy.py          # Engine-boundary CaptureProxy (token IDs + processed logprobs + SSE)
+│   ├── rollout.py        # Isolated trial runner (single_file + repo_pytest + RLIMIT)
+│   ├── grade.py          # Unprivileged hidden grader (single_file + pytest multi-file)
+│   ├── reward.py         # Correctness + tool efficiency + static/bash anti-hack zeroing
+│   ├── train.py          # Colocated GRPO (Sleep/HotSwap + Prefix-Merged Packing + TIS x Clip)
+│   ├── eval.py           # Cluster Bootstrap CI, task-level permutation test & failure taxonomy
+│   ├── merge.py          # TIES / DARE-TIES / Linear Super-Adapter merger
+│   ├── plots.py          # Zero-dependency SVG charts & GGUF weight merge helper
+│   ├── clean_data.py     # Validation, AST/slug dedup & strict domain-disjoint splitter
+│   ├── gen_repo_tasks.py # Multi-file repo_pytest generator with automated pytest triple-control
+│   ├── build_ood_oss.py  # Real pure-Python OSS historical bugfix OOD benchmark miner
+│   └── adversarial.py    # 10-exploit reward-hacking regression suite
+├── protocol/             # Experiment config (oca-v4.json) & frozen v3 manifest
+├── data/                 # Cleaned L1 single-file, L2 repo_pytest, L3 OSS OOD benchmarks
+└── tests/                # Fast local unit test suite
+```
+
+## License
+
+Apache-2.0 — see [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt) and [NOTICE](NOTICE).

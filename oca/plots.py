@@ -144,6 +144,52 @@ def render_failure_taxonomy(eval_report_json: Path, out_svg: Path, lora_key: str
     out_svg.write_text(_svg_wrap(W, H, "\n".join(els)), encoding="utf-8")
 
 
+def render_transfer_matrix(matrix_json: Path, out_svg: Path):
+    """Render 2x2 + Super-Adapter cross-harness transfer heatmap SVG.
+
+    Expected JSON:
+      {"harnesses": ["OpenCode", "Pi"],
+       "models": [{"name": "Base", "scores": [0.22, 0.19]}, ...]}
+    """
+    doc = json.loads(matrix_json.read_text(encoding="utf-8"))
+    harnesses = doc["harnesses"]
+    models = doc["models"]
+    W = 220 + len(harnesses) * 145 + 145
+    H = 95 + len(models) * 48 + 30
+    els = [
+        f'<text x="{W//2}" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">'
+        f'Cross-Harness Transfer &amp; Super-Adapter Matrix (Held-out pass@1)</text>'
+    ]
+    cols = [*harnesses, "Mean"]
+    for j, col in enumerate(cols):
+        cx = 220 + j * 145 + 65
+        els.append(f'<text x="{cx}" y="68" text-anchor="middle" font-size="13" font-weight="600" fill="#374151">{col}</text>')
+
+    def cell_color(v: float) -> tuple[str, str]:
+        # Soft blue-green scale from 0.0 to 1.0
+        cl = max(0.0, min(1.0, v))
+        if cl >= 0.65:
+            return "#16a34a", "#ffffff"
+        if cl >= 0.45:
+            return "#2563eb", "#ffffff"
+        if cl >= 0.25:
+            return "#93c5fd", "#111827"
+        return "#e5e7eb", "#111827"
+
+    for i, m in enumerate(models):
+        y = 82 + i * 48
+        els.append(f'<text x="206" y="{y+26}" text-anchor="end" font-size="13" font-weight="600" fill="#1f2937">{m["name"]}</text>')
+        vals = [*m["scores"], sum(m["scores"]) / max(1, len(m["scores"]))]
+        for j, v in enumerate(vals):
+            x = 220 + j * 145
+            bg, fg = cell_color(v)
+            els.append(f'<rect x="{x}" y="{y}" width="130" height="38" rx="6" fill="{bg}"/>')
+            els.append(f'<text x="{x+65}" y="{y+24}" text-anchor="middle" font-size="13" font-weight="600" fill="{fg}">{v*100:.1f}%</text>')
+
+    out_svg.parent.mkdir(parents=True, exist_ok=True)
+    out_svg.write_text(_svg_wrap(W, H, "\n".join(els)), encoding="utf-8")
+
+
 def merge_and_export(base_model_path: Path, lora_ckpt: Path, merged_out: Path):
     """Merge PEFT LoRA into base BF16 weights for standalone serving or llama.cpp GGUF conversion (A5)."""
     import torch
@@ -166,6 +212,7 @@ def main():
     ap.add_argument("--history", type=Path)
     ap.add_argument("--compare-history", type=Path)
     ap.add_argument("--eval-report", type=Path)
+    ap.add_argument("--transfer-matrix", type=Path)
     ap.add_argument("--out-dir", type=Path, default=Path("docs/figures"))
     ap.add_argument("--merge-lora", type=Path, default=None)
     ap.add_argument("--base-model", type=Path, default=Path("/content/models/Qwen3-8B"))
@@ -178,6 +225,8 @@ def main():
         render_logprob_hist(args.history, args.out_dir / "logprob_divergence.svg")
     if args.eval_report and args.eval_report.is_file():
         render_failure_taxonomy(args.eval_report, args.out_dir / "failure_taxonomy.svg")
+    if args.transfer_matrix and args.transfer_matrix.is_file():
+        render_transfer_matrix(args.transfer_matrix, args.out_dir / "transfer_matrix.svg")
     if args.merge_lora:
         merge_and_export(args.base_model, args.merge_lora, args.merged_out)
 

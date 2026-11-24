@@ -1,16 +1,27 @@
 {
-  "total_valid": 5,
+  "total_valid": 39,
   "splits": {
-    "train": 5
+    "train": 35,
+    "heldout": 4
   },
   "train_domains": [
+    "cache_proxy",
     "config_cascade",
+    "cron_sched",
+    "doc_indexer",
+    "event_bus",
     "http_router",
+    "ledger_book",
     "mini_orm",
+    "pkg_resolver",
     "rate_quota",
+    "template_kit",
     "workflow_dag"
   ],
-  "heldout_domains": [],
-  "elapsed_s": 192.1,
-  "usage": "calls=6 disk=0 in=17022 cached=0 out=48226"
+  "heldout_domains": [
+    "patch_vcs",
+    "rule_linter"
+  ],
+  "elapsed_s": 783.6,
+  "usage": "calls=45 disk=0 in=144261 cached=0 out=359405"
 }
