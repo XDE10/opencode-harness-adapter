@@ -1,0 +1,148 @@
+{
+  "function": "render_box_table",
+  "cases": [
+    {
+      "id": "basic_auto_width",
+      "args": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          [
+            "1",
+            "2"
+          ]
+        ]
+      ],
+      "value": "+---+---+\n| A | B |\n+---+---+\n| 1 | 2 |\n+---+---+"
+    },
+    {
+      "id": "empty_rows",
+      "args": [
+        [
+          "Name",
+          "Val"
+        ],
+        []
+      ],
+      "value": "+------+-----+\n| Name | Val |\n+------+-----+"
+    },
+    {
+      "id": "empty_cell_auto_width",
+      "args": [
+        [
+          "X"
+        ],
+        [
+          [
+            ""
+          ]
+        ]
+      ],
+      "value": "+---+\n| X |\n+---+\n|   |\n+---+"
+    },
+    {
+      "id": "zero_padding",
+      "args": [
+        [
+          "K",
+          "V"
+        ],
+        [
+          [
+            "a",
+            "b"
+          ]
+        ],
+        null,
+        0
+      ],
+      "value": "+-+-+\n|K|V|\n+-+-+\n|a|b|\n+-+-+"
+    },
+    {
+      "id": "wrapped_uneven_heights",
+      "args": [
+        [
+          "Item",
+          "Notes"
+        ],
+        [
+          [
+            "ok",
+            "alpha beta gamma"
+          ]
+        ],
+        [
+          4,
+          6
+        ]
+      ],
+      "value": "+------+--------+\n| Item | Notes  |\n+------+--------+\n| ok   | alpha  |\n|      | beta   |\n|      | gamma  |\n+------+--------+"
+    },
+    {
+      "id": "multiline_hard_break",
+      "args": [
+        [
+          "Tag",
+          "Body"
+        ],
+        [
+          [
+            "id",
+            "abcdef\nxy"
+          ]
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "value": "+-----+------+\n| Tag | Body |\n+-----+------+\n| id  | abcd |\n|     | ef   |\n|     | xy   |\n+-----+------+"
+    },
+    {
+      "id": "width_one_allowed",
+      "args": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          [
+            "1",
+            "2"
+          ]
+        ],
+        [
+          1,
+          1
+        ],
+        0
+      ],
+      "value": "+-+-+\n|A|B|\n+-+-+\n|1|2|\n+-+-+"
+    },
+    {
+      "id": "row_length_mismatch_raises",
+      "args": [
+        [
+          "A",
+          "B"
+        ],
+        [
+          [
+            "1"
+          ]
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "empty_headers_raises",
+      "args": [
+        [],
+        []
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

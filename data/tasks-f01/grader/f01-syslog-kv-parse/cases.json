@@ -1,0 +1,119 @@
+{
+  "function": "parse_syslog_records",
+  "cases": [
+    {
+      "id": "basic_in_order",
+      "args": [
+        [
+          "ts=100 level=warn msg=\"started\"",
+          "   ",
+          "ts=120 level=err msg=\"disk full\""
+        ]
+      ],
+      "value": [
+        {"ts": 100, "level": "WARNING", "msg": "started"},
+        {"ts": 120, "level": "ERROR", "msg": "disk full"}
+      ]
+    },
+    {
+      "id": "out_of_order_within_skew",
+      "args": [
+        [
+          "ts=200 level=crit msg=\"alert\"",
+          "ts=185 level=info msg=\"delayed\"",
+          "ts=150 level=debug msg=\"too late\""
+        ],
+        null,
+        20
+      ],
+      "value": [
+        {"ts": 185, "level": "INFO", "msg": "delayed"},
+        {"ts": 200, "level": "CRITICAL", "msg": "alert"}
+      ]
+    },
+    {
+      "id": "zero_skew_drops_late",
+      "args": [
+        [
+          "ts=100 msg=\"a\"",
+          "ts=99 msg=\"b\"",
+          "ts=100 msg=\"c\""
+        ],
+        null,
+        0
+      ],
+      "value": [
+        {"ts": 100, "msg": "a"},
+        {"ts": 100, "msg": "c"}
+      ]
+    },
+    {
+      "id": "exact_skew_boundary_kept",
+      "args": [
+        [
+          "ts=100 msg=\"a\"",
+          "ts=75 msg=\"boundary\"",
+          "ts=74 msg=\"dropped\""
+        ],
+        null,
+        25
+      ],
+      "value": [
+        {"ts": 75, "msg": "boundary"},
+        {"ts": 100, "msg": "a"}
+      ]
+    },
+    {
+      "id": "escaped_backslash_before_quote",
+      "args": [
+        [
+          "ts=10 path=\"C:\\\\logs\\\\\" msg=\"say \\\"hi\\\"\""
+        ]
+      ],
+      "value": [
+        {"ts": 10, "path": "C:\\logs\\", "msg": "say \"hi\""}
+      ]
+    },
+    {
+      "id": "empty_quoted_and_tie_order",
+      "args": [
+        [
+          "ts=50 id=first msg=\"\"",
+          "ts=50 id=second msg=\"ok\""
+        ]
+      ],
+      "value": [
+        {"ts": 50, "id": "first", "msg": ""},
+        {"ts": 50, "id": "second", "msg": "ok"}
+      ]
+    },
+    {
+      "id": "missing_required_field",
+      "args": [
+        [
+          "ts=10 service=api"
+        ],
+        ["service", "trace_id"]
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "negative_ts_raises",
+      "args": [
+        [
+          "ts=-5 msg=bad"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_key_raises",
+      "args": [
+        [
+          "ts=10 msg=a msg=b"
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

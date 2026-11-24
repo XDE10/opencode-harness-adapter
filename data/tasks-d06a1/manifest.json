@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d06a1-dijkstra-stateful-tiebreak",
+      "split": "heldout",
+      "domain": "graph_dependency",
+      "lines": 62,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

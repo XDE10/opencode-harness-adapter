@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "f10-mvcc-snapshot-kv",
+      "split": "train",
+      "domain": "stateful_cache_kv",
+      "lines": 112,
+      "cases": 8,
+      "passed": {
+        "original": "5/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "f10-savepoint-kv",
+      "split": "train",
+      "domain": "stateful_cache_kv",
+      "lines": 114,
+      "cases": 8,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "7/8"
+      }
+    }
+  ]
+}

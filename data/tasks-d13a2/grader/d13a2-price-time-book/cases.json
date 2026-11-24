@@ -1,0 +1,444 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_buy_single_ask",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "a1",
+            "side": "sell",
+            "price": 10,
+            "qty": 5
+          },
+          {
+            "op": "match",
+            "side": "buy",
+            "limit": 10,
+            "qty": 3
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          {
+            "id": "a1",
+            "qty": 3,
+            "price": 10
+          }
+        ],
+        {
+          "bids": [],
+          "asks": [
+            [
+              10,
+              2,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "basic_sell_single_bid",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "b1",
+            "side": "buy",
+            "price": 9,
+            "qty": 4
+          },
+          {
+            "op": "match",
+            "side": "sell",
+            "limit": 9,
+            "qty": 1
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          {
+            "id": "b1",
+            "qty": 1,
+            "price": 9
+          }
+        ],
+        {
+          "bids": [
+            [
+              9,
+              3,
+              0
+            ]
+          ],
+          "asks": []
+        }
+      ]
+    },
+    {
+      "id": "basic_cancel_unknown",
+      "args": [
+        [
+          {
+            "op": "cancel",
+            "id": "missing"
+          },
+          {
+            "op": "add",
+            "id": "c",
+            "side": "buy",
+            "price": 5,
+            "qty": 2
+          },
+          {
+            "op": "cancel",
+            "id": "c"
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        false,
+        null,
+        true,
+        {
+          "bids": [],
+          "asks": []
+        }
+      ]
+    },
+    {
+      "id": "basic_book_sort",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "b_low",
+            "side": "buy",
+            "price": 8,
+            "qty": 1
+          },
+          {
+            "op": "add",
+            "id": "a_high",
+            "side": "sell",
+            "price": 12,
+            "qty": 2
+          },
+          {
+            "op": "add",
+            "id": "b_high",
+            "side": "buy",
+            "price": 11,
+            "qty": 3
+          },
+          {
+            "op": "add",
+            "id": "a_low",
+            "side": "sell",
+            "price": 7,
+            "qty": 4
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "bids": [
+            [
+              11,
+              3,
+              2
+            ],
+            [
+              8,
+              1,
+              0
+            ]
+          ],
+          "asks": [
+            [
+              7,
+              4,
+              3
+            ],
+            [
+              12,
+              2,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ask_price_priority",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "high",
+            "side": "sell",
+            "price": 12,
+            "qty": 5
+          },
+          {
+            "op": "add",
+            "id": "low",
+            "side": "sell",
+            "price": 10,
+            "qty": 5
+          },
+          {
+            "op": "match",
+            "side": "buy",
+            "limit": 12,
+            "qty": 5
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          {
+            "id": "low",
+            "qty": 5,
+            "price": 10
+          }
+        ],
+        {
+          "bids": [],
+          "asks": [
+            [
+              12,
+              5,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ask_price_priority_multi_fill",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "p15",
+            "side": "sell",
+            "price": 15,
+            "qty": 2
+          },
+          {
+            "op": "add",
+            "id": "p11",
+            "side": "sell",
+            "price": 11,
+            "qty": 3
+          },
+          {
+            "op": "add",
+            "id": "p10",
+            "side": "sell",
+            "price": 10,
+            "qty": 2
+          },
+          {
+            "op": "match",
+            "side": "buy",
+            "limit": 15,
+            "qty": 5
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        [
+          {
+            "id": "p10",
+            "qty": 2,
+            "price": 10
+          },
+          {
+            "id": "p11",
+            "qty": 3,
+            "price": 11
+          }
+        ],
+        {
+          "bids": [],
+          "asks": [
+            [
+              15,
+              2,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "buy_tie_fifo",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "s1",
+            "side": "sell",
+            "price": 10,
+            "qty": 2
+          },
+          {
+            "op": "add",
+            "id": "s2",
+            "side": "sell",
+            "price": 10,
+            "qty": 2
+          },
+          {
+            "op": "match",
+            "side": "buy",
+            "limit": 10,
+            "qty": 3
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          {
+            "id": "s1",
+            "qty": 2,
+            "price": 10
+          },
+          {
+            "id": "s2",
+            "qty": 1,
+            "price": 10
+          }
+        ],
+        {
+          "bids": [],
+          "asks": [
+            [
+              10,
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sell_tie_fifo",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "b1",
+            "side": "buy",
+            "price": 10,
+            "qty": 2
+          },
+          {
+            "op": "add",
+            "id": "b2",
+            "side": "buy",
+            "price": 10,
+            "qty": 2
+          },
+          {
+            "op": "match",
+            "side": "sell",
+            "limit": 10,
+            "qty": 3
+          },
+          {
+            "op": "book"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          {
+            "id": "b1",
+            "qty": 2,
+            "price": 10
+          },
+          {
+            "id": "b2",
+            "qty": 1,
+            "price": 10
+          }
+        ],
+        {
+          "bids": [
+            [
+              10,
+              1,
+              1
+            ]
+          ],
+          "asks": []
+        }
+      ]
+    },
+    {
+      "id": "duplicate_live_id_error",
+      "args": [
+        [
+          {
+            "op": "add",
+            "id": "x",
+            "side": "buy",
+            "price": 1,
+            "qty": 1
+          },
+          {
+            "op": "add",
+            "id": "x",
+            "side": "sell",
+            "price": 2,
+            "qty": 1
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

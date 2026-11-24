@@ -1,0 +1,105 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_snapshot_isolation",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "write", "tx": "t1", "key": "a", "value": 10},
+        {"op": "begin", "tx": "t2"},
+        {"op": "commit", "tx": "t1"},
+        {"op": "read", "tx": "t2", "key": "a", "default": -1},
+        {"op": "commit", "tx": "t2"},
+        {"op": "committed_keys"}
+      ]],
+      "value": [0, 10, 0, 1, -1, 2, ["a"]]
+    },
+    {
+      "id": "basic_concurrent_conflict_raises",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "begin", "tx": "t2"},
+        {"op": "write", "tx": "t1", "key": "k", "value": 1},
+        {"op": "write", "tx": "t2", "key": "k", "value": 2},
+        {"op": "commit", "tx": "t1"},
+        {"op": "commit", "tx": "t2"}
+      ]],
+      "raises": "ValueError"
+    },
+    {
+      "id": "abort_discards_writes",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "write", "tx": "t1", "key": "k", "value": 5},
+        {"op": "read", "tx": "t1", "key": "k"},
+        {"op": "abort", "tx": "t1"},
+        {"op": "committed_keys"}
+      ]],
+      "value": [0, 5, 5, true, []]
+    },
+    {
+      "id": "falsy_values_read",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "write", "tx": "t1", "key": "z", "value": 0},
+        {"op": "write", "tx": "t1", "key": "f", "value": false},
+        {"op": "read", "tx": "t1", "key": "z", "default": 99},
+        {"op": "commit", "tx": "t1"},
+        {"op": "begin", "tx": "t2"},
+        {"op": "read", "tx": "t2", "key": "z", "default": 99},
+        {"op": "read", "tx": "t2", "key": "f", "default": true}
+      ]],
+      "value": [0, 0, false, 0, 1, 1, 0, false]
+    },
+    {
+      "id": "delete_at_historical_version",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "write", "tx": "t1", "key": "a", "value": 1},
+        {"op": "write", "tx": "t1", "key": "b", "value": 2},
+        {"op": "commit", "tx": "t1"},
+        {"op": "begin", "tx": "t2"},
+        {"op": "delete", "tx": "t2", "key": "a"},
+        {"op": "read", "tx": "t2", "key": "a", "default": -1},
+        {"op": "commit", "tx": "t2"},
+        {"op": "committed_keys", "at_ver": 1},
+        {"op": "committed_keys", "at_ver": 2}
+      ]],
+      "value": [0, 1, 2, 1, 1, true, -1, 2, ["a", "b"], ["b"]]
+    },
+    {
+      "id": "sequential_overwrite_no_conflict",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "write", "tx": "t1", "key": "x", "value": 1},
+        {"op": "commit", "tx": "t1"},
+        {"op": "begin", "tx": "t2"},
+        {"op": "write", "tx": "t2", "key": "x", "value": 2},
+        {"op": "commit", "tx": "t2"},
+        {"op": "begin", "tx": "t3"},
+        {"op": "read", "tx": "t3", "key": "x"}
+      ]],
+      "value": [0, 1, 1, 1, 2, 2, 2, 2]
+    },
+    {
+      "id": "conflict_cleanup_allows_rebegin",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "begin", "tx": "t2"},
+        {"op": "write", "tx": "t1", "key": "k", "value": 1},
+        {"op": "write", "tx": "t2", "key": "k", "value": 2},
+        {"op": "commit", "tx": "t1"},
+        {"op": "commit", "tx": "t2"}
+      ]],
+      "raises": "ValueError"
+    },
+    {
+      "id": "delete_missing_raises",
+      "args": [[
+        {"op": "begin", "tx": "t1"},
+        {"op": "delete", "tx": "t1", "key": "missing"}
+      ]],
+      "raises": "KeyError"
+    }
+  ]
+}

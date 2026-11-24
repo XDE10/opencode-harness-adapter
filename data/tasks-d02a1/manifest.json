@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "d02a1-brace-query-session",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 163,
+      "cases": 8,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "d02a1-posix-stream-lexer",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 106,
+      "cases": 9,
+      "passed": {
+        "original": "0/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

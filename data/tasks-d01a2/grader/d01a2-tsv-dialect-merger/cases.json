@@ -1,0 +1,165 @@
+{
+  "function": "merge_dialect_tables",
+  "cases": [
+    {
+      "id": "basic_outer_join_numeric_sort",
+      "args": [
+        "ID,Score,Tag\n10,50,alpha\n2,20,NULL",
+        "id\tscore\textra\n2\t25\tx\n1\t99\ty",
+        "ID",
+        "latest"
+      ],
+      "value": [
+        {
+          "extra": "y",
+          "id": "1",
+          "score": 99,
+          "tag": null
+        },
+        {
+          "extra": "x",
+          "id": "2",
+          "score": 25,
+          "tag": null
+        },
+        {
+          "extra": null,
+          "id": "10",
+          "score": 50,
+          "tag": "alpha"
+        }
+      ]
+    },
+    {
+      "id": "alphanumeric_keys_lex_sort",
+      "args": [
+        "user_id,role\nu10,admin\nu2,guest",
+        "USER-ID\tdept\nu2\tsales\nu10\teng",
+        "user_id",
+        "primary"
+      ],
+      "value": [
+        {
+          "dept": "eng",
+          "role": "admin",
+          "user_id": "u10"
+        },
+        {
+          "dept": "sales",
+          "role": "guest",
+          "user_id": "u2"
+        }
+      ]
+    },
+    {
+      "id": "within_table_duplicate_key_preserves_non_null",
+      "args": [
+        "id,name,points\n1,Alice,100\n1,NULL,150\n1,Alicia,",
+        "id\tpoints\tbadge\n1\t120\tgold\n1\t\tNULL",
+        "id",
+        "primary"
+      ],
+      "value": [
+        {
+          "badge": "gold",
+          "id": "1",
+          "name": "Alicia",
+          "points": 150
+        }
+      ]
+    },
+    {
+      "id": "within_table_secondary_dedup",
+      "args": [
+        "id,val\n5,10",
+        "id\tval\tnote\n5\t20\t\"first\nline\"\n5\tNULL\t",
+        "id",
+        "secondary"
+      ],
+      "value": [
+        {
+          "id": "5",
+          "note": "first\nline",
+          "val": 20
+        }
+      ]
+    },
+    {
+      "id": "zero_and_empty_quoted_string_falsy_values",
+      "args": [
+        "id,balance,label\n1,0,\"\"\n2,100,ok",
+        "id\tbalance\tlabel\n1\t50\tfallback\n2\t0\t\"\"",
+        "id",
+        "primary"
+      ],
+      "value": [
+        {
+          "balance": 0,
+          "id": "1",
+          "label": ""
+        },
+        {
+          "balance": 100,
+          "id": "2",
+          "label": "ok"
+        }
+      ]
+    },
+    {
+      "id": "zero_in_secondary_with_latest_prefer",
+      "args": [
+        "id,delta,note\n1,15,initial\n2,-5,keep",
+        "id\tdelta\tnote\n1\t0\t\"\"\n2\tNULL\tNULL",
+        "id",
+        "latest"
+      ],
+      "value": [
+        {
+          "delta": 0,
+          "id": "1",
+          "note": ""
+        },
+        {
+          "delta": -5,
+          "id": "2",
+          "note": "keep"
+        }
+      ]
+    },
+    {
+      "id": "leading_tab_empty_first_col_in_tsv",
+      "args": [
+        "note,id\nfrom_csv,7",
+        "note\tid\n\t7",
+        "id",
+        "secondary"
+      ],
+      "value": [
+        {
+          "id": "7",
+          "note": "from_csv"
+        }
+      ]
+    },
+    {
+      "id": "missing_key_column_raises",
+      "args": [
+        "id,name\n1,a",
+        "other_id\tname\n1\tb",
+        "id",
+        "latest"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "null_key_value_raises",
+      "args": [
+        "id,name\nNULL,a",
+        "id\tname\n1\tb",
+        "id",
+        "latest"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

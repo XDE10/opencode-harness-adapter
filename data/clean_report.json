@@ -1,0 +1,281 @@
+{
+  "dry_run": false,
+  "funnel": {
+    "scanned_on_disk": 107,
+    "valid_triple_control": 103,
+    "after_v3_dedup": 103,
+    "after_near_dup_dedup": 83,
+    "generated_train": 59,
+    "generated_heldout": 24,
+    "v3_train": 12,
+    "v3_heldout": 12,
+    "total_train": 71,
+    "total_heldout": 36
+  },
+  "domain_disjoint_verified": true,
+  "heldout_domains": [
+    "calendar_interval",
+    "data_quality_framing",
+    "diff_interpreter",
+    "graph_dependency",
+    "wire_scheduler"
+  ],
+  "train_domains": [
+    "auction_ast",
+    "backend_codec",
+    "config_tabular",
+    "game_index",
+    "grid_string_codec",
+    "log_routing",
+    "markup_tokenizer",
+    "money_numeric",
+    "range_quota",
+    "sequence_tree",
+    "stateful_cache_kv",
+    "string_timeseries",
+    "table_combinatorics",
+    "text_formatting",
+    "vfs_buildgraph"
+  ],
+  "domains": {
+    "auction_ast": {
+      "split": "train",
+      "count": 2
+    },
+    "backend_codec": {
+      "split": "train",
+      "count": 2
+    },
+    "calendar_interval": {
+      "split": "heldout",
+      "count": 8
+    },
+    "config_tabular": {
+      "split": "train",
+      "count": 7
+    },
+    "data_quality_framing": {
+      "split": "heldout",
+      "count": 2
+    },
+    "diff_interpreter": {
+      "split": "heldout",
+      "count": 8
+    },
+    "game_index": {
+      "split": "train",
+      "count": 1
+    },
+    "graph_dependency": {
+      "split": "heldout",
+      "count": 5
+    },
+    "grid_string_codec": {
+      "split": "train",
+      "count": 2
+    },
+    "log_routing": {
+      "split": "train",
+      "count": 8
+    },
+    "markup_tokenizer": {
+      "split": "train",
+      "count": 9
+    },
+    "money_numeric": {
+      "split": "train",
+      "count": 9
+    },
+    "range_quota": {
+      "split": "train",
+      "count": 2
+    },
+    "sequence_tree": {
+      "split": "train",
+      "count": 6
+    },
+    "stateful_cache_kv": {
+      "split": "train",
+      "count": 5
+    },
+    "string_timeseries": {
+      "split": "train",
+      "count": 2
+    },
+    "table_combinatorics": {
+      "split": "train",
+      "count": 1
+    },
+    "text_formatting": {
+      "split": "train",
+      "count": 2
+    },
+    "vfs_buildgraph": {
+      "split": "train",
+      "count": 1
+    },
+    "wire_scheduler": {
+      "split": "heldout",
+      "count": 1
+    }
+  },
+  "removed_invalid": [
+    {
+      "dir": "tasks-d20a1",
+      "id": "d20a1-tlv-seq-reset",
+      "problems": [
+        "reference should pass, got fail  ['basic_text_int', 'split_frame', 'boundary_resets_seq', 'boundary_split_feeds', 'reset_clears_seq', 'reset_partial_and_seq', 'reset_then_finish'] "
+      ]
+    },
+    {
+      "dir": "tasks-f02",
+      "id": "f02-segmented-lru-cache",
+      "problems": [
+        "reference should pass, got fail  ['demoted_entry_goes_to_probationary_mru'] "
+      ]
+    },
+    {
+      "dir": "tasks-f03",
+      "id": "f03-hamilton-bill-split",
+      "problems": [
+        "partial should fail, got pass"
+      ]
+    },
+    {
+      "dir": "tasks-f06",
+      "id": "f06-bullet-wrap",
+      "problems": [
+        "missing grader/cases.json",
+        "missing grader/reference.py",
+        "missing grader/partial.py"
+      ]
+    }
+  ],
+  "removed_v3_overlap": [],
+  "removed_duplicates_count": 20,
+  "removed_duplicates": [
+    {
+      "dropped": "d01a1-dialect-table-loader",
+      "kept": "d01a2-dialect-table-parser",
+      "domain": "config_tabular"
+    },
+    {
+      "dropped": "d01b2-dotenv-multiline",
+      "kept": "d01b1-dotenv-multiline-overlay",
+      "domain": "config_tabular"
+    },
+    {
+      "dropped": "d01b1-ini-inherit-session",
+      "kept": "d01b2-ini-inherit",
+      "domain": "config_tabular"
+    },
+    {
+      "dropped": "f06-md-table-align",
+      "kept": "f06-md-table-extract",
+      "domain": "markup_tokenizer"
+    },
+    {
+      "dropped": "d02b1-md-table-inline",
+      "kept": "f06-md-table-extract",
+      "domain": "markup_tokenizer"
+    },
+    {
+      "dropped": "d03a1-recurring-billing-scheduler",
+      "kept": "d03a2-recurring-billing-schedule",
+      "domain": "calendar_interval"
+    },
+    {
+      "dropped": "d03a2-sla-business-deadline",
+      "kept": "f08-sla-deadline",
+      "domain": "calendar_interval"
+    },
+    {
+      "dropped": "d03a1-sla-deadline-engine",
+      "kept": "f08-sla-deadline",
+      "domain": "calendar_interval"
+    },
+    {
+      "dropped": "f02-sliding-ttl-cache",
+      "kept": "d04a2-lfu-ttl-cache",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "d04a2-writeback-sliding-cache",
+      "kept": "d04a2-lfu-ttl-cache",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "d04a1-lfu-cache-decay",
+      "kept": "d04a2-lfu-ttl-cache",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "f02-lru-ttl-cache",
+      "kept": "d04a2-lfu-ttl-cache",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "d04b1-nested-tx-kv",
+      "kept": "d04b2-nested-tx-kv",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "f10-nested-kv-txn",
+      "kept": "d04b2-nested-tx-kv",
+      "domain": "stateful_cache_kv"
+    },
+    {
+      "dropped": "d06a2-dijkstra-tiebreak",
+      "kept": "d06a1-dijkstra-stateful-tiebreak",
+      "domain": "graph_dependency"
+    },
+    {
+      "dropped": "d07a1-box-table-wrap",
+      "kept": "f06-box-table",
+      "domain": "text_formatting"
+    },
+    {
+      "dropped": "d07b1-duration-state-canonicalizer",
+      "kept": "d07b2-duration-canonicalizer",
+      "domain": "text_formatting"
+    },
+    {
+      "dropped": "f09-kway-merge-dedup",
+      "kept": "d08a2-kway-sorted-merge-dedup",
+      "domain": "sequence_tree"
+    },
+    {
+      "dropped": "d08b1-json-pointer-state-ops",
+      "kept": "d08b2-json-pointer-ops",
+      "domain": "sequence_tree"
+    },
+    {
+      "dropped": "f05-json-pointer-eval",
+      "kept": "d08b2-json-pointer-ops",
+      "domain": "config_tabular"
+    }
+  ],
+  "dup_edges_detected": 25,
+  "removed_empty_dirs": [
+    "tasks-d01a",
+    "tasks-d01b",
+    "tasks-d06b2",
+    "tasks-d10b1",
+    "tasks-d10b2",
+    "tasks-d12b2",
+    "tasks-d13a1",
+    "tasks-d13b1",
+    "tasks-d17b2",
+    "tasks-d18a1"
+  ],
+  "pruned_after_dedup": [
+    "tasks-d03a1",
+    "tasks-d04b1",
+    "tasks-d06a2",
+    "tasks-d07a1",
+    "tasks-d07b1",
+    "tasks-d08b1",
+    "tasks-d20a1",
+    "tasks-f02"
+  ]
+}

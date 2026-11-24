@@ -1,0 +1,16 @@
+{
+  "total_valid": 5,
+  "splits": {
+    "train": 5
+  },
+  "train_domains": [
+    "config_cascade",
+    "http_router",
+    "mini_orm",
+    "rate_quota",
+    "workflow_dag"
+  ],
+  "heldout_domains": [],
+  "elapsed_s": 192.1,
+  "usage": "calls=6 disk=0 in=17022 cached=0 out=48226"
+}

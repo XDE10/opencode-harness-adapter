@@ -1,0 +1,631 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_init",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              0,
+              0
+            ],
+            "heading": "E"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "basic_move_obstacle",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 4,
+            "obstacles": [
+              [
+                1,
+                3
+              ]
+            ],
+            "start": [
+              1,
+              1
+            ],
+            "heading": "E"
+          },
+          {
+            "op": "move",
+            "steps": 5
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            2
+          ],
+          "heading": "E",
+          "blocked": true,
+          "visited": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "basic_move_south",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 2,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              0,
+              1
+            ],
+            "heading": "S"
+          },
+          {
+            "op": "move",
+            "steps": 5
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "heading": "S",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "S",
+          "blocked": true,
+          "visited": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "error_unknown_op",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 2,
+            "cols": 2,
+            "obstacles": [],
+            "start": [
+              0,
+              0
+            ],
+            "heading": "N"
+          },
+          {
+            "op": "jump"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "turn_right_then_move",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              1,
+              1
+            ],
+            "heading": "N"
+          },
+          {
+            "op": "turn",
+            "dir": "right"
+          },
+          {
+            "op": "move",
+            "steps": 2
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "N",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            2
+          ],
+          "heading": "E",
+          "blocked": true,
+          "visited": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "turn_left_then_move",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              1,
+              1
+            ],
+            "heading": "E"
+          },
+          {
+            "op": "turn",
+            "dir": "left"
+          },
+          {
+            "op": "move",
+            "steps": 1
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "N",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "heading": "N",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boundary_west_one",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 2,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              0,
+              1
+            ],
+            "heading": "W"
+          },
+          {
+            "op": "move",
+            "steps": 1
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            0,
+            1
+          ],
+          "heading": "W",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "heading": "W",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boundary_west_two",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 4,
+            "obstacles": [],
+            "start": [
+              2,
+              2
+            ],
+            "heading": "W"
+          },
+          {
+            "op": "move",
+            "steps": 2
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            2,
+            2
+          ],
+          "heading": "W",
+          "blocked": false,
+          "visited": [
+            [
+              2,
+              2
+            ]
+          ]
+        },
+        {
+          "pos": [
+            2,
+            0
+          ],
+          "heading": "W",
+          "blocked": false,
+          "visited": [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              2,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_clears_visited",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              0,
+              0
+            ],
+            "heading": "E"
+          },
+          {
+            "op": "move",
+            "steps": 2
+          },
+          {
+            "op": "reset"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "pos": [
+            0,
+            2
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ]
+          ]
+        },
+        {
+          "pos": [
+            0,
+            0
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              0,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_twice",
+      "args": [
+        [
+          {
+            "op": "init",
+            "rows": 3,
+            "cols": 3,
+            "obstacles": [],
+            "start": [
+              1,
+              1
+            ],
+            "heading": "E"
+          },
+          {
+            "op": "move",
+            "steps": 1
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "move",
+            "steps": 1
+          },
+          {
+            "op": "reset"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            2
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            2
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "pos": [
+            1,
+            1
+          ],
+          "heading": "E",
+          "blocked": false,
+          "visited": [
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

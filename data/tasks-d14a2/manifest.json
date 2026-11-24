@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d14a2-cron-field-expander",
+      "split": "heldout",
+      "domain": "data_quality_framing",
+      "lines": 72,
+      "cases": 10,
+      "passed": {
+        "original": "5/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

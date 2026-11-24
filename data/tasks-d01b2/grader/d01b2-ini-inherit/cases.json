@@ -1,0 +1,116 @@
+{
+  "function": "parse_ini",
+  "cases": [
+    {
+      "id": "basic_default_and_quotes",
+      "args": [
+        "# Global config\napp = \"my#app\" ; inline comment\npath = /var/log\n[server]\nurl = \"http://localhost/${default.app}\"\n"
+      ],
+      "value": {
+        "default": {
+          "app": "my#app",
+          "path": "/var/log"
+        },
+        "server": {
+          "url": "http://localhost/my#app"
+        }
+      }
+    },
+    {
+      "id": "child_overrides_parent",
+      "args": [
+        "[base]\nhost = 127.0.0.1\nport = 80\nendpoint = ${host}:${port}\n[prod : base]\nport = 8080\n"
+      ],
+      "value": {
+        "base": {
+          "host": "127.0.0.1",
+          "port": "80",
+          "endpoint": "127.0.0.1:80"
+        },
+        "prod": {
+          "host": "127.0.0.1",
+          "port": "8080",
+          "endpoint": "127.0.0.1:8080"
+        }
+      }
+    },
+    {
+      "id": "multilevel_inheritance_override",
+      "args": [
+        "[a]\nx = 1\ny = 2\nz = 3\n[b : a]\ny = 20\n[c : b]\nz = 30\ny = 200\n"
+      ],
+      "value": {
+        "a": {
+          "x": "1",
+          "y": "2",
+          "z": "3"
+        },
+        "b": {
+          "x": "1",
+          "y": "20",
+          "z": "3"
+        },
+        "c": {
+          "x": "1",
+          "y": "200",
+          "z": "30"
+        }
+      }
+    },
+    {
+      "id": "dotted_key_same_section",
+      "args": [
+        "[service]\ndb.host = localhost\ndb.port = 5432\ndsn = postgres://${db.host}:${db.port}/app\n"
+      ],
+      "value": {
+        "service": {
+          "db.host": "localhost",
+          "db.port": "5432",
+          "dsn": "postgres://localhost:5432/app"
+        }
+      }
+    },
+    {
+      "id": "cross_section_dotted_key",
+      "args": [
+        "[db]\nconn.host = 10.0.0.1\n[web]\ntarget = ${db.conn.host}:80\n"
+      ],
+      "value": {
+        "db": {
+          "conn.host": "10.0.0.1"
+        },
+        "web": {
+          "target": "10.0.0.1:80"
+        }
+      }
+    },
+    {
+      "id": "comment_with_equals_without_key",
+      "args": [
+        "[sec]\nfoo # = bar\n"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "var_interpolation_cycle",
+      "args": [
+        "[sec]\na = ${b}\nb = ${c}\nc = ${a}\n"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "section_inheritance_cycle",
+      "args": [
+        "[a : b]\nx = 1\n[b : a]\ny = 2\n"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "missing_interpolation_key",
+      "args": [
+        "[sec]\na = ${nonexistent.key}\n"
+      ],
+      "raises": "KeyError"
+    }
+  ]
+}

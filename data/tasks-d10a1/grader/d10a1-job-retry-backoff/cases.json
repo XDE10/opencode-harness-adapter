@@ -1,0 +1,322 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_done",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "a",
+            "base": 2,
+            "factor": 2,
+            "max_attempts": 3
+          },
+          {
+            "op": "status",
+            "t": 0,
+            "job": "a"
+          },
+          {
+            "op": "succeed",
+            "t": 1,
+            "job": "a"
+          },
+          {
+            "op": "status",
+            "t": 2,
+            "job": "a"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "ready",
+        "done",
+        "done"
+      ]
+    },
+    {
+      "id": "cancel_resubmit",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "a",
+            "base": 1,
+            "factor": 2,
+            "max_attempts": 2
+          },
+          {
+            "op": "cancel",
+            "t": 1,
+            "job": "a"
+          },
+          {
+            "op": "status",
+            "t": 1,
+            "job": "a"
+          },
+          {
+            "op": "submit",
+            "t": 2,
+            "job": "a",
+            "base": 4,
+            "factor": 2,
+            "max_attempts": 3
+          },
+          {
+            "op": "status",
+            "t": 2,
+            "job": "a"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "cancelled",
+        "cancelled",
+        "submitted",
+        "ready"
+      ]
+    },
+    {
+      "id": "duplicate_active_error",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "a",
+            "base": 2,
+            "factor": 2,
+            "max_attempts": 3
+          },
+          {
+            "op": "submit",
+            "t": 1,
+            "job": "a",
+            "base": 2,
+            "factor": 2,
+            "max_attempts": 3
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "wait_before_due",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "a",
+            "base": 5,
+            "factor": 2,
+            "max_attempts": 3
+          },
+          {
+            "op": "run",
+            "t": 0,
+            "job": "a"
+          },
+          {
+            "op": "status",
+            "t": 4,
+            "job": "a"
+          },
+          {
+            "op": "succeed",
+            "t": 4,
+            "job": "a"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "retry",
+        "waiting",
+        "waiting"
+      ]
+    },
+    {
+      "id": "final_single_attempt",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "j",
+            "base": 2,
+            "factor": 3,
+            "max_attempts": 1
+          },
+          {
+            "op": "run",
+            "t": 0,
+            "job": "j"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "failed"
+      ]
+    },
+    {
+      "id": "final_later_due",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 10,
+            "job": "b",
+            "base": 7,
+            "factor": 2,
+            "max_attempts": 1
+          },
+          {
+            "op": "run",
+            "t": 10,
+            "job": "b"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "failed"
+      ]
+    },
+    {
+      "id": "terminal_succeed_error",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "c",
+            "base": 1,
+            "factor": 2,
+            "max_attempts": 1
+          },
+          {
+            "op": "run",
+            "t": 0,
+            "job": "c"
+          },
+          {
+            "op": "succeed",
+            "t": 0,
+            "job": "c"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "backoff_first_status",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 0,
+            "job": "d",
+            "base": 2,
+            "factor": 3,
+            "max_attempts": 3
+          },
+          {
+            "op": "run",
+            "t": 0,
+            "job": "d"
+          },
+          {
+            "op": "status",
+            "t": 1,
+            "job": "d"
+          },
+          {
+            "op": "status",
+            "t": 2,
+            "job": "d"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "retry",
+        "waiting",
+        "ready"
+      ]
+    },
+    {
+      "id": "backoff_second_run",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 10,
+            "job": "e",
+            "base": 3,
+            "factor": 2,
+            "max_attempts": 4
+          },
+          {
+            "op": "run",
+            "t": 10,
+            "job": "e"
+          },
+          {
+            "op": "run",
+            "t": 13,
+            "job": "e"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "retry",
+        "retry"
+      ]
+    },
+    {
+      "id": "backoff_second_status",
+      "args": [
+        [
+          {
+            "op": "submit",
+            "t": 5,
+            "job": "f",
+            "base": 4,
+            "factor": 2,
+            "max_attempts": 5
+          },
+          {
+            "op": "run",
+            "t": 5,
+            "job": "f"
+          },
+          {
+            "op": "run",
+            "t": 13,
+            "job": "f"
+          },
+          {
+            "op": "status",
+            "t": 21,
+            "job": "f"
+          }
+        ]
+      ],
+      "value": [
+        "submitted",
+        "retry",
+        "retry",
+        "ready"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,428 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_commit_capacity",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 5
+          },
+          {
+            "op": "reserve",
+            "rid": "a",
+            "qty": 2,
+            "t": 0,
+            "ttl": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "b",
+            "qty": 3,
+            "t": 1,
+            "ttl": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "c",
+            "qty": 1,
+            "t": 2,
+            "ttl": 10
+          },
+          {
+            "op": "commit",
+            "rid": "a",
+            "t": 3
+          },
+          {
+            "op": "reserve",
+            "rid": "c",
+            "qty": 1,
+            "t": 4,
+            "ttl": 10
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "basic_release_snapshot",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "a",
+            "qty": 1,
+            "t": 0,
+            "ttl": 5
+          },
+          {
+            "op": "reserve",
+            "rid": "b",
+            "qty": 2,
+            "t": 1,
+            "ttl": 6
+          },
+          {
+            "op": "snapshot",
+            "t": 2
+          },
+          {
+            "op": "release",
+            "rid": "a",
+            "t": 3
+          },
+          {
+            "op": "reserve",
+            "rid": "c",
+            "qty": 4,
+            "t": 4,
+            "ttl": 5
+          },
+          {
+            "op": "snapshot",
+            "t": 4
+          },
+          {
+            "op": "release",
+            "rid": "z",
+            "t": 4
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        [
+          [
+            "a",
+            1,
+            5
+          ],
+          [
+            "b",
+            2,
+            7
+          ]
+        ],
+        true,
+        true,
+        [
+          [
+            "b",
+            2,
+            7
+          ],
+          [
+            "c",
+            4,
+            9
+          ]
+        ],
+        false
+      ]
+    },
+    {
+      "id": "basic_expired_commit_noop",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 4
+          },
+          {
+            "op": "reserve",
+            "rid": "r",
+            "qty": 3,
+            "t": 0,
+            "ttl": 2
+          },
+          {
+            "op": "commit",
+            "rid": "r",
+            "t": 2
+          },
+          {
+            "op": "reserve",
+            "rid": "s",
+            "qty": 4,
+            "t": 2,
+            "ttl": 5
+          },
+          {
+            "op": "snapshot",
+            "t": 2
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        false,
+        true,
+        [
+          [
+            "s",
+            4,
+            7
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "error_nonpositive_qty",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 3
+          },
+          {
+            "op": "reserve",
+            "rid": "bad",
+            "qty": 0,
+            "t": 0,
+            "ttl": 5
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "expire_before_capacity",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 5
+          },
+          {
+            "op": "reserve",
+            "rid": "old",
+            "qty": 5,
+            "t": 0,
+            "ttl": 1
+          },
+          {
+            "op": "reserve",
+            "rid": "new",
+            "qty": 5,
+            "t": 1,
+            "ttl": 10
+          },
+          {
+            "op": "snapshot",
+            "t": 1
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        [
+          [
+            "new",
+            5,
+            11
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "expire_before_duplicate",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 5
+          },
+          {
+            "op": "reserve",
+            "rid": "r",
+            "qty": 5,
+            "t": 0,
+            "ttl": 1
+          },
+          {
+            "op": "reserve",
+            "rid": "r",
+            "qty": 2,
+            "t": 1,
+            "ttl": 10
+          },
+          {
+            "op": "snapshot",
+            "t": 1
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        [
+          [
+            "r",
+            2,
+            11
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "expire_before_partial_capacity",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "x",
+            "qty": 6,
+            "t": 0,
+            "ttl": 1
+          },
+          {
+            "op": "reserve",
+            "rid": "y",
+            "qty": 4,
+            "t": 0,
+            "ttl": 1
+          },
+          {
+            "op": "reserve",
+            "rid": "z",
+            "qty": 7,
+            "t": 1,
+            "ttl": 3
+          },
+          {
+            "op": "snapshot",
+            "t": 1
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        true,
+        [
+          [
+            "z",
+            7,
+            4
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "snapshot_expiry_order",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "a",
+            "qty": 1,
+            "t": 0,
+            "ttl": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "b",
+            "qty": 2,
+            "t": 0,
+            "ttl": 5
+          },
+          {
+            "op": "snapshot",
+            "t": 1
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        [
+          [
+            "b",
+            2,
+            5
+          ],
+          [
+            "a",
+            1,
+            10
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "snapshot_seq_tie",
+      "args": [
+        [
+          {
+            "op": "init",
+            "stock": 10
+          },
+          {
+            "op": "reserve",
+            "rid": "b",
+            "qty": 1,
+            "t": 0,
+            "ttl": 5
+          },
+          {
+            "op": "reserve",
+            "rid": "a",
+            "qty": 2,
+            "t": 0,
+            "ttl": 5
+          },
+          {
+            "op": "snapshot",
+            "t": 1
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        true,
+        [
+          [
+            "b",
+            1,
+            5
+          ],
+          [
+            "a",
+            2,
+            5
+          ]
+        ]
+      ]
+    }
+  ]
+}

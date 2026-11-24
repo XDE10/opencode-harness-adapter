@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d11a1-anomaly-streak-run",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 65,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

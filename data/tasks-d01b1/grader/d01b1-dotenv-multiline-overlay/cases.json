@@ -1,0 +1,247 @@
+{
+  "function": "run_dotenv",
+  "cases": [
+    {
+      "id": "basic_layers_and_single_quote",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "base",
+            "text": "export HOST = localhost # host comment\nPORT=8080\nRAW='${HOST}:${PORT}'\nURL=\"http://${HOST}:${PORT}\""
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "base"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "RAW"
+          },
+          {
+            "op": "resolve",
+            "key": "URL"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        "${HOST}:${PORT}",
+        "http://localhost:8080"
+      ]
+    },
+    {
+      "id": "multiline_triple_quotes",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "app",
+            "text": "USER=admin\nBANNER=\"\"\"hello ${USER}\n# not a comment\nline \\\"3\\\"\"\"\" # trailing comment"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "app"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "BANNER"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        "hello admin\n# not a comment\nline \"3\""
+      ]
+    },
+    {
+      "id": "unclosed_triple_quote_raises",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "bad",
+            "text": "A=\"\"\"line 1\nline 2"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "cycle_detection_across_layers",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "l1",
+            "text": "A=${B}"
+          },
+          {
+            "op": "parse",
+            "layer": "l2",
+            "text": "B=${A}"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "l1",
+              "l2"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "A"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "unquoted_hash_without_space_is_literal",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "theme",
+            "text": "COLOR=#ff00aa # hex color\nSLUG=item#42\nEMPTY= #full comment"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "theme"
+            ]
+          },
+          {
+            "op": "export_all"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        {
+          "COLOR": "#ff00aa",
+          "EMPTY": "",
+          "SLUG": "item#42"
+        }
+      ]
+    },
+    {
+      "id": "url_fragment_in_unquoted_value",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "web",
+            "text": "PAGE=https://example.com/docs#install\nLINK=${PAGE}?v=1 # inline comment"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "web"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "LINK"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        "https://example.com/docs#install?v=1"
+      ]
+    },
+    {
+      "id": "empty_var_triggers_colon_dash_fallback",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "base",
+            "text": "HOST=\nTARGET=${HOST:-127.0.0.1}:${PORT:-9000}"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "base"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "TARGET"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        "127.0.0.1:9000"
+      ]
+    },
+    {
+      "id": "layer_override_to_empty_triggers_fallback",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "base",
+            "text": "TOKEN=secret123\nAUTH=Bearer ${TOKEN:-anonymous}"
+          },
+          {
+            "op": "parse",
+            "layer": "test",
+            "text": "TOKEN=\"\""
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "base",
+              "test"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "AUTH"
+          }
+        ]
+      ],
+      "value": [
+        "OK",
+        "OK",
+        "OK",
+        "Bearer anonymous"
+      ]
+    },
+    {
+      "id": "missing_var_without_fallback_raises_keyerror",
+      "args": [
+        [
+          {
+            "op": "parse",
+            "layer": "base",
+            "text": "X=${UNDEFINED_VAR}"
+          },
+          {
+            "op": "activate",
+            "layers": [
+              "base"
+            ]
+          },
+          {
+            "op": "resolve",
+            "key": "X"
+          }
+        ]
+      ],
+      "raises": "KeyError"
+    }
+  ]
+}

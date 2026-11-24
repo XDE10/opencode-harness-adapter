@@ -1,0 +1,100 @@
+{
+  "function": "build_sequence",
+  "cases": [
+    {
+      "id": "basic_chain",
+      "args": [
+        [
+          {"name": "a", "priority": 2, "duration": 3},
+          {"name": "b", "priority": 1, "duration": 2}
+        ],
+        [["a", "b"]]
+      ],
+      "value": ["a", "b"]
+    },
+    {
+      "id": "empty_jobs",
+      "args": [[], []],
+      "value": []
+    },
+    {
+      "id": "priority_beats_lex",
+      "args": [
+        [
+          {"name": "a", "priority": 1, "duration": 1},
+          {"name": "b", "priority": 5, "duration": 4}
+        ],
+        []
+      ],
+      "value": ["b", "a"]
+    },
+    {
+      "id": "lex_tie_break",
+      "args": [
+        [
+          {"name": "zeta", "priority": 3, "duration": 2},
+          {"name": "alpha", "priority": 3, "duration": 2}
+        ],
+        []
+      ],
+      "value": ["alpha", "zeta"]
+    },
+    {
+      "id": "duration_tie_break",
+      "args": [
+        [
+          {"name": "slow", "priority": 4, "duration": 10},
+          {"name": "fast", "priority": 4, "duration": 2}
+        ],
+        []
+      ],
+      "value": ["fast", "slow"]
+    },
+    {
+      "id": "dynamic_unlock_priority",
+      "args": [
+        [
+          {"name": "a", "priority": 5, "duration": 2},
+          {"name": "b", "priority": 2, "duration": 1},
+          {"name": "c", "priority": 2, "duration": 4},
+          {"name": "d", "priority": 5, "duration": 1}
+        ],
+        [["a", "d"]]
+      ],
+      "value": ["a", "d", "b", "c"]
+    },
+    {
+      "id": "zero_duration_allowed",
+      "args": [
+        [
+          {"name": "gate", "priority": 0, "duration": 0},
+          {"name": "prep", "priority": 0, "duration": 3}
+        ],
+        [["prep", "gate"]]
+      ],
+      "value": ["prep", "gate"]
+    },
+    {
+      "id": "duplicate_deps",
+      "args": [
+        [
+          {"name": "x", "priority": 1, "duration": 2},
+          {"name": "y", "priority": 1, "duration": 1}
+        ],
+        [["x", "y"], ["x", "y"]]
+      ],
+      "value": ["x", "y"]
+    },
+    {
+      "id": "cycle_raises",
+      "args": [
+        [
+          {"name": "a", "priority": 1, "duration": 1},
+          {"name": "b", "priority": 2, "duration": 1}
+        ],
+        [["a", "b"], ["b", "a"]]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

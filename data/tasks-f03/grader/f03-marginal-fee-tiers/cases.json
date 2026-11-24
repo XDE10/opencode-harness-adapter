@@ -1,0 +1,87 @@
+{
+  "function": "compute_tiered_fee",
+  "cases": [
+    {
+      "id": "basic_single_tier",
+      "args": [10000, [[50000, 150], [null, 100]]],
+      "value": {
+        "fee_cents": 150,
+        "raw_fee_cents": 150,
+        "breakdown": [
+          {"tier_index": 0, "slice_cents": 10000, "bps": 150}
+        ]
+      }
+    },
+    {
+      "id": "basic_multi_tier_exact",
+      "args": [100000, [[50000, 100], [null, 200]]],
+      "value": {
+        "fee_cents": 1500,
+        "raw_fee_cents": 1500,
+        "breakdown": [
+          {"tier_index": 0, "slice_cents": 50000, "bps": 100},
+          {"tier_index": 1, "slice_cents": 50000, "bps": 200}
+        ]
+      }
+    },
+    {
+      "id": "zero_amount_ignores_min_fee",
+      "args": [0, [[null, 100]], 500, null],
+      "value": {
+        "fee_cents": 0,
+        "raw_fee_cents": 0,
+        "breakdown": []
+      }
+    },
+    {
+      "id": "min_fee_floor",
+      "args": [1000, [[null, 50]], 250, null],
+      "value": {
+        "fee_cents": 250,
+        "raw_fee_cents": 5,
+        "breakdown": [
+          {"tier_index": 0, "slice_cents": 1000, "bps": 50}
+        ]
+      }
+    },
+    {
+      "id": "half_up_across_tiers",
+      "args": [300, [[100, 50], [200, 50], [null, 50]]],
+      "value": {
+        "fee_cents": 2,
+        "raw_fee_cents": 2,
+        "breakdown": [
+          {"tier_index": 0, "slice_cents": 100, "bps": 50},
+          {"tier_index": 1, "slice_cents": 100, "bps": 50},
+          {"tier_index": 2, "slice_cents": 100, "bps": 50}
+        ]
+      }
+    },
+    {
+      "id": "max_fee_zero_cap",
+      "args": [50000, [[null, 200]], 0, 0],
+      "value": {
+        "fee_cents": 0,
+        "raw_fee_cents": 1000,
+        "breakdown": [
+          {"tier_index": 0, "slice_cents": 50000, "bps": 200}
+        ]
+      }
+    },
+    {
+      "id": "uncovered_amount_raises",
+      "args": [60000, [[50000, 100]], 0, null],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_tier_order_raises",
+      "args": [1000, [[5000, 100], [5000, 200]], 0, null],
+      "raises": "ValueError"
+    },
+    {
+      "id": "negative_amount_raises",
+      "args": [-1, [[null, 100]]],
+      "raises": "ValueError"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d04a1-writeback-ttl-buffer",
+      "split": "train",
+      "domain": "stateful_cache_kv",
+      "lines": 104,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

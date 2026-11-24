@@ -1,0 +1,230 @@
+{
+  "function": "run_csv_stream",
+  "cases": [
+    {
+      "id": "basic_feed_and_take",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "Item-Name,Qty,Active\n# comment\napple,10,true\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        [
+          {
+            "item_name": "apple",
+            "qty": 10,
+            "active": true
+          }
+        ]
+      ]
+    },
+    {
+      "id": "quoted_newlines_and_escaped_quotes",
+      "args": [
+        "|",
+        [
+          {
+            "op": "feed",
+            "chunk": "User ID|Bio Note\n42|\"Line 1\n\"\"Line 2\"\"\"\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        [
+          {
+            "user_id": 42,
+            "bio_note": "Line 1\n\"Line 2\""
+          }
+        ]
+      ]
+    },
+    {
+      "id": "empty_vs_quoted_empty_coercion",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "A,B,C\n,\"\",\"0\"\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        [
+          {
+            "a": null,
+            "b": "",
+            "c": "0"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "invalid_delimiter_raises",
+      "args": [
+        "#",
+        [
+          {
+            "op": "feed",
+            "chunk": "a,b\n"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "take_drains_queue",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "Col-A,Col-B\n1,2\n"
+          },
+          {
+            "op": "take"
+          },
+          {
+            "op": "feed",
+            "chunk": "3,4\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        [
+          {
+            "col_a": 1,
+            "col_b": 2
+          }
+        ],
+        1,
+        [
+          {
+            "col_a": 3,
+            "col_b": 4
+          }
+        ]
+      ]
+    },
+    {
+      "id": "reset_clears_header_and_buffer",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "Old-A,Old-B\n1,2\npartial"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "feed",
+            "chunk": "New-X\n99\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        null,
+        1,
+        [
+          {
+            "new_x": 99
+          }
+        ]
+      ]
+    },
+    {
+      "id": "quoted_hash_inside_multiline_field",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "Tag,Val\n\"first\n#not_a_comment\",-5\n"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        1,
+        [
+          {
+            "tag": "first\n#not_a_comment",
+            "val": -5
+          }
+        ]
+      ]
+    },
+    {
+      "id": "finish_flushes_trailing_record",
+      "args": [
+        "\t",
+        [
+          {
+            "op": "feed",
+            "chunk": "Key\tFlag\nalpha\tFALSE"
+          },
+          {
+            "op": "finish"
+          },
+          {
+            "op": "take"
+          }
+        ]
+      ],
+      "value": [
+        0,
+        1,
+        [
+          {
+            "key": "alpha",
+            "flag": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "unclosed_quote_on_finish_raises",
+      "args": [
+        ",",
+        [
+          {
+            "op": "feed",
+            "chunk": "A,B\n\"unclosed,1"
+          },
+          {
+            "op": "finish"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

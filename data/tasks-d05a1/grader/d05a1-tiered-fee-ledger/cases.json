@@ -1,0 +1,411 @@
+{
+  "function": "run_fee_ledger",
+  "cases": [
+    {
+      "id": "basic_single_tier",
+      "args": [
+        [
+          [
+            1000,
+            200
+          ],
+          [
+            null,
+            100
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 1000,
+            "splits": [
+              {
+                "recipient": "a",
+                "weight": 1
+              },
+              {
+                "recipient": "b",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "close_cycle"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 20,
+          "net": 980,
+          "allocations": {
+            "a": 490,
+            "b": 490
+          }
+        },
+        {
+          "balances": {
+            "a": 490,
+            "b": 490
+          }
+        }
+      ]
+    },
+    {
+      "id": "cross_tier_and_refund",
+      "args": [
+        [
+          [
+            500,
+            400
+          ],
+          [
+            1500,
+            200
+          ],
+          [
+            null,
+            100
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 800,
+            "splits": [
+              {
+                "recipient": "m1",
+                "weight": 3
+              },
+              {
+                "recipient": "m2",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "refund",
+            "amount": 500
+          },
+          {
+            "op": "charge",
+            "amount": 400,
+            "splits": [
+              {
+                "recipient": "m1",
+                "weight": 1
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 26,
+          "net": 774,
+          "allocations": {
+            "m1": 581,
+            "m2": 193
+          }
+        },
+        300,
+        {
+          "fee": 12,
+          "net": 388,
+          "allocations": {
+            "m1": 388
+          }
+        }
+      ]
+    },
+    {
+      "id": "bankers_rounding_half_to_even",
+      "args": [
+        [
+          [
+            null,
+            250
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 20,
+            "splits": [
+              {
+                "recipient": "x",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "charge",
+            "amount": 60,
+            "splits": [
+              {
+                "recipient": "x",
+                "weight": 1
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 0,
+          "net": 20,
+          "allocations": {
+            "x": 20
+          }
+        },
+        {
+          "fee": 2,
+          "net": 58,
+          "allocations": {
+            "x": 58
+          }
+        }
+      ]
+    },
+    {
+      "id": "bankers_rounding_across_brackets",
+      "args": [
+        [
+          [
+            100,
+            150
+          ],
+          [
+            null,
+            100
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 200,
+            "splits": [
+              {
+                "recipient": "u",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "close_cycle"
+          },
+          {
+            "op": "charge",
+            "amount": 400,
+            "splits": [
+              {
+                "recipient": "u",
+                "weight": 1
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 2,
+          "net": 198,
+          "allocations": {
+            "u": 198
+          }
+        },
+        {
+          "balances": {
+            "u": 198
+          }
+        },
+        {
+          "fee": 4,
+          "net": 396,
+          "allocations": {
+            "u": 396
+          }
+        }
+      ]
+    },
+    {
+      "id": "lexicographical_tie_break_on_split",
+      "args": [
+        [
+          [
+            null,
+            0
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 100,
+            "splits": [
+              {
+                "recipient": "zoe",
+                "weight": 1
+              },
+              {
+                "recipient": "amy",
+                "weight": 1
+              },
+              {
+                "recipient": "bob",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "close_cycle"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 0,
+          "net": 100,
+          "allocations": {
+            "amy": 34,
+            "bob": 33,
+            "zoe": 33
+          }
+        },
+        {
+          "balances": {
+            "amy": 34,
+            "bob": 33,
+            "zoe": 33
+          }
+        }
+      ]
+    },
+    {
+      "id": "weight_and_lex_tie_break_combined",
+      "args": [
+        [
+          [
+            null,
+            0
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 7,
+            "splits": [
+              {
+                "recipient": "charlie",
+                "weight": 1
+              },
+              {
+                "recipient": "beta",
+                "weight": 1
+              },
+              {
+                "recipient": "alpha",
+                "weight": 4
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 0,
+          "net": 7,
+          "allocations": {
+            "alpha": 5,
+            "beta": 1,
+            "charlie": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "weight_precedence_over_lex",
+      "args": [
+        [
+          [
+            null,
+            0
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 5,
+            "splits": [
+              {
+                "recipient": "aaa",
+                "weight": 1
+              },
+              {
+                "recipient": "zzz",
+                "weight": 2
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        {
+          "fee": 0,
+          "net": 5,
+          "allocations": {
+            "zzz": 3,
+            "aaa": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid_brackets_unbounded",
+      "args": [
+        [
+          [
+            100,
+            50
+          ],
+          [
+            200,
+            25
+          ]
+        ],
+        []
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_refund_exceeds_cycle_volume",
+      "args": [
+        [
+          [
+            null,
+            100
+          ]
+        ],
+        [
+          {
+            "op": "charge",
+            "amount": 500,
+            "splits": [
+              {
+                "recipient": "a",
+                "weight": 1
+              }
+            ]
+          },
+          {
+            "op": "close_cycle"
+          },
+          {
+            "op": "refund",
+            "amount": 100
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

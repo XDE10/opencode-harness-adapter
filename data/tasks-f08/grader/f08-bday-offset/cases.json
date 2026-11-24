@@ -1,0 +1,55 @@
+{
+  "function": "shift_business_days",
+  "cases": [
+    {
+      "id": "basic_forward",
+      "args": ["2024-01-03", 2],
+      "value": "2024-01-05"
+    },
+    {
+      "id": "cross_weekend",
+      "args": ["2024-01-05", 1],
+      "value": "2024-01-08"
+    },
+    {
+      "id": "basic_backward",
+      "args": ["2024-01-10", -2],
+      "value": "2024-01-08"
+    },
+    {
+      "id": "start_on_weekend_plus_one",
+      "args": ["2024-01-06", 1],
+      "value": "2024-01-08"
+    },
+    {
+      "id": "start_on_holiday_minus_one",
+      "args": ["2024-01-01", -1, ["2024-01-01"]],
+      "value": "2023-12-29"
+    },
+    {
+      "id": "zero_on_holiday_snap_next",
+      "args": ["2024-01-01", 0, ["2024-01-01"], null, "next"],
+      "value": "2024-01-02"
+    },
+    {
+      "id": "zero_on_weekend_snap_prev",
+      "args": ["2024-01-07", 0, [], null, "prev"],
+      "value": "2024-01-05"
+    },
+    {
+      "id": "empty_weekend_seven_day_week",
+      "args": ["2024-01-05", 2, [], []],
+      "value": "2024-01-07"
+    },
+    {
+      "id": "invalid_all_weekend",
+      "args": ["2024-01-05", 1, [], [0, 1, 2, 3, 4, 5, 6]],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_snap_mode",
+      "args": ["2024-01-05", 0, null, null, "nearest"],
+      "raises": "ValueError"
+    }
+  ]
+}

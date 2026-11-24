@@ -1,0 +1,393 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_single",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 2
+          },
+          {
+            "op": "path",
+            "s": "a",
+            "t": "b"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        {
+          "dist": 2,
+          "path": [
+            "a",
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "basic_chain",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "b",
+            "v": "c",
+            "w": 2
+          },
+          {
+            "op": "path",
+            "s": "a",
+            "t": "c"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "dist": 3,
+          "path": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overwrite_remove",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 5
+          },
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "b",
+            "v": "c",
+            "w": 1
+          },
+          {
+            "op": "remove",
+            "u": "b",
+            "v": "c"
+          },
+          {
+            "op": "path",
+            "s": "a",
+            "t": "b"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "dist": 2,
+          "path": [
+            "a",
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie_fewer_hops",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "s",
+            "v": "a",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "b",
+            "v": "c",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "c",
+            "v": "t",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "s",
+            "v": "z",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "z",
+            "v": "t",
+            "w": 2
+          },
+          {
+            "op": "path",
+            "s": "s",
+            "t": "t"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "dist": 4,
+          "path": [
+            "s",
+            "z",
+            "t"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie_lexicographic",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "s",
+            "v": "z",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "z",
+            "v": "t",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "s",
+            "v": "a",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "a",
+            "v": "t",
+            "w": 1
+          },
+          {
+            "op": "path",
+            "s": "s",
+            "t": "t"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "dist": 3,
+          "path": [
+            "s",
+            "a",
+            "t"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tie_after_overwrite",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "s",
+            "v": "z",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "z",
+            "v": "t",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "s",
+            "v": "a",
+            "w": 2
+          },
+          {
+            "op": "add",
+            "u": "a",
+            "v": "t",
+            "w": 5
+          },
+          {
+            "op": "path",
+            "s": "s",
+            "t": "t"
+          },
+          {
+            "op": "add",
+            "u": "a",
+            "v": "t",
+            "w": 1
+          },
+          {
+            "op": "path",
+            "s": "s",
+            "t": "t"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "dist": 3,
+          "path": [
+            "s",
+            "z",
+            "t"
+          ]
+        },
+        null,
+        {
+          "dist": 3,
+          "path": [
+            "s",
+            "a",
+            "t"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_simple",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 1
+          },
+          {
+            "op": "path",
+            "s": "a",
+            "t": "b"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "path",
+            "s": "a",
+            "t": "b"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        {
+          "dist": 1,
+          "path": [
+            "a",
+            "b"
+          ]
+        },
+        null,
+        null
+      ]
+    },
+    {
+      "id": "reset_then_add",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "x",
+            "v": "y",
+            "w": 1
+          },
+          {
+            "op": "add",
+            "u": "y",
+            "v": "z",
+            "w": 5
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "add",
+            "u": "x",
+            "v": "y",
+            "w": 2
+          },
+          {
+            "op": "path",
+            "s": "x",
+            "t": "z"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "id": "invalid_weight",
+      "args": [
+        [
+          {
+            "op": "add",
+            "u": "a",
+            "v": "b",
+            "w": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

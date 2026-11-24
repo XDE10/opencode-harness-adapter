@@ -1,0 +1,326 @@
+{
+  "function": "compute_fx_tax_summary",
+  "cases": [
+    {
+      "id": "single_bracket_with_fx_half_even",
+      "args": [
+        [
+          {
+            "currency": "EUR",
+            "amount": "10.00",
+            "kind": "income"
+          },
+          {
+            "currency": "GBP",
+            "amount": "0.03",
+            "kind": "deduction"
+          }
+        ],
+        {
+          "EUR": [
+            11,
+            10
+          ],
+          "GBP": [
+            3,
+            2
+          ]
+        },
+        [
+          [
+            2000,
+            1000
+          ],
+          [
+            null,
+            2000
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "11.00",
+        "deductions_usd": "0.04",
+        "taxable_usd": "10.96",
+        "tax_usd": "1.10",
+        "net_usd": "9.86"
+      }
+    },
+    {
+      "id": "empty_entries_zero_summary",
+      "args": [
+        [],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            10000,
+            1000
+          ],
+          [
+            null,
+            2000
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "0.00",
+        "deductions_usd": "0.00",
+        "taxable_usd": "0.00",
+        "tax_usd": "0.00",
+        "net_usd": "0.00"
+      }
+    },
+    {
+      "id": "two_tier_progressive_marginal_tax",
+      "args": [
+        [
+          {
+            "currency": "USD",
+            "amount": "150.00",
+            "kind": "income"
+          }
+        ],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            10000,
+            1000
+          ],
+          [
+            null,
+            2000
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "150.00",
+        "deductions_usd": "0.00",
+        "taxable_usd": "150.00",
+        "tax_usd": "20.00",
+        "net_usd": "130.00"
+      }
+    },
+    {
+      "id": "three_tier_with_per_bracket_half_even_rounding",
+      "args": [
+        [
+          {
+            "currency": "CAD",
+            "amount": "200.00",
+            "kind": "income"
+          },
+          {
+            "currency": "USD",
+            "amount": "100.01",
+            "kind": "income"
+          },
+          {
+            "currency": "USD",
+            "amount": "50.00",
+            "kind": "deduction"
+          }
+        ],
+        {
+          "CAD": [
+            3,
+            4
+          ],
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            5000,
+            500
+          ],
+          [
+            15000,
+            1000
+          ],
+          [
+            null,
+            2500
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "250.01",
+        "deductions_usd": "50.00",
+        "taxable_usd": "200.01",
+        "tax_usd": "25.00",
+        "net_usd": "175.01"
+      }
+    },
+    {
+      "id": "bounded_tiers_exceeded_without_unbounded_tail",
+      "args": [
+        [
+          {
+            "currency": "USD",
+            "amount": "80.00",
+            "kind": "income"
+          }
+        ],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            2000,
+            500
+          ],
+          [
+            5000,
+            1500
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "80.00",
+        "deductions_usd": "0.00",
+        "taxable_usd": "80.00",
+        "tax_usd": "5.50",
+        "net_usd": "74.50"
+      }
+    },
+    {
+      "id": "deductions_exceed_gross_negative_net",
+      "args": [
+        [
+          {
+            "currency": "USD",
+            "amount": "10.00",
+            "kind": "income"
+          },
+          {
+            "currency": "USD",
+            "amount": "25.50",
+            "kind": "deduction"
+          }
+        ],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            5000,
+            1000
+          ],
+          [
+            null,
+            2000
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "10.00",
+        "deductions_usd": "25.50",
+        "taxable_usd": "0.00",
+        "tax_usd": "0.00",
+        "net_usd": "-15.50"
+      }
+    },
+    {
+      "id": "only_deductions_multi_currency_negative_net",
+      "args": [
+        [
+          {
+            "currency": "GBP",
+            "amount": "0.05",
+            "kind": "deduction"
+          }
+        ],
+        {
+          "GBP": [
+            3,
+            2
+          ]
+        },
+        [
+          [
+            1000,
+            1000
+          ]
+        ]
+      ],
+      "value": {
+        "gross_usd": "0.00",
+        "deductions_usd": "0.08",
+        "taxable_usd": "0.00",
+        "tax_usd": "0.00",
+        "net_usd": "-0.08"
+      }
+    },
+    {
+      "id": "error_non_increasing_brackets",
+      "args": [
+        [
+          {
+            "currency": "USD",
+            "amount": "10.00",
+            "kind": "income"
+          }
+        ],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            5000,
+            1000
+          ],
+          [
+            5000,
+            2000
+          ]
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_unknown_currency",
+      "args": [
+        [
+          {
+            "currency": "CHF",
+            "amount": "10.00",
+            "kind": "income"
+          }
+        ],
+        {
+          "USD": [
+            1,
+            1
+          ]
+        },
+        [
+          [
+            5000,
+            1000
+          ]
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

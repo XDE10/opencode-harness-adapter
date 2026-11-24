@@ -1,0 +1,185 @@
+{
+  "function": "run_query_session",
+  "cases": [
+    {
+      "id": "basic_brace_and_array",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "f[{a,b}][]=1&f[a][]=2"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        3,
+        {
+          "f": {
+            "a": [
+              "1",
+              "2"
+            ],
+            "b": [
+              "1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cartesian_key_val_expansion",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "db[{r,w}]={10,20}"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        4,
+        {
+          "db": {
+            "r": "20",
+            "w": "20"
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid_middle_empty_bracket",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "a[][b]=1"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "nested_brace_error",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "a={x,{y,z}}"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "single_item_braces_kept_literal",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "tpl[{id}]={val}&empty={}"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        2,
+        {
+          "tpl": {
+            "{id}": "{val}"
+          },
+          "empty": "{}"
+        }
+      ]
+    },
+    {
+      "id": "escaped_comma_in_braces_not_expanded",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "tag={a\\,b}&list={x\\,y,z}"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        3,
+        {
+          "tag": "{a,b}",
+          "list": "z"
+        }
+      ]
+    },
+    {
+      "id": "unset_prunes_empty_ancestors",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "a[b][c]=1&a[b][d]=2"
+          },
+          {
+            "op": "unset",
+            "key": "a[b][c]"
+          },
+          {
+            "op": "snapshot"
+          },
+          {
+            "op": "unset",
+            "key": "a[b][d]"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        2,
+        1,
+        {
+          "a": {
+            "b": {
+              "d": "2"
+            }
+          }
+        },
+        1,
+        {}
+      ]
+    },
+    {
+      "id": "unset_brace_expanded_prunes_all",
+      "args": [
+        [
+          {
+            "op": "ingest",
+            "query": "svc[{api,web}][host]=localhost"
+          },
+          {
+            "op": "unset",
+            "key": "svc[{api,web,worker}][host]"
+          },
+          {
+            "op": "snapshot"
+          }
+        ]
+      ],
+      "value": [
+        2,
+        2,
+        {}
+      ]
+    }
+  ]
+}

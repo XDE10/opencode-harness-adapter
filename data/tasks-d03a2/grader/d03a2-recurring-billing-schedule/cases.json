@@ -1,0 +1,250 @@
+{
+  "function": "generate_billing_schedule",
+  "cases": [
+    {
+      "id": "mid_month_following",
+      "args": [
+        "2025-03-15",
+        2,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "FOLLOWING"
+        },
+        []
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2025-03-15",
+          "effective_date": "2025-03-17",
+          "shifted_days": 2,
+          "iso_week": "2025-W12-1"
+        },
+        {
+          "index": 1,
+          "scheduled_date": "2025-04-15",
+          "effective_date": "2025-04-15",
+          "shifted_days": 0,
+          "iso_week": "2025-W16-2"
+        }
+      ]
+    },
+    {
+      "id": "Preceding_with_holiday",
+      "args": [
+        "2025-05-05",
+        2,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "PRECEDING"
+        },
+        [
+          "2025-05-05",
+          "2025-05-02"
+        ]
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2025-05-05",
+          "effective_date": "2025-05-01",
+          "shifted_days": -4,
+          "iso_week": "2025-W18-4"
+        },
+        {
+          "index": 1,
+          "scheduled_date": "2025-06-05",
+          "effective_date": "2025-06-05",
+          "shifted_days": 0,
+          "iso_week": "2025-W23-4"
+        }
+      ]
+    },
+    {
+      "id": "eom_clamping_recovery_after_february",
+      "args": [
+        "2025-01-31",
+        3,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "MODIFIED_FOLLOWING"
+        },
+        [
+          "2025-02-28"
+        ]
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2025-01-31",
+          "effective_date": "2025-01-31",
+          "shifted_days": 0,
+          "iso_week": "2025-W05-5"
+        },
+        {
+          "index": 1,
+          "scheduled_date": "2025-02-28",
+          "effective_date": "2025-02-27",
+          "shifted_days": -1,
+          "iso_week": "2025-W09-4"
+        },
+        {
+          "index": 2,
+          "scheduled_date": "2025-03-31",
+          "effective_date": "2025-03-31",
+          "shifted_days": 0,
+          "iso_week": "2025-W14-1"
+        }
+      ]
+    },
+    {
+      "id": "leap_year_quarterly_clamping",
+      "args": [
+        "2023-11-30",
+        3,
+        {
+          "freq": "QUARTERLY",
+          "interval": 1,
+          "roll": "FOLLOWING"
+        },
+        []
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2023-11-30",
+          "effective_date": "2023-11-30",
+          "shifted_days": 0,
+          "iso_week": "2023-W48-4"
+        },
+        {
+          "index": 1,
+          "scheduled_date": "2024-02-29",
+          "effective_date": "2024-02-29",
+          "shifted_days": 0,
+          "iso_week": "2024-W09-4"
+        },
+        {
+          "index": 2,
+          "scheduled_date": "2024-05-30",
+          "effective_date": "2024-05-30",
+          "shifted_days": 0,
+          "iso_week": "2024-W22-4"
+        }
+      ]
+    },
+    {
+      "id": "iso_week_year_boundary_dec_to_jan_week1",
+      "args": [
+        "2025-12-29",
+        1,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "FOLLOWING"
+        },
+        []
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2025-12-29",
+          "effective_date": "2025-12-29",
+          "shifted_days": 0,
+          "iso_week": "2026-W01-1"
+        }
+      ]
+    },
+    {
+      "id": "iso_week_year_boundary_jan_in_prev_iso_year",
+      "args": [
+        "2021-01-01",
+        1,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "FOLLOWING"
+        },
+        []
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2021-01-01",
+          "effective_date": "2021-01-01",
+          "shifted_days": 0,
+          "iso_week": "2020-W53-5"
+        }
+      ]
+    },
+    {
+      "id": "eom_plus_iso_boundary_combined",
+      "args": [
+        "2024-10-31",
+        3,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "MODIFIED_FOLLOWING"
+        },
+        [
+          "2024-12-31"
+        ]
+      ],
+      "value": [
+        {
+          "index": 0,
+          "scheduled_date": "2024-10-31",
+          "effective_date": "2024-10-31",
+          "shifted_days": 0,
+          "iso_week": "2024-W44-4"
+        },
+        {
+          "index": 1,
+          "scheduled_date": "2024-11-30",
+          "effective_date": "2024-11-29",
+          "shifted_days": -1,
+          "iso_week": "2024-W48-5"
+        },
+        {
+          "index": 2,
+          "scheduled_date": "2024-12-31",
+          "effective_date": "2024-12-30",
+          "shifted_days": -1,
+          "iso_week": "2025-W01-1"
+        }
+      ]
+    },
+    {
+      "id": "invalid_count_zero",
+      "args": [
+        "2025-01-15",
+        0,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "FOLLOWING"
+        },
+        []
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_roll_policy",
+      "args": [
+        "2025-01-15",
+        2,
+        {
+          "freq": "MONTHLY",
+          "interval": 1,
+          "roll": "NEAREST"
+        },
+        []
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

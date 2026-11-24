@@ -1,0 +1,93 @@
+{
+  "function": "quote_fx_conversions",
+  "cases": [
+    {
+      "id": "basic_buy_quote",
+      "args": [
+        [{"id": "q1", "foreign_amount": "100.00", "rate": "1.20", "side": "BUY", "spread_bps": 50}],
+        [{"up_to_cents": null, "bps": 100, "flat_cents": 200}]
+      ],
+      "value": [
+        {"id": "q1", "gross_base_cents": 12060, "fee_cents": 321, "net_base_cents": 12381}
+      ]
+    },
+    {
+      "id": "basic_sell_quote",
+      "args": [
+        [{"id": "q2", "foreign_amount": "200.00", "rate": "1.10", "side": "SELL", "spread_bps": 50}],
+        [{"up_to_cents": null, "bps": 50, "flat_cents": 100}]
+      ],
+      "value": [
+        {"id": "q2", "gross_base_cents": 21890, "fee_cents": 209, "net_base_cents": 21681}
+      ]
+    },
+    {
+      "id": "half_cent_decimal_exact",
+      "args": [
+        [{"id": "q3", "foreign_amount": "1.00", "rate": "1.005", "side": "BUY", "spread_bps": 0}],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 0}]
+      ],
+      "value": [
+        {"id": "q3", "gross_base_cents": 101, "fee_cents": 0, "net_base_cents": 101}
+      ]
+    },
+    {
+      "id": "binary_float_drift_half_up",
+      "args": [
+        [{"id": "q4", "foreign_amount": "1.00", "rate": "2.675", "side": "BUY", "spread_bps": 0}],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 0}]
+      ],
+      "value": [
+        {"id": "q4", "gross_base_cents": 268, "fee_cents": 0, "net_base_cents": 268}
+      ]
+    },
+    {
+      "id": "exact_tier_boundary_inclusive",
+      "args": [
+        [{"id": "q5", "foreign_amount": "100.00", "rate": "1.00", "side": "BUY", "spread_bps": 0}],
+        [
+          {"up_to_cents": 10000, "bps": 50, "flat_cents": 100},
+          {"up_to_cents": null, "bps": 100, "flat_cents": 500}
+        ]
+      ],
+      "value": [
+        {"id": "q5", "gross_base_cents": 10000, "fee_cents": 150, "net_base_cents": 10150}
+      ]
+    },
+    {
+      "id": "sell_net_negative_raises",
+      "args": [
+        [{"id": "q6", "foreign_amount": "5.00", "rate": "1.00", "side": "SELL", "spread_bps": 0}],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 600}]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "excessive_sell_spread_raises",
+      "args": [
+        [{"id": "q7", "foreign_amount": "10.00", "rate": "1.00", "side": "SELL", "spread_bps": 10000}],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 0}]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_order_id_raises",
+      "args": [
+        [
+          {"id": "dup", "foreign_amount": "10", "rate": "1.0", "side": "BUY", "spread_bps": 0},
+          {"id": "dup", "foreign_amount": "20", "rate": "1.0", "side": "BUY", "spread_bps": 0}
+        ],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 0}]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_decimal_raises",
+      "args": [
+        [{"id": "q9", "foreign_amount": "NaN", "rate": "1.0", "side": "BUY", "spread_bps": 0}],
+        [{"up_to_cents": null, "bps": 0, "flat_cents": 0}]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

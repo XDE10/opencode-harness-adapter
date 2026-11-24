@@ -1,0 +1,377 @@
+{
+  "function": "run_recurring_schedule",
+  "cases": [
+    {
+      "id": "basic_add_and_query",
+      "args": [
+        50,
+        [
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 5,
+            "duration": 10,
+            "period": 20,
+            "count": 3
+          },
+          {
+            "op": "query_window",
+            "start": 0,
+            "end": 50
+          }
+        ]
+      ],
+      "value": [
+        true,
+        [
+          [
+            5,
+            15,
+            "s1"
+          ],
+          [
+            25,
+            35,
+            "s1"
+          ],
+          [
+            45,
+            50,
+            "s1"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "conflict_and_skip_resolution",
+      "args": [
+        50,
+        [
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 5,
+            "duration": 10,
+            "period": 20,
+            "count": 3
+          },
+          {
+            "op": "add_series",
+            "id": "s2",
+            "start": 25,
+            "duration": 10,
+            "period": 20,
+            "count": 1
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 1
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 1
+          },
+          {
+            "op": "add_series",
+            "id": "s2",
+            "start": 25,
+            "duration": 10,
+            "period": 20,
+            "count": 1
+          },
+          {
+            "op": "query_window",
+            "start": 10,
+            "end": 48
+          }
+        ]
+      ],
+      "value": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        [
+          [
+            10,
+            15,
+            "s1"
+          ],
+          [
+            25,
+            35,
+            "s2"
+          ],
+          [
+            45,
+            48,
+            "s1"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "skip_beyond_horizon_returns_false",
+      "args": [
+        25,
+        [
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 5,
+            "duration": 5,
+            "period": 15,
+            "count": 3
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 2
+          }
+        ]
+      ],
+      "value": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": "invalid_period_less_than_duration",
+      "args": [
+        50,
+        [
+          {
+            "op": "add_series",
+            "id": "bad",
+            "start": 0,
+            "duration": 10,
+            "period": 8,
+            "count": 2
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "start_beyond_horizon_raises",
+      "args": [
+        20,
+        [
+          {
+            "op": "add_series",
+            "id": "late",
+            "start": 20,
+            "duration": 5,
+            "period": 10,
+            "count": 1
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "back_to_back_period_equals_duration",
+      "args": [
+        40,
+        [
+          {
+            "op": "add_series",
+            "id": "contiguous",
+            "start": 0,
+            "duration": 10,
+            "period": 10,
+            "count": 3
+          },
+          {
+            "op": "query_window",
+            "start": 5,
+            "end": 25
+          }
+        ]
+      ],
+      "value": [
+        true,
+        [
+          [
+            5,
+            10,
+            "contiguous"
+          ],
+          [
+            10,
+            20,
+            "contiguous"
+          ],
+          [
+            20,
+            25,
+            "contiguous"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "single_shot_period_equals_duration",
+      "args": [
+        30,
+        [
+          {
+            "op": "add_series",
+            "id": "once",
+            "start": 10,
+            "duration": 15,
+            "period": 15,
+            "count": 1
+          },
+          {
+            "op": "add_series",
+            "id": "after",
+            "start": 25,
+            "duration": 5,
+            "period": 5,
+            "count": 1
+          },
+          {
+            "op": "query_window",
+            "start": 0,
+            "end": 30
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        [
+          [
+            10,
+            25,
+            "once"
+          ],
+          [
+            25,
+            30,
+            "after"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "remove_and_readd_clears_skipped_state",
+      "args": [
+        60,
+        [
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 0,
+            "duration": 10,
+            "period": 20,
+            "count": 2
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 0
+          },
+          {
+            "op": "remove_series",
+            "id": "s1"
+          },
+          {
+            "op": "remove_series",
+            "id": "s1"
+          },
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 0,
+            "duration": 10,
+            "period": 20,
+            "count": 2
+          },
+          {
+            "op": "query_window",
+            "start": 0,
+            "end": 50
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        [
+          [
+            0,
+            10,
+            "s1"
+          ],
+          [
+            20,
+            30,
+            "s1"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "readded_series_conflicts_on_previously_skipped_index",
+      "args": [
+        60,
+        [
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 10,
+            "duration": 10,
+            "period": 20,
+            "count": 2
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 1
+          },
+          {
+            "op": "remove_series",
+            "id": "s1"
+          },
+          {
+            "op": "add_series",
+            "id": "s1",
+            "start": 10,
+            "duration": 10,
+            "period": 20,
+            "count": 2
+          },
+          {
+            "op": "add_series",
+            "id": "other",
+            "start": 30,
+            "duration": 10,
+            "period": 20,
+            "count": 1
+          },
+          {
+            "op": "skip_occurrence",
+            "id": "s1",
+            "index": 1
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ]
+    }
+  ]
+}

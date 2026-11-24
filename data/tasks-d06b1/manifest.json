@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d06b1-weighted-dsu-reset",
+      "split": "heldout",
+      "domain": "graph_dependency",
+      "lines": 79,
+      "cases": 10,
+      "passed": {
+        "original": "5/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

@@ -1,4 +1,0 @@
-# CPU schema-validation pins; no model or GPU packages.
-openenv==0.7.0
-harbor==0.25.0
-fastmcp==3.4.11

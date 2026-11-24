@@ -1,0 +1,372 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_first_and_normal",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "cpu",
+            "t": 0,
+            "value": 5
+          },
+          {
+            "op": "observe",
+            "metric": "cpu",
+            "t": 1,
+            "value": 15
+          },
+          {
+            "op": "status",
+            "metric": "cpu"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "streak": 0,
+          "emitted": false,
+          "prev": 15
+        }
+      ]
+    },
+    {
+      "id": "basic_single_streak",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "mem",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "observe",
+            "metric": "mem",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "mem",
+            "t": 2,
+            "value": 40
+          },
+          {
+            "op": "status",
+            "metric": "mem"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "metric": "mem",
+          "t": 2,
+          "streak": 2
+        },
+        {
+          "streak": 2,
+          "emitted": true,
+          "prev": 40
+        }
+      ]
+    },
+    {
+      "id": "gap_over_limit",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "net",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "observe",
+            "metric": "net",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "net",
+            "t": 7,
+            "value": 40
+          },
+          {
+            "op": "status",
+            "metric": "net"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        {
+          "streak": 0,
+          "emitted": false,
+          "prev": 40
+        }
+      ]
+    },
+    {
+      "id": "invalid_unknown_op",
+      "args": [
+        [
+          {
+            "op": "bogus"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "gap_exact_boundary",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "lat",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "observe",
+            "metric": "lat",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "lat",
+            "t": 6,
+            "value": 40
+          },
+          {
+            "op": "status",
+            "metric": "lat"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "metric": "lat",
+          "t": 6,
+          "streak": 2
+        },
+        {
+          "streak": 2,
+          "emitted": true,
+          "prev": 40
+        }
+      ]
+    },
+    {
+      "id": "reset_status",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "disk",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "reset",
+            "metric": "disk"
+          },
+          {
+            "op": "observe",
+            "metric": "disk",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "status",
+            "metric": "disk"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        {
+          "streak": 0,
+          "emitted": false,
+          "prev": 20
+        }
+      ]
+    },
+    {
+      "id": "reset_then_new_streak",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "q",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "reset",
+            "metric": "q"
+          },
+          {
+            "op": "observe",
+            "metric": "q",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "q",
+            "t": 2,
+            "value": 40
+          },
+          {
+            "op": "status",
+            "metric": "q"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "streak": 1,
+          "emitted": false,
+          "prev": 40
+        }
+      ]
+    },
+    {
+      "id": "repeated_streak_after_normal",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 2,
+            "value": 40
+          },
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 3,
+            "value": 40
+          },
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 4,
+            "value": 60
+          },
+          {
+            "op": "observe",
+            "metric": "api",
+            "t": 5,
+            "value": 80
+          },
+          {
+            "op": "status",
+            "metric": "api"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "metric": "api",
+          "t": 2,
+          "streak": 2
+        },
+        null,
+        null,
+        {
+          "metric": "api",
+          "t": 5,
+          "streak": 2
+        },
+        {
+          "streak": 2,
+          "emitted": true,
+          "prev": 80
+        }
+      ]
+    },
+    {
+      "id": "emitted_after_normal_status",
+      "args": [
+        [
+          {
+            "op": "observe",
+            "metric": "api2",
+            "t": 0,
+            "value": 0
+          },
+          {
+            "op": "observe",
+            "metric": "api2",
+            "t": 1,
+            "value": 20
+          },
+          {
+            "op": "observe",
+            "metric": "api2",
+            "t": 2,
+            "value": 40
+          },
+          {
+            "op": "observe",
+            "metric": "api2",
+            "t": 3,
+            "value": 40
+          },
+          {
+            "op": "status",
+            "metric": "api2"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "metric": "api2",
+          "t": 2,
+          "streak": 2
+        },
+        null,
+        {
+          "streak": 0,
+          "emitted": false,
+          "prev": 40
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "function": "run_rpn",
+  "cases": [
+    {"id": "basic_add_mul", "args": ["LOAD x 2 MUL 1 ADD", {"x": 5}], "value": {"stack": [11], "vars": {"x": 5}, "steps": 5}},
+    {"id": "stack_ops_halt", "args": ["3 4 OVER SWAP DROP HALT 99", null], "value": {"stack": [3, 3], "vars": {}, "steps": 6}},
+    {"id": "sub_div_order", "args": ["10 3 SUB 14 3 DIV", null], "value": {"stack": [7, 4], "vars": {}, "steps": 6}},
+    {"id": "loop_countdown", "args": ["3 STORE n\nloop:\nLOAD n JZ done\nLOAD n 1 SUB STORE n\nJMP loop\ndone:\nLOAD n", null], "value": {"stack": [0], "vars": {"n": 0}, "steps": 26}},
+    {"id": "load_zero_input", "args": ["LOAD z 5 ADD", {"z": 0}], "value": {"stack": [5], "vars": {"z": 0}, "steps": 3}},
+    {"id": "div_by_zero", "args": ["5 0 DIV", null], "raises": "ZeroDivisionError"},
+    {"id": "missing_var", "args": ["LOAD missing", {}], "raises": "KeyError"},
+    {"id": "stack_underflow", "args": ["1 ADD", null], "raises": "ValueError"},
+    {"id": "infinite_loop", "args": ["spin:\nJMP spin", null], "raises": "ValueError"}
+  ]
+}

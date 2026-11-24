@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "d01a2-dialect-table-parser",
+      "split": "train",
+      "domain": "config_tabular",
+      "lines": 128,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "d01a2-tsv-dialect-merger",
+      "split": "train",
+      "domain": "config_tabular",
+      "lines": 151,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

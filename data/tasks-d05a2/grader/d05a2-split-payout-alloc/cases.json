@@ -1,0 +1,311 @@
+{
+  "function": "allocate_payout",
+  "cases": [
+    {
+      "id": "exact_split_with_fee",
+      "args": [
+        "100",
+        [
+          {
+            "id": "u1",
+            "weight": 3
+          },
+          {
+            "id": "u2",
+            "weight": 1
+          }
+        ],
+        200,
+        "half_even"
+      ],
+      "value": {
+        "gross": "100.00",
+        "fee": "2.00",
+        "net": "98.00",
+        "payouts": [
+          {
+            "id": "u1",
+            "amount": "73.50"
+          },
+          {
+            "id": "u2",
+            "amount": "24.50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "remainder_rank_by_fraction_and_weight",
+      "args": [
+        "1.00",
+        [
+          {
+            "id": "low_w",
+            "weight": 1
+          },
+          {
+            "id": "high_w",
+            "weight": 4
+          }
+        ],
+        0,
+        "half_up"
+      ],
+      "value": {
+        "gross": "1.00",
+        "fee": "0.00",
+        "net": "1.00",
+        "payouts": [
+          {
+            "id": "low_w",
+            "amount": "0.20"
+          },
+          {
+            "id": "high_w",
+            "amount": "0.80"
+          }
+        ]
+      }
+    },
+    {
+      "id": "half_up_midpoint_fee",
+      "args": [
+        "1.00",
+        [
+          {
+            "id": "solo",
+            "weight": 10
+          }
+        ],
+        250,
+        "half_up"
+      ],
+      "value": {
+        "gross": "1.00",
+        "fee": "0.03",
+        "net": "0.97",
+        "payouts": [
+          {
+            "id": "solo",
+            "amount": "0.97"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tie_break_by_lexicographical_id",
+      "args": [
+        "10.00",
+        [
+          {
+            "id": "b",
+            "weight": 1
+          },
+          {
+            "id": "a",
+            "weight": 1
+          },
+          {
+            "id": "c",
+            "weight": 1
+          }
+        ],
+        0,
+        "half_even"
+      ],
+      "value": {
+        "gross": "10.00",
+        "fee": "0.00",
+        "net": "10.00",
+        "payouts": [
+          {
+            "id": "b",
+            "amount": "3.33"
+          },
+          {
+            "id": "a",
+            "amount": "3.34"
+          },
+          {
+            "id": "c",
+            "amount": "3.33"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tie_break_two_leftover_cents_reverse_ids",
+      "args": [
+        "0.05",
+        [
+          {
+            "id": "z",
+            "weight": 1
+          },
+          {
+            "id": "m",
+            "weight": 1
+          },
+          {
+            "id": "a",
+            "weight": 1
+          }
+        ],
+        0,
+        "half_up"
+      ],
+      "value": {
+        "gross": "0.05",
+        "fee": "0.00",
+        "net": "0.05",
+        "payouts": [
+          {
+            "id": "z",
+            "amount": "0.01"
+          },
+          {
+            "id": "m",
+            "amount": "0.02"
+          },
+          {
+            "id": "a",
+            "amount": "0.02"
+          }
+        ]
+      }
+    },
+    {
+      "id": "half_even_midpoint_even_quotient",
+      "args": [
+        "1.00",
+        [
+          {
+            "id": "p1",
+            "weight": 1
+          },
+          {
+            "id": "p2",
+            "weight": 1
+          }
+        ],
+        250,
+        "half_even"
+      ],
+      "value": {
+        "gross": "1.00",
+        "fee": "0.02",
+        "net": "0.98",
+        "payouts": [
+          {
+            "id": "p1",
+            "amount": "0.49"
+          },
+          {
+            "id": "p2",
+            "amount": "0.49"
+          }
+        ]
+      }
+    },
+    {
+      "id": "half_even_midpoint_odd_quotient",
+      "args": [
+        "1.00",
+        [
+          {
+            "id": "p1",
+            "weight": 1
+          },
+          {
+            "id": "p2",
+            "weight": 1
+          }
+        ],
+        350,
+        "half_even"
+      ],
+      "value": {
+        "gross": "1.00",
+        "fee": "0.04",
+        "net": "0.96",
+        "payouts": [
+          {
+            "id": "p1",
+            "amount": "0.48"
+          },
+          {
+            "id": "p2",
+            "amount": "0.48"
+          }
+        ]
+      }
+    },
+    {
+      "id": "zero_weight_member_with_half_even_zero_tie",
+      "args": [
+        "0.5",
+        [
+          {
+            "id": "zero",
+            "weight": 0
+          },
+          {
+            "id": "full",
+            "weight": 5
+          }
+        ],
+        100,
+        "half_even"
+      ],
+      "value": {
+        "gross": "0.50",
+        "fee": "0.00",
+        "net": "0.50",
+        "payouts": [
+          {
+            "id": "zero",
+            "amount": "0.00"
+          },
+          {
+            "id": "full",
+            "amount": "0.50"
+          }
+        ]
+      }
+    },
+    {
+      "id": "error_all_zero_weights",
+      "args": [
+        "10.00",
+        [
+          {
+            "id": "a",
+            "weight": 0
+          },
+          {
+            "id": "b",
+            "weight": 0
+          }
+        ],
+        100,
+        "half_even"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_more_than_two_decimals",
+      "args": [
+        "10.125",
+        [
+          {
+            "id": "a",
+            "weight": 1
+          }
+        ],
+        100,
+        "half_even"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

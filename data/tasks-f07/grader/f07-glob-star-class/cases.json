@@ -1,0 +1,15 @@
+{
+  "function": "match_glob",
+  "cases": [
+    {"id": "basic_star_q", "args": ["src/*.py", "src/main.py"], "value": true},
+    {"id": "star_no_cross_slash", "args": ["src/*.py", "src/a/main.py"], "value": false},
+    {"id": "double_star_multi", "args": ["src/**/test_?.py", "src/a/b/test_1.py"], "value": true},
+    {"id": "double_star_zero_segs", "args": ["src/**/test_?.py", "src/test_x.py"], "value": true},
+    {"id": "char_range_neg", "args": ["log_[0-9][!a-z].txt", "log_7X.txt"], "value": true},
+    {"id": "literal_rbracket_in_class", "args": ["[]a][!]]", "]b"], "value": true},
+    {"id": "escaped_meta", "args": ["a\\*b\\?c\\[1\\]", "a*b?c[1]"], "value": true},
+    {"id": "inline_double_star", "args": ["a**b/c", "a123b/c"], "value": true},
+    {"id": "unclosed_class", "args": ["a[bc", "ab"], "raises": "ValueError"},
+    {"id": "descending_range", "args": ["[z-a]", "m"], "raises": "ValueError"}
+  ]
+}

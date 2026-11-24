@@ -1,0 +1,275 @@
+{
+  "function": "diff_hunks",
+  "cases": [
+    {
+      "id": "basic_empty",
+      "args": [
+        [],
+        []
+      ],
+      "value": []
+    },
+    {
+      "id": "basic_equal_one",
+      "args": [
+        [
+          "a"
+        ],
+        [
+          "a"
+        ]
+      ],
+      "value": [
+        {
+          "op": "equal",
+          "a_start": 0,
+          "a_end": 1,
+          "b_start": 0,
+          "b_end": 1
+        }
+      ]
+    },
+    {
+      "id": "basic_delete_one",
+      "args": [
+        [
+          "a"
+        ],
+        []
+      ],
+      "value": [
+        {
+          "op": "delete",
+          "a_start": 0,
+          "a_end": 1,
+          "b_start": 0,
+          "b_end": 0
+        }
+      ]
+    },
+    {
+      "id": "basic_insert_one",
+      "args": [
+        [],
+        [
+          "a"
+        ]
+      ],
+      "value": [
+        {
+          "op": "insert",
+          "a_start": 0,
+          "a_end": 0,
+          "b_start": 0,
+          "b_end": 1
+        }
+      ]
+    },
+    {
+      "id": "tie_swap_two",
+      "args": [
+        [
+          "p",
+          "q"
+        ],
+        [
+          "q",
+          "p"
+        ]
+      ],
+      "value": [
+        {
+          "op": "delete",
+          "a_start": 0,
+          "a_end": 1,
+          "b_start": 0,
+          "b_end": 0
+        },
+        {
+          "op": "equal",
+          "a_start": 1,
+          "a_end": 2,
+          "b_start": 0,
+          "b_end": 1
+        },
+        {
+          "op": "insert",
+          "a_start": 2,
+          "a_end": 2,
+          "b_start": 1,
+          "b_end": 2
+        }
+      ]
+    },
+    {
+      "id": "tie_three_shift",
+      "args": [
+        [
+          "a",
+          "b",
+          "c"
+        ],
+        [
+          "b",
+          "a",
+          "c"
+        ]
+      ],
+      "value": [
+        {
+          "op": "delete",
+          "a_start": 0,
+          "a_end": 1,
+          "b_start": 0,
+          "b_end": 0
+        },
+        {
+          "op": "equal",
+          "a_start": 1,
+          "a_end": 2,
+          "b_start": 0,
+          "b_end": 1
+        },
+        {
+          "op": "insert",
+          "a_start": 2,
+          "a_end": 2,
+          "b_start": 1,
+          "b_end": 2
+        },
+        {
+          "op": "equal",
+          "a_start": 2,
+          "a_end": 3,
+          "b_start": 2,
+          "b_end": 3
+        }
+      ]
+    },
+    {
+      "id": "tie_four_shift",
+      "args": [
+        [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        [
+          "b",
+          "a",
+          "d",
+          "c"
+        ]
+      ],
+      "value": [
+        {
+          "op": "delete",
+          "a_start": 0,
+          "a_end": 1,
+          "b_start": 0,
+          "b_end": 0
+        },
+        {
+          "op": "equal",
+          "a_start": 1,
+          "a_end": 2,
+          "b_start": 0,
+          "b_end": 1
+        },
+        {
+          "op": "delete",
+          "a_start": 2,
+          "a_end": 3,
+          "b_start": 1,
+          "b_end": 1
+        },
+        {
+          "op": "insert",
+          "a_start": 3,
+          "a_end": 3,
+          "b_start": 1,
+          "b_end": 2
+        },
+        {
+          "op": "equal",
+          "a_start": 3,
+          "a_end": 4,
+          "b_start": 2,
+          "b_end": 3
+        },
+        {
+          "op": "insert",
+          "a_start": 4,
+          "a_end": 4,
+          "b_start": 3,
+          "b_end": 4
+        }
+      ]
+    },
+    {
+      "id": "coalesce_delete_run",
+      "args": [
+        [
+          "a",
+          "b",
+          "c"
+        ],
+        []
+      ],
+      "value": [
+        {
+          "op": "delete",
+          "a_start": 0,
+          "a_end": 3,
+          "b_start": 0,
+          "b_end": 0
+        }
+      ]
+    },
+    {
+      "id": "coalesce_insert_run",
+      "args": [
+        [],
+        [
+          "x",
+          "y",
+          "z"
+        ]
+      ],
+      "value": [
+        {
+          "op": "insert",
+          "a_start": 0,
+          "a_end": 0,
+          "b_start": 0,
+          "b_end": 3
+        }
+      ]
+    },
+    {
+      "id": "coalesce_equal_run",
+      "args": [
+        [
+          "a",
+          "b",
+          "c"
+        ],
+        [
+          "a",
+          "b",
+          "c"
+        ]
+      ],
+      "value": [
+        {
+          "op": "equal",
+          "a_start": 0,
+          "a_end": 3,
+          "b_start": 0,
+          "b_end": 3
+        }
+      ]
+    }
+  ]
+}

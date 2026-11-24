@@ -1,0 +1,100 @@
+{
+  "function": "parse_markdown_table",
+  "cases": [
+    {
+      "id": "basic_table",
+      "args": [
+        "| name | role |\n| :--- | ---: |\n| alice | admin |\n| bob | user |"
+      ],
+      "value": [
+        {
+          "name": "alice",
+          "role": "admin"
+        },
+        {
+          "name": "bob",
+          "role": "user"
+        }
+      ]
+    },
+    {
+      "id": "surrounding_blank_lines_and_escaped_pipe",
+      "args": [
+        "\n\n| key | expr |\n| --- | --- |\n| or | a\\|b |\n\n"
+      ],
+      "value": [
+        {
+          "key": "or",
+          "expr": "a|b"
+        }
+      ]
+    },
+    {
+      "id": "no_trim_and_no_unescape",
+      "args": [
+        "| k | v |\n| --- | --- |\n| x\\|y |  val  |",
+        false,
+        false
+      ],
+      "value": [
+        {
+          " k ": " x\\|y ",
+          " v ": "  val  "
+        }
+      ]
+    },
+    {
+      "id": "header_only_returns_empty_list",
+      "args": [
+        "| col1 | col2 |\n| --- | :---: |"
+      ],
+      "value": []
+    },
+    {
+      "id": "short_row_padded_with_empty",
+      "args": [
+        "| a | b | c |\n| --- | --- | --- |\n| 1 |"
+      ],
+      "value": [
+        {
+          "a": "1",
+          "b": "",
+          "c": ""
+        }
+      ]
+    },
+    {
+      "id": "escaped_backslash_before_escaped_pipe",
+      "args": [
+        "| raw | note |\n| --- | --- |\n| a\\\\\\|b | \\\\n |"
+      ],
+      "value": [
+        {
+          "raw": "a\\|b",
+          "note": "\\n"
+        }
+      ]
+    },
+    {
+      "id": "separator_fewer_than_three_dashes_raises",
+      "args": [
+        "| a | b |\n| -- | --- |\n| 1 | 2 |"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_header_raises",
+      "args": [
+        "| id | id |\n| --- | --- |\n| 1 | 2 |"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "blank_line_inside_table_raises",
+      "args": [
+        "| a |\n| --- |\n\n| 1 |"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

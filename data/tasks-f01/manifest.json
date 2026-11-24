@@ -1,0 +1,52 @@
+{
+  "tasks": [
+    {
+      "id": "f01-session-gap-window",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 72,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f01-sliding-error-rate",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 56,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "f01-syslog-kv-parse",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 95,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f01-tumbling-watermark",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 53,
+      "cases": 8,
+      "passed": {
+        "original": "5/8",
+        "reference": "8/8",
+        "partial": "7/8"
+      }
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "function": "eval_expr",
+  "cases": [
+    {
+      "id": "basic_precedence",
+      "args": [
+        "1 + 2 * 3",
+        {}
+      ],
+      "value": 7
+    },
+    {
+      "id": "basic_unary_parens",
+      "args": [
+        "-2 * (3 + 4)",
+        {}
+      ],
+      "value": -14
+    },
+    {
+      "id": "basic_floor_division",
+      "args": [
+        "7 / 2 + -7 / 2",
+        {}
+      ],
+      "value": -1
+    },
+    {
+      "id": "basic_variables",
+      "args": [
+        "a * 2 + b",
+        {
+          "a": 5,
+          "b": 3
+        }
+      ],
+      "value": 13
+    },
+    {
+      "id": "left_assoc_sub",
+      "args": [
+        "10 - 3 - 2",
+        {}
+      ],
+      "value": 5
+    },
+    {
+      "id": "left_assoc_mixed",
+      "args": [
+        "20 - 5 + 2 - 1",
+        {}
+      ],
+      "value": 16
+    },
+    {
+      "id": "left_assoc_chain",
+      "args": [
+        "1 - 2 - 3 - 4",
+        {}
+      ],
+      "value": -8
+    },
+    {
+      "id": "left_assoc_parens",
+      "args": [
+        "(10 - 3 - 1) * 2",
+        {}
+      ],
+      "value": 12
+    },
+    {
+      "id": "undefined_variable",
+      "args": [
+        "x + 1",
+        {}
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "undefined_in_parens",
+      "args": [
+        "(a * 2) - 1",
+        {
+          "b": 4
+        }
+      ],
+      "raises": "KeyError"
+    }
+  ]
+}

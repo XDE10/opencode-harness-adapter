@@ -1,0 +1,204 @@
+{
+  "function": "parse_markdown_table",
+  "cases": [
+    {
+      "id": "basic_table",
+      "args": [
+        [
+          "| Name | Expr | Score |",
+          "| :--- | :---: | ---: |",
+          "| Alice | `a | b` | 10 |",
+          "| Bob\\|Jr | x \\| y |"
+        ]
+      ],
+      "value": {
+        "headers": [
+          "Name",
+          "Expr",
+          "Score"
+        ],
+        "align": [
+          "left",
+          "center",
+          "right"
+        ],
+        "rows": [
+          [
+            "Alice",
+            "`a | b`",
+            "10"
+          ],
+          [
+            "Bob|Jr",
+            "x | y",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "id": "trim_outer_blank_lines",
+      "args": [
+        [
+          "",
+          "  ",
+          "ColA | ColB",
+          "--- | :---",
+          "1 | 2",
+          "   "
+        ]
+      ],
+      "value": {
+        "headers": [
+          "ColA",
+          "ColB"
+        ],
+        "align": [
+          "left",
+          "left"
+        ],
+        "rows": [
+          [
+            "1",
+            "2"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "code_span_preserves_backslashes",
+      "args": [
+        [
+          "| Code | Text |",
+          "| --- | --- |",
+          "| `a \\| b` | c \\\\ d |"
+        ]
+      ],
+      "value": {
+        "headers": [
+          "Code",
+          "Text"
+        ],
+        "align": [
+          "left",
+          "left"
+        ],
+        "rows": [
+          [
+            "`a \\| b`",
+            "c \\ d"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "escaped_trailing_pipe_no_outer_border",
+      "args": [
+        [
+          "Key | Value",
+          "--- | ---",
+          "cmd | a \\|"
+        ]
+      ],
+      "value": {
+        "headers": [
+          "Key",
+          "Value"
+        ],
+        "align": [
+          "left",
+          "left"
+        ],
+        "rows": [
+          [
+            "cmd",
+            "a |"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "error_blank_line_inside",
+      "args": [
+        [
+          "| A |",
+          "| --- |",
+          "",
+          "| 1 |"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_short_delimiter_two_dashes",
+      "args": [
+        [
+          "| A | B |",
+          "| --- | -- |",
+          "| 1 | 2 |"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_short_delimiter_colon_one_dash",
+      "args": [
+        [
+          "| A |",
+          "| :-: |",
+          "| 1 |"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "trailing_escaped_backslash_before_border_pipe",
+      "args": [
+        [
+          "| Path | Status |",
+          "| --- | --- |",
+          "| C:\\\\ | OK \\\\|"
+        ]
+      ],
+      "value": {
+        "headers": [
+          "Path",
+          "Status"
+        ],
+        "align": [
+          "left",
+          "left"
+        ],
+        "rows": [
+          [
+            "C:\\",
+            "OK \\"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "double_escaped_backslash_before_border_pipe",
+      "args": [
+        [
+          "| Item |",
+          "| :---: |",
+          "| root\\\\\\\\|"
+        ]
+      ],
+      "value": {
+        "headers": [
+          "Item"
+        ],
+        "align": [
+          "center"
+        ],
+        "rows": [
+          [
+            "root\\\\"
+          ]
+        ]
+      }
+    }
+  ]
+}

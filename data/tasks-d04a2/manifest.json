@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d04a2-lfu-ttl-cache",
+      "split": "train",
+      "domain": "stateful_cache_kv",
+      "lines": 92,
+      "cases": 10,
+      "passed": {
+        "original": "6/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

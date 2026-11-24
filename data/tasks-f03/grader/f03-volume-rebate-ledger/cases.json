@@ -1,0 +1,127 @@
+{
+  "function": "apply_volume_rebates",
+  "cases": [
+    {
+      "id": "basic_taker_exact",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "taker"}
+        ],
+        {"tiers": [[0, 25, -5]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": 25}],
+        "account_totals": {"A": 25}
+      }
+    },
+    {
+      "id": "basic_maker_rebate_exact",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "maker"}
+        ],
+        {"tiers": [[0, 20, -5]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": -5}],
+        "account_totals": {"A": -5}
+      }
+    },
+    {
+      "id": "cross_tier_split",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 20000, "role": "taker"}
+        ],
+        {"tiers": [[0, 30, 0], [10000, 10, -5]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": 40}],
+        "account_totals": {"A": 40}
+      }
+    },
+    {
+      "id": "separate_months_reset",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "taker"},
+          {"id": "t2", "account": "A", "month": "2026-02", "notional_cents": 10000, "role": "taker"}
+        ],
+        {"tiers": [[0, 30, 0], [10000, 10, 0]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [
+          {"id": "t1", "fee_cents": 30},
+          {"id": "t2", "fee_cents": 30}
+        ],
+        "account_totals": {"A": 60}
+      }
+    },
+    {
+      "id": "zero_maker_bps",
+      "args": [
+        [
+          {"id": "t1", "account": "B", "month": "2026-01", "notional_cents": 10000, "role": "maker"}
+        ],
+        {"tiers": [[0, 25, 0]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": 0}],
+        "account_totals": {"B": 0}
+      }
+    },
+    {
+      "id": "negative_rebate_half_away",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 5000, "role": "maker"}
+        ],
+        {"tiers": [[0, 20, -5]], "rebate_cap_cents": null}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": -3}],
+        "account_totals": {"A": -3}
+      }
+    },
+    {
+      "id": "rebate_cap_enforced",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "maker"},
+          {"id": "t2", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "maker"}
+        ],
+        {"tiers": [[0, 20, -10]], "rebate_cap_cents": 15}
+      ],
+      "value": {
+        "trades": [
+          {"id": "t1", "fee_cents": -10},
+          {"id": "t2", "fee_cents": -5}
+        ],
+        "account_totals": {"A": -15}
+      }
+    },
+    {
+      "id": "zero_rebate_cap",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "maker"}
+        ],
+        {"tiers": [[0, 20, -10]], "rebate_cap_cents": 0}
+      ],
+      "value": {
+        "trades": [{"id": "t1", "fee_cents": 0}],
+        "account_totals": {"A": 0}
+      }
+    },
+    {
+      "id": "invalid_role_raises",
+      "args": [
+        [
+          {"id": "t1", "account": "A", "month": "2026-01", "notional_cents": 10000, "role": "broker"}
+        ],
+        {"tiers": [[0, 20, 0]], "rebate_cap_cents": null}
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

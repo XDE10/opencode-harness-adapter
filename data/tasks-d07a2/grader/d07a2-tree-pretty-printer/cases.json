@@ -1,0 +1,320 @@
+{
+  "function": "render_tree",
+  "cases": [
+    {
+      "id": "empty_forest",
+      "args": [
+        []
+      ],
+      "value": []
+    },
+    {
+      "id": "single_root",
+      "args": [
+        [
+          {
+            "id": 7,
+            "label": "root",
+            "children": []
+          }
+        ]
+      ],
+      "value": [
+        "root#7"
+      ]
+    },
+    {
+      "id": "basic_children",
+      "args": [
+        [
+          {
+            "id": 2,
+            "label": "b",
+            "children": [
+              {
+                "id": 4,
+                "label": "y",
+                "children": []
+              },
+              {
+                "id": 3,
+                "label": "x",
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": 1,
+            "label": "a",
+            "children": [
+              {
+                "id": 5,
+                "label": "z",
+                "children": []
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        "a#1",
+        "\u2514\u2500\u2500 z#5",
+        "b#2",
+        "\u251c\u2500\u2500 x#3",
+        "\u2514\u2500\u2500 y#4"
+      ]
+    },
+    {
+      "id": "duplicate_id_error",
+      "args": [
+        [
+          {
+            "id": 1,
+            "label": "a",
+            "children": [
+              {
+                "id": 1,
+                "label": "b",
+                "children": []
+              }
+            ]
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "sort_roots_by_id",
+      "args": [
+        [
+          {
+            "id": 2,
+            "label": "dup",
+            "children": []
+          },
+          {
+            "id": 1,
+            "label": "dup",
+            "children": []
+          }
+        ]
+      ],
+      "value": [
+        "dup#1",
+        "dup#2"
+      ]
+    },
+    {
+      "id": "sort_children_by_id",
+      "args": [
+        [
+          {
+            "id": 10,
+            "label": "r",
+            "children": [
+              {
+                "id": 3,
+                "label": "x",
+                "children": []
+              },
+              {
+                "id": 1,
+                "label": "x",
+                "children": []
+              },
+              {
+                "id": 2,
+                "label": "x",
+                "children": []
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        "r#10",
+        "\u251c\u2500\u2500 x#1",
+        "\u251c\u2500\u2500 x#2",
+        "\u2514\u2500\u2500 x#3"
+      ]
+    },
+    {
+      "id": "sort_label_then_id",
+      "args": [
+        [
+          {
+            "id": 100,
+            "label": "r",
+            "children": [
+              {
+                "id": 9,
+                "label": "b",
+                "children": []
+              },
+              {
+                "id": 5,
+                "label": "a",
+                "children": []
+              },
+              {
+                "id": 2,
+                "label": "a",
+                "children": []
+              },
+              {
+                "id": 1,
+                "label": "b",
+                "children": []
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        "r#100",
+        "\u251c\u2500\u2500 a#2",
+        "\u251c\u2500\u2500 a#5",
+        "\u251c\u2500\u2500 b#1",
+        "\u2514\u2500\u2500 b#9"
+      ]
+    },
+    {
+      "id": "last_child_descendants",
+      "args": [
+        [
+          {
+            "id": 1,
+            "label": "r",
+            "children": [
+              {
+                "id": 2,
+                "label": "a",
+                "children": [
+                  {
+                    "id": 4,
+                    "label": "a1",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "label": "b",
+                "children": [
+                  {
+                    "id": 5,
+                    "label": "b1",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        "r#1",
+        "\u251c\u2500\u2500 a#2",
+        "\u2502   \u2514\u2500\u2500 a1#4",
+        "\u2514\u2500\u2500 b#3",
+        "    \u2514\u2500\u2500 b1#5"
+      ]
+    },
+    {
+      "id": "deep_last_chain",
+      "args": [
+        [
+          {
+            "id": 1,
+            "label": "r",
+            "children": [
+              {
+                "id": 2,
+                "label": "x",
+                "children": []
+              },
+              {
+                "id": 3,
+                "label": "y",
+                "children": [
+                  {
+                    "id": 4,
+                    "label": "y1",
+                    "children": []
+                  },
+                  {
+                    "id": 5,
+                    "label": "y2",
+                    "children": [
+                      {
+                        "id": 6,
+                        "label": "deep",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      ],
+      "value": [
+        "r#1",
+        "\u251c\u2500\u2500 x#2",
+        "\u2514\u2500\u2500 y#3",
+        "    \u251c\u2500\u2500 y1#4",
+        "    \u2514\u2500\u2500 y2#5",
+        "        \u2514\u2500\u2500 deep#6"
+      ]
+    },
+    {
+      "id": "forest_last_branch",
+      "args": [
+        [
+          {
+            "id": 1,
+            "label": "A",
+            "children": [
+              {
+                "id": 2,
+                "label": "m",
+                "children": [
+                  {
+                    "id": 3,
+                    "label": "mm",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": 4,
+                "label": "n",
+                "children": [
+                  {
+                    "id": 5,
+                    "label": "nn",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "label": "B",
+            "children": []
+          }
+        ]
+      ],
+      "value": [
+        "A#1",
+        "\u251c\u2500\u2500 m#2",
+        "\u2502   \u2514\u2500\u2500 mm#3",
+        "\u2514\u2500\u2500 n#4",
+        "    \u2514\u2500\u2500 nn#5",
+        "B#6"
+      ]
+    }
+  ]
+}

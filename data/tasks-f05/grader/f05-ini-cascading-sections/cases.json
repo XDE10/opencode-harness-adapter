@@ -1,0 +1,98 @@
+{
+  "function": "load_ini_config",
+  "cases": [
+    {
+      "id": "basic_section_and_interp",
+      "args": [
+        "; config\n[DEFAULT]\nenv = dev\n[web]\nhost = 127.0.0.1\nurl = http://${host}/${env}\n",
+        "web"
+      ],
+      "value": {
+        "env": "dev",
+        "host": "127.0.0.1",
+        "url": "http://127.0.0.1/dev"
+      }
+    },
+    {
+      "id": "defaults_and_repeated_section",
+      "args": [
+        "[api]\na = 1\n[api]\nb = $$${a}\n",
+        "api",
+        {
+          "a": "0",
+          "c": "3"
+        }
+      ],
+      "value": {
+        "a": "1",
+        "b": "$1",
+        "c": "3"
+      }
+    },
+    {
+      "id": "colon_delimiter_with_equals_in_value",
+      "args": [
+        "[db]\ndsn: postgres://host?ssl=true\nurl = http://a:8080\n",
+        "db"
+      ],
+      "value": {
+        "dsn": "postgres://host?ssl=true",
+        "url": "http://a:8080"
+      }
+    },
+    {
+      "id": "parent_overrides_default_section",
+      "args": [
+        "[DEFAULT]\nretries = 1\n[base]\nretries = 3\ntimeout = 10\n[worker < base]\nname = w1\n",
+        "worker"
+      ],
+      "value": {
+        "retries": "3",
+        "timeout": "10",
+        "name": "w1"
+      }
+    },
+    {
+      "id": "cross_section_inherited_lookup",
+      "args": [
+        "[base]\nport = 9000\n[auth < base]\nhost = auth.local\n[gateway]\nauth_url = http://${auth.host}:${auth.port}\n",
+        "gateway"
+      ],
+      "value": {
+        "auth_url": "http://auth.local:9000"
+      }
+    },
+    {
+      "id": "missing_target_raises",
+      "args": [
+        "[a]\nk = v\n",
+        "missing"
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "inheritance_cycle_raises",
+      "args": [
+        "[a < b]\nx = 1\n[b < a]\ny = 2\n",
+        "a"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "interp_cycle_raises",
+      "args": [
+        "[app]\na = ${b}\nb = ${a}\n",
+        "app"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "kv_outside_section_raises",
+      "args": [
+        "orphan = 1\n[app]\na = 2\n",
+        "app"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

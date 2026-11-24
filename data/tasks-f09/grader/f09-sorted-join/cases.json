@@ -1,0 +1,86 @@
+{
+  "function": "sorted_merge_join",
+  "cases": [
+    {
+      "id": "basic_inner",
+      "args": [
+        [[1, "a"], [2, "b"], [4, "d"]],
+        [[2, 20], [3, 30], [4, 40]],
+        "inner"
+      ],
+      "value": [[2, "b", 20], [4, "d", 40]]
+    },
+    {
+      "id": "basic_left",
+      "args": [
+        [[1, "a"], [3, "c"]],
+        [[2, 20], [3, 30]],
+        "left"
+      ],
+      "value": [[1, "a", null], [3, "c", 30]]
+    },
+    {
+      "id": "outer_empty_left",
+      "args": [
+        [],
+        [[0, "zero"], [2, "two"]],
+        "outer"
+      ],
+      "value": [[0, null, "zero"], [2, null, "two"]]
+    },
+    {
+      "id": "right_join_tail",
+      "args": [
+        [[1, "a"]],
+        [[1, "x"], [2, "y"], [3, "z"]],
+        "right"
+      ],
+      "value": [[1, "a", "x"], [2, null, "y"], [3, null, "z"]]
+    },
+    {
+      "id": "duplicate_keys_cartesian",
+      "args": [
+        [[2, "a"], [2, "b"], [5, "c"]],
+        [[2, 10], [2, 20], [5, 50]],
+        "inner"
+      ],
+      "value": [[2, "a", 10], [2, "a", 20], [2, "b", 10], [2, "b", 20], [5, "c", 50]]
+    },
+    {
+      "id": "duplicate_keys_left_unmatched",
+      "args": [
+        [[1, "a"], [1, "b"]],
+        [[2, "x"]],
+        "outer"
+      ],
+      "value": [[1, "a", null], [1, "b", null], [2, null, "x"]]
+    },
+    {
+      "id": "negative_after_zero_unsorted_raises",
+      "args": [
+        [[0, "a"], [-1, "b"]],
+        [[0, "x"]],
+        "inner"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_how_raises",
+      "args": [
+        [[1, "a"]],
+        [[1, "b"]],
+        "cross"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "falsy_values_outer",
+      "args": [
+        [[0, 0]],
+        [[0, false]],
+        "outer"
+      ],
+      "value": [[0, 0, false]]
+    }
+  ]
+}

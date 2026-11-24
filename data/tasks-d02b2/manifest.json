@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d02b2-markdown-table-parser",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 91,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

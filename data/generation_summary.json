@@ -1,0 +1,9 @@
+{
+  "total_valid_generated": 33,
+  "splits": {
+    "train": 26,
+    "heldout": 8
+  },
+  "elapsed_s": 126.1,
+  "usage": "api_calls=2 disk_hits=0 uncached_in=3648 cache_read=2816 (43.6% cached) out=49152 allowance=$0.0000"
+}

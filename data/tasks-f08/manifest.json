@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "f08-bday-offset",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 55,
+      "cases": 10,
+      "passed": {
+        "original": "5/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    },
+    {
+      "id": "f08-bday-window-count",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 58,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f08-sla-deadline",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 78,
+      "cases": 10,
+      "passed": {
+        "original": "6/10",
+        "reference": "10/10",
+        "partial": "9/10"
+      }
+    }
+  ]
+}

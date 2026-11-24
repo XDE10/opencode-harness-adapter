@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d11b1-rbac-glob-state",
+      "split": "train",
+      "domain": "log_routing",
+      "lines": 73,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

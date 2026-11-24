@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "f04-lex-topo-order",
+      "split": "heldout",
+      "domain": "graph_dependency",
+      "lines": 59,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "f04-priority-build-queue",
+      "split": "heldout",
+      "domain": "graph_dependency",
+      "lines": 68,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f04-wave-batch-planner",
+      "split": "heldout",
+      "domain": "graph_dependency",
+      "lines": 62,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

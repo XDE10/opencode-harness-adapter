@@ -1,0 +1,171 @@
+{
+  "function": "build_session_windows",
+  "cases": [
+    {
+      "id": "basic_single_user",
+      "args": [
+        [
+          {"user": "u1", "ts": 100, "kind": "open"},
+          {"user": "u1", "ts": 130, "kind": "click"},
+          {"user": "u1", "ts": 200, "kind": "close"}
+        ],
+        50,
+        0
+      ],
+      "value": [
+        {
+          "user": "u1",
+          "start_ts": 100,
+          "end_ts": 130,
+          "duration_ms": 30,
+          "event_count": 2,
+          "kinds": ["open", "click"]
+        },
+        {
+          "user": "u1",
+          "start_ts": 200,
+          "end_ts": 200,
+          "duration_ms": 0,
+          "event_count": 1,
+          "kinds": ["close"]
+        }
+      ]
+    },
+    {
+      "id": "out_of_order_within_lateness",
+      "args": [
+        [
+          {"user": "u1", "ts": 150, "kind": "b"},
+          {"user": "u1", "ts": 120, "kind": "a"},
+          {"user": "u1", "ts": 150, "kind": "c"}
+        ],
+        40,
+        30
+      ],
+      "value": [
+        {
+          "user": "u1",
+          "start_ts": 120,
+          "end_ts": 150,
+          "duration_ms": 30,
+          "event_count": 3,
+          "kinds": ["a", "b", "c"]
+        }
+      ]
+    },
+    {
+      "id": "zero_lateness_drops_late",
+      "args": [
+        [
+          {"user": "u1", "ts": 100, "kind": "ok"},
+          {"user": "u1", "ts": 90, "kind": "late"},
+          {"user": "u1", "ts": 100, "kind": "same"}
+        ],
+        20,
+        0
+      ],
+      "value": [
+        {
+          "user": "u1",
+          "start_ts": 100,
+          "end_ts": 100,
+          "duration_ms": 0,
+          "event_count": 2,
+          "kinds": ["ok", "same"]
+        }
+      ]
+    },
+    {
+      "id": "exact_gap_boundary_same_session",
+      "args": [
+        [
+          {"user": "u1", "ts": 10, "kind": "a"},
+          {"user": "u1", "ts": 60, "kind": "b"}
+        ],
+        50,
+        10
+      ],
+      "value": [
+        {
+          "user": "u1",
+          "start_ts": 10,
+          "end_ts": 60,
+          "duration_ms": 50,
+          "event_count": 2,
+          "kinds": ["a", "b"]
+        }
+      ]
+    },
+    {
+      "id": "tie_break_user_over_end_ts",
+      "args": [
+        [
+          {"user": "bob", "ts": 100, "kind": "x"},
+          {"user": "bob", "ts": 110, "kind": "y"},
+          {"user": "alice", "ts": 100, "kind": "m"},
+          {"user": "alice", "ts": 130, "kind": "n"}
+        ],
+        50,
+        20
+      ],
+      "value": [
+        {
+          "user": "alice",
+          "start_ts": 100,
+          "end_ts": 130,
+          "duration_ms": 30,
+          "event_count": 2,
+          "kinds": ["m", "n"]
+        },
+        {
+          "user": "bob",
+          "start_ts": 100,
+          "end_ts": 110,
+          "duration_ms": 10,
+          "event_count": 2,
+          "kinds": ["x", "y"]
+        }
+      ]
+    },
+    {
+      "id": "empty_events",
+      "args": [
+        [],
+        100,
+        0
+      ],
+      "value": []
+    },
+    {
+      "id": "missing_key_raises",
+      "args": [
+        [
+          {"user": "u1", "ts": 10}
+        ],
+        10,
+        0
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "negative_gap_raises",
+      "args": [
+        [],
+        -1,
+        0
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "empty_user_raises",
+      "args": [
+        [
+          {"user": "", "ts": 10, "kind": "a"}
+        ],
+        10,
+        0
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

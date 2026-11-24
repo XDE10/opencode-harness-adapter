@@ -1,0 +1,352 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_watermark",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 0
+          },
+          {
+            "op": "event",
+            "t": 0,
+            "price": 5,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 9,
+            "price": 7,
+            "seq": 2
+          },
+          {
+            "op": "watermark",
+            "t": 20
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 5,
+          "high": 7,
+          "low": 5,
+          "close": 7,
+          "volume": 2,
+          "first_seq": 1,
+          "last_seq": 2
+        }
+      ]
+    },
+    {
+      "id": "basic_with_lateness",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 5,
+            "lateness": 2
+          },
+          {
+            "op": "event",
+            "t": 0,
+            "price": 3,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 4,
+            "price": 9,
+            "seq": 2
+          },
+          {
+            "op": "watermark",
+            "t": 10
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 3,
+          "high": 9,
+          "low": 3,
+          "close": 9,
+          "volume": 2,
+          "first_seq": 1,
+          "last_seq": 2
+        }
+      ]
+    },
+    {
+      "id": "late_event_ignored",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 3
+          },
+          {
+            "op": "watermark",
+            "t": 20
+          },
+          {
+            "op": "event",
+            "t": 16,
+            "price": 100,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 17,
+            "price": 4,
+            "seq": 2
+          },
+          {
+            "op": "event",
+            "t": 25,
+            "price": 8,
+            "seq": 3
+          },
+          {
+            "op": "watermark",
+            "t": 30
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 1,
+          "open": 4,
+          "high": 4,
+          "low": 4,
+          "close": 4,
+          "volume": 1,
+          "first_seq": 2,
+          "last_seq": 2
+        }
+      ]
+    },
+    {
+      "id": "boundary_exact_lateness",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 5
+          },
+          {
+            "op": "event",
+            "t": 0,
+            "price": 2,
+            "seq": 1
+          },
+          {
+            "op": "watermark",
+            "t": 15
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 2,
+          "high": 2,
+          "low": 2,
+          "close": 2,
+          "volume": 1,
+          "first_seq": 1,
+          "last_seq": 1
+        }
+      ]
+    },
+    {
+      "id": "boundary_exact_close",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 0
+          },
+          {
+            "op": "event",
+            "t": 0,
+            "price": 1,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 10,
+            "price": 2,
+            "seq": 2
+          },
+          {
+            "op": "watermark",
+            "t": 10
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 1,
+          "high": 1,
+          "low": 1,
+          "close": 1,
+          "volume": 1,
+          "first_seq": 1,
+          "last_seq": 1
+        }
+      ]
+    },
+    {
+      "id": "boundary_exact_two_bars",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 5,
+            "lateness": 1
+          },
+          {
+            "op": "event",
+            "t": 0,
+            "price": 1,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 5,
+            "price": 2,
+            "seq": 2
+          },
+          {
+            "op": "watermark",
+            "t": 6
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 1,
+          "high": 1,
+          "low": 1,
+          "close": 1,
+          "volume": 1,
+          "first_seq": 1,
+          "last_seq": 1
+        }
+      ]
+    },
+    {
+      "id": "tie_by_time",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 0
+          },
+          {
+            "op": "event",
+            "t": 3,
+            "price": 30,
+            "seq": 5
+          },
+          {
+            "op": "event",
+            "t": 1,
+            "price": 10,
+            "seq": 2
+          },
+          {
+            "op": "event",
+            "t": 2,
+            "price": 20,
+            "seq": 1
+          },
+          {
+            "op": "end"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 10,
+          "high": 30,
+          "low": 10,
+          "close": 30,
+          "volume": 3,
+          "first_seq": 2,
+          "last_seq": 5
+        }
+      ]
+    },
+    {
+      "id": "tie_by_seq",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 10,
+            "lateness": 0
+          },
+          {
+            "op": "event",
+            "t": 5,
+            "price": 100,
+            "seq": 3
+          },
+          {
+            "op": "event",
+            "t": 5,
+            "price": 50,
+            "seq": 1
+          },
+          {
+            "op": "event",
+            "t": 5,
+            "price": 70,
+            "seq": 2
+          },
+          {
+            "op": "end"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "bar": 0,
+          "open": 50,
+          "high": 100,
+          "low": 50,
+          "close": 100,
+          "volume": 3,
+          "first_seq": 1,
+          "last_seq": 3
+        }
+      ]
+    },
+    {
+      "id": "error_bad_config",
+      "args": [
+        [
+          {
+            "op": "config",
+            "bucket": 0,
+            "lateness": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

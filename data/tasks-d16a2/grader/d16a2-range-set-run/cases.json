@@ -1,0 +1,347 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_add_query",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 2,
+            "r": 5
+          },
+          {
+            "op": "add",
+            "l": 8,
+            "r": 9
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            2,
+            5
+          ],
+          [
+            8,
+            9
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "overlapping_add",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 1,
+            "r": 4
+          },
+          {
+            "op": "add",
+            "l": 3,
+            "r": 7
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            1,
+            7
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "remove_split",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 1,
+            "r": 10
+          },
+          {
+            "op": "remove",
+            "l": 4,
+            "r": 6
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            1,
+            3
+          ],
+          [
+            7,
+            10
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "remove_edges",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 0,
+            "r": 5
+          },
+          {
+            "op": "add",
+            "l": 10,
+            "r": 12
+          },
+          {
+            "op": "remove",
+            "l": 0,
+            "r": 0
+          },
+          {
+            "op": "remove",
+            "l": 12,
+            "r": 12
+          },
+          {
+            "op": "query",
+            "l": -5,
+            "r": 99
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        [
+          [
+            1,
+            5
+          ],
+          [
+            10,
+            11
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "adjacent_right",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 1,
+            "r": 3
+          },
+          {
+            "op": "add",
+            "l": 4,
+            "r": 6
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            1,
+            6
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "adjacent_left",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 5,
+            "r": 7
+          },
+          {
+            "op": "add",
+            "l": 2,
+            "r": 4
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            2,
+            7
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "bridge_multiple",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 1,
+            "r": 2
+          },
+          {
+            "op": "add",
+            "l": 6,
+            "r": 8
+          },
+          {
+            "op": "add",
+            "l": 3,
+            "r": 5
+          },
+          {
+            "op": "query",
+            "l": -10,
+            "r": 100
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        [
+          [
+            1,
+            8
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "query_exact_end",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 2,
+            "r": 6
+          },
+          {
+            "op": "query",
+            "l": 0,
+            "r": 6
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          [
+            2,
+            6
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "query_inside",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 10,
+            "r": 20
+          },
+          {
+            "op": "query",
+            "l": 12,
+            "r": 15
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          [
+            12,
+            15
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "query_multiple_clipped",
+      "args": [
+        [
+          {
+            "op": "add",
+            "l": 0,
+            "r": 4
+          },
+          {
+            "op": "add",
+            "l": 8,
+            "r": 12
+          },
+          {
+            "op": "query",
+            "l": 3,
+            "r": 8
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          [
+            3,
+            4
+          ],
+          [
+            8,
+            8
+          ]
+        ]
+      ]
+    }
+  ]
+}

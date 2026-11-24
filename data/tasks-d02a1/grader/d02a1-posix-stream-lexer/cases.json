@@ -1,0 +1,219 @@
+{
+  "function": "run_lexer",
+  "cases": [
+    {
+      "id": "basic_words_and_quotes",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "ls -la 'my dir' "
+          },
+          {
+            "op": "feed",
+            "chunk": "file\\ name"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [
+          "ls",
+          "-la",
+          "my dir"
+        ],
+        [],
+        [
+          "file name"
+        ]
+      ]
+    },
+    {
+      "id": "line_continuation_and_reset",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "hel\\\nlo "
+          },
+          {
+            "op": "feed",
+            "chunk": "'unclosed"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "feed",
+            "chunk": "ok"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [
+          "hello"
+        ],
+        [],
+        null,
+        [],
+        [
+          "ok"
+        ]
+      ]
+    },
+    {
+      "id": "unclosed_quote_raises",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "echo \"hello"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "trailing_backslash_raises",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "echo abc\\"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "empty_quoted_tokens",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "cmd '' \"\" "
+          },
+          {
+            "op": "feed",
+            "chunk": "''"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [
+          "cmd",
+          "",
+          ""
+        ],
+        [],
+        [
+          ""
+        ]
+      ]
+    },
+    {
+      "id": "inline_hash_and_comments",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "tag#1 # full comment\n\"\"#2 # second\nnext"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [
+          "tag#1",
+          "#2"
+        ],
+        [
+          "next"
+        ]
+      ]
+    },
+    {
+      "id": "double_quote_selective_escapes",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "\"a\\nb\\\"c\\\\d\\$e\\`f\\\ng\""
+          }
+        ],
+        {
+          "op": "flush"
+        }
+      ],
+      "raises": "TypeError"
+    },
+    {
+      "id": "double_quote_escape_rules",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "\"a\\nb\\\"c\\\\d\\$e\\`f\\\ng\" 'x\\ny'"
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [
+          "a\\nb\"c\\d$e`fg"
+        ],
+        [
+          "x\\ny"
+        ]
+      ]
+    },
+    {
+      "id": "cross_chunk_double_quote_escape",
+      "args": [
+        [
+          {
+            "op": "feed",
+            "chunk": "\"path\\"
+          },
+          {
+            "op": "feed",
+            "chunk": "to\\"
+          },
+          {
+            "op": "feed",
+            "chunk": "\"dir\" "
+          },
+          {
+            "op": "flush"
+          }
+        ]
+      ],
+      "value": [
+        [],
+        [],
+        [
+          "path\\to\"dir"
+        ],
+        []
+      ]
+    }
+  ]
+}

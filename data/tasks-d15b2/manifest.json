@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d15b2-watermark-ohlc-aggregator",
+      "split": "train",
+      "domain": "string_timeseries",
+      "lines": 83,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "function": "resolve_path",
+  "cases": [
+    {
+      "id": "basic_dotdot",
+      "args": [
+        {
+          "type": "dir"
+        },
+        "/a/b/../c",
+        "/"
+      ],
+      "value": "/a/c"
+    },
+    {
+      "id": "relative_cwd",
+      "args": [
+        {
+          "type": "dir"
+        },
+        "docs/./readme",
+        "/work"
+      ],
+      "value": "/work/docs/readme"
+    },
+    {
+      "id": "relative_symlink",
+      "args": [
+        {
+          "/a": {
+            "type": "dir"
+          },
+          "/a/b": {
+            "type": "dir"
+          },
+          "/a/b/c": {
+            "type": "dir"
+          },
+          "/a/link": {
+            "type": "link",
+            "target": "b/c"
+          }
+        },
+        "/a/link/file",
+        "/"
+      ],
+      "value": "/a/b/c/file"
+    },
+    {
+      "id": "loop_error",
+      "args": [
+        {
+          "/loop": {
+            "type": "link",
+            "target": "loop"
+          }
+        },
+        "/loop",
+        "/"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "absolute_link_nested",
+      "args": [
+        {
+          "/work": {
+            "type": "dir"
+          },
+          "/work/real": {
+            "type": "dir"
+          },
+          "/work/link": {
+            "type": "link",
+            "target": "/work/real"
+          }
+        },
+        "/work/link/file",
+        "/"
+      ],
+      "value": "/work/real/file"
+    },
+    {
+      "id": "absolute_link_to_top",
+      "args": [
+        {
+          "/work": {
+            "type": "dir"
+          },
+          "/work/go": {
+            "type": "link",
+            "target": "/top"
+          }
+        },
+        "/work/go/x",
+        "/"
+      ],
+      "value": "/top/x"
+    },
+    {
+      "id": "absolute_link_relative_cwd",
+      "args": [
+        {
+          "/base": {
+            "type": "dir"
+          },
+          "/base/go": {
+            "type": "link",
+            "target": "/other/place"
+          }
+        },
+        "go/item",
+        "/base"
+      ],
+      "value": "/other/place/item"
+    },
+    {
+      "id": "relative_dotdot_simple",
+      "args": [
+        {
+          "/a": {
+            "type": "dir"
+          },
+          "/a/b": {
+            "type": "dir"
+          },
+          "/a/b/link": {
+            "type": "link",
+            "target": "../c"
+          }
+        },
+        "/a/b/link/file",
+        "/"
+      ],
+      "value": "/a/c/file"
+    },
+    {
+      "id": "relative_dotdot_twice",
+      "args": [
+        {
+          "/a": {
+            "type": "dir"
+          },
+          "/a/b": {
+            "type": "dir"
+          },
+          "/a/b/up": {
+            "type": "link",
+            "target": "../.."
+          }
+        },
+        "/a/b/up/x",
+        "/"
+      ],
+      "value": "/x"
+    },
+    {
+      "id": "relative_dotdot_middle",
+      "args": [
+        {
+          "/d": {
+            "type": "dir"
+          },
+          "/d/l": {
+            "type": "link",
+            "target": "sub/../other"
+          }
+        },
+        "/d/l/f",
+        "/"
+      ],
+      "value": "/d/other/f"
+    }
+  ]
+}

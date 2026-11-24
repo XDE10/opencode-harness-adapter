@@ -1,0 +1,196 @@
+{
+  "function": "route_request",
+  "cases": [
+    {
+      "id": "basic_literal",
+      "args": [
+        [
+          {
+            "name": "health",
+            "template": "/health"
+          }
+        ],
+        "/health"
+      ],
+      "value": {
+        "name": "health",
+        "params": {}
+      }
+    },
+    {
+      "id": "basic_param",
+      "args": [
+        [
+          {
+            "name": "user",
+            "template": "/users/:id"
+          }
+        ],
+        "/users/42"
+      ],
+      "value": {
+        "name": "user",
+        "params": {
+          "id": "42"
+        }
+      }
+    },
+    {
+      "id": "basic_wildcard_nonempty",
+      "args": [
+        [
+          {
+            "name": "files",
+            "template": "/files/*"
+          }
+        ],
+        "/files/a/b"
+      ],
+      "value": {
+        "name": "files",
+        "params": {
+          "wildcard": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    },
+    {
+      "id": "error_bad_wildcard",
+      "args": [
+        [
+          {
+            "name": "bad",
+            "template": "/a/*/b"
+          }
+        ],
+        "/a/x/b"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "static_beats_param",
+      "args": [
+        [
+          {
+            "name": "param_user",
+            "template": "/users/:id"
+          },
+          {
+            "name": "new_user",
+            "template": "/users/new"
+          }
+        ],
+        "/users/new"
+      ],
+      "value": {
+        "name": "new_user",
+        "params": {}
+      }
+    },
+    {
+      "id": "param_beats_wildcard",
+      "args": [
+        [
+          {
+            "name": "docs_any",
+            "template": "/docs/*"
+          },
+          {
+            "name": "doc",
+            "template": "/docs/:slug"
+          }
+        ],
+        "/docs/intro"
+      ],
+      "value": {
+        "name": "doc",
+        "params": {
+          "slug": "intro"
+        }
+      }
+    },
+    {
+      "id": "longer_literal_beats_short_param",
+      "args": [
+        [
+          {
+            "name": "param_api",
+            "template": "/api/:version/status"
+          },
+          {
+            "name": "v1_status",
+            "template": "/api/v1/status"
+          }
+        ],
+        "/api/v1/status"
+      ],
+      "value": {
+        "name": "v1_status",
+        "params": {}
+      }
+    },
+    {
+      "id": "extra_literal_beats_wildcard",
+      "args": [
+        [
+          {
+            "name": "assets_any",
+            "template": "/assets/*"
+          },
+          {
+            "name": "images",
+            "template": "/assets/img/*"
+          }
+        ],
+        "/assets/img/logo.png"
+      ],
+      "value": {
+        "name": "images",
+        "params": {
+          "wildcard": [
+            "logo.png"
+          ]
+        }
+      }
+    },
+    {
+      "id": "wildcard_zero_files",
+      "args": [
+        [
+          {
+            "name": "files",
+            "template": "/files/*"
+          }
+        ],
+        "/files"
+      ],
+      "value": {
+        "name": "files",
+        "params": {
+          "wildcard": []
+        }
+      }
+    },
+    {
+      "id": "wildcard_zero_param_prefix",
+      "args": [
+        [
+          {
+            "name": "download",
+            "template": "/u/:uid/*"
+          }
+        ],
+        "/u/7"
+      ],
+      "value": {
+        "name": "download",
+        "params": {
+          "uid": "7",
+          "wildcard": []
+        }
+      }
+    }
+  ]
+}

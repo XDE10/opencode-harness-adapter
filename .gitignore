@@ -20,6 +20,8 @@ __pycache__/
 .ssh/
 credentials*.json
 secrets*.json
+*keys*.txt
+*openapi*.txt
 *.key
 *.pem
 *.p12

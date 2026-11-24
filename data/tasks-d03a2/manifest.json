@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d03a2-recurring-billing-schedule",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 97,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    }
+  ]
+}

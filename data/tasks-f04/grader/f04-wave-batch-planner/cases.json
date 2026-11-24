@@ -1,0 +1,50 @@
+{
+  "function": "plan_waves",
+  "cases": [
+    {
+      "id": "basic_unlimited",
+      "args": [["b", "a", "c"], [["a", "b"], ["a", "c"]], null],
+      "value": [["a"], ["b", "c"]]
+    },
+    {
+      "id": "empty_graph",
+      "args": [[], [], 2],
+      "value": []
+    },
+    {
+      "id": "negative_limit_raises",
+      "args": [["a"], [], -1],
+      "raises": "ValueError"
+    },
+    {
+      "id": "unknown_node_raises",
+      "args": [["a"], [["a", "missing"]], 1],
+      "raises": "KeyError"
+    },
+    {
+      "id": "cycle_raises",
+      "args": [["a", "b", "c"], [["a", "b"], ["b", "a"]], 2],
+      "raises": "ValueError"
+    },
+    {
+      "id": "batch_limit_lex_slice",
+      "args": [["c", "a", "b"], [], 2],
+      "value": [["a", "b"], ["c"]]
+    },
+    {
+      "id": "wave_isolation_with_limit",
+      "args": [["d", "a", "c", "b"], [["d", "a"]], 2],
+      "value": [["b", "c"], ["d"], ["a"]]
+    },
+    {
+      "id": "zero_limit_raises",
+      "args": [["a", "b"], [], 0],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_edges",
+      "args": [["b", "a"], [["a", "b"], ["a", "b"]], 1],
+      "value": [["a"], ["b"]]
+    }
+  ]
+}

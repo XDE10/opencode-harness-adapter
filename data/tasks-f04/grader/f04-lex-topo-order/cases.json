@@ -1,0 +1,50 @@
+{
+  "function": "topo_order",
+  "cases": [
+    {
+      "id": "basic_chain",
+      "args": [["c", "a", "b"], [["a", "b"], ["b", "c"]]],
+      "value": ["a", "b", "c"]
+    },
+    {
+      "id": "empty_graph",
+      "args": [[], []],
+      "value": []
+    },
+    {
+      "id": "disconnected_lex",
+      "args": [["z", "m", "a"], []],
+      "value": ["a", "m", "z"]
+    },
+    {
+      "id": "heap_beats_fifo",
+      "args": [["a", "b", "c"], [["a", "b"]]],
+      "value": ["a", "b", "c"]
+    },
+    {
+      "id": "reverse_tie_break",
+      "args": [["a", "b", "c", "d"], [["d", "b"]], true],
+      "value": ["d", "c", "b", "a"]
+    },
+    {
+      "id": "duplicate_edges",
+      "args": [["a", "b", "c"], [["a", "b"], ["a", "b"], ["b", "c"]]],
+      "value": ["a", "b", "c"]
+    },
+    {
+      "id": "cycle_raises",
+      "args": [["a", "b", "c"], [["a", "b"], ["b", "c"], ["c", "b"]]],
+      "raises": "ValueError"
+    },
+    {
+      "id": "self_loop_raises",
+      "args": [["a", "b"], [["a", "a"]]],
+      "raises": "ValueError"
+    },
+    {
+      "id": "unknown_endpoint",
+      "args": [["a"], [["a", "z"]]],
+      "raises": "KeyError"
+    }
+  ]
+}

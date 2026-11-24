@@ -1,0 +1,332 @@
+{
+  "function": "run_bookings",
+  "cases": [
+    {
+      "id": "basic_disjoint",
+      "args": [
+        2,
+        [
+          {
+            "op": "book",
+            "id": "a",
+            "start": 10,
+            "end": 20,
+            "room": null
+          },
+          {
+            "op": "book",
+            "id": "b",
+            "start": 30,
+            "end": 40,
+            "room": null
+          },
+          {
+            "op": "free_slots",
+            "room": 0,
+            "start": 0,
+            "end": 50
+          }
+        ]
+      ],
+      "value": [
+        0,
+        0,
+        [
+          [
+            0,
+            10
+          ],
+          [
+            20,
+            30
+          ],
+          [
+            40,
+            50
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "cancel_and_rebook",
+      "args": [
+        1,
+        [
+          {
+            "op": "book",
+            "id": "a",
+            "start": 10,
+            "end": 25,
+            "room": null
+          },
+          {
+            "op": "book",
+            "id": "b",
+            "start": 15,
+            "end": 20,
+            "room": null
+          },
+          {
+            "op": "cancel",
+            "id": "a"
+          },
+          {
+            "op": "cancel",
+            "id": "a"
+          },
+          {
+            "op": "book",
+            "id": "a",
+            "start": 15,
+            "end": 20,
+            "room": null
+          }
+        ]
+      ],
+      "value": [
+        0,
+        -1,
+        true,
+        false,
+        0
+      ]
+    },
+    {
+      "id": "invalid_num_rooms",
+      "args": [
+        0,
+        []
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_active_id",
+      "args": [
+        2,
+        [
+          {
+            "op": "book",
+            "id": "x",
+            "start": 0,
+            "end": 10
+          },
+          {
+            "op": "book",
+            "id": "x",
+            "start": 20,
+            "end": 30
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "touching_endpoints_booking",
+      "args": [
+        1,
+        [
+          {
+            "op": "book",
+            "id": "b1",
+            "start": 10,
+            "end": 20,
+            "room": null
+          },
+          {
+            "op": "book",
+            "id": "b2",
+            "start": 20,
+            "end": 30,
+            "room": null
+          },
+          {
+            "op": "book",
+            "id": "b3",
+            "start": 0,
+            "end": 10,
+            "room": null
+          },
+          {
+            "op": "free_slots",
+            "room": 0,
+            "start": 0,
+            "end": 35
+          }
+        ]
+      ],
+      "value": [
+        0,
+        0,
+        0,
+        [
+          [
+            30,
+            35
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "touching_blackout_no_evict",
+      "args": [
+        1,
+        [
+          {
+            "op": "book",
+            "id": "b1",
+            "start": 10,
+            "end": 20
+          },
+          {
+            "op": "book",
+            "id": "b2",
+            "start": 30,
+            "end": 40
+          },
+          {
+            "op": "blackout",
+            "room": 0,
+            "start": 20,
+            "end": 30
+          },
+          {
+            "op": "free_slots",
+            "room": 0,
+            "start": 0,
+            "end": 50
+          }
+        ]
+      ],
+      "value": [
+        0,
+        0,
+        [],
+        [
+          [
+            0,
+            10
+          ],
+          [
+            40,
+            50
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "blackout_evicts_and_allows_id_reuse",
+      "args": [
+        2,
+        [
+          {
+            "op": "book",
+            "id": "m2",
+            "start": 10,
+            "end": 18,
+            "room": 1
+          },
+          {
+            "op": "book",
+            "id": "m1",
+            "start": 18,
+            "end": 28,
+            "room": 1
+          },
+          {
+            "op": "blackout",
+            "room": 1,
+            "start": 15,
+            "end": 20
+          },
+          {
+            "op": "book",
+            "id": "m2",
+            "start": 20,
+            "end": 30,
+            "room": 1
+          }
+        ]
+      ],
+      "value": [
+        1,
+        1,
+        [
+          "m1",
+          "m2"
+        ],
+        1
+      ]
+    },
+    {
+      "id": "explicit_room_zero_stays_in_zero",
+      "args": [
+        2,
+        [
+          {
+            "op": "book",
+            "id": "a",
+            "start": 10,
+            "end": 20,
+            "room": 0
+          },
+          {
+            "op": "book",
+            "id": "b",
+            "start": 12,
+            "end": 18,
+            "room": 0
+          },
+          {
+            "op": "free_slots",
+            "room": 1,
+            "start": 0,
+            "end": 30
+          }
+        ]
+      ],
+      "value": [
+        0,
+        -1,
+        [
+          [
+            0,
+            30
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "blackout_on_room_zero_blocks_explicit_room_zero",
+      "args": [
+        3,
+        [
+          {
+            "op": "blackout",
+            "room": 0,
+            "start": 0,
+            "end": 50
+          },
+          {
+            "op": "book",
+            "id": "only_r0",
+            "start": 10,
+            "end": 20,
+            "room": 0
+          },
+          {
+            "op": "book",
+            "id": "any_room",
+            "start": 10,
+            "end": 20,
+            "room": null
+          }
+        ]
+      ],
+      "value": [
+        [],
+        -1,
+        1
+      ]
+    }
+  ]
+}

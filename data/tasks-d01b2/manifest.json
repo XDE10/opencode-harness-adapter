@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d01b2-ini-inherit",
+      "split": "train",
+      "domain": "config_tabular",
+      "lines": 145,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

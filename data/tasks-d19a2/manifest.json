@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d19a2-poker-five-card-comparator",
+      "split": "train",
+      "domain": "game_index",
+      "lines": 80,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

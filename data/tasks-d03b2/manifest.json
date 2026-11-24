@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "d03b2-recurring-blackout-slots",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 94,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "d03b2-room-turnaround",
+      "split": "heldout",
+      "domain": "calendar_interval",
+      "lines": 62,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

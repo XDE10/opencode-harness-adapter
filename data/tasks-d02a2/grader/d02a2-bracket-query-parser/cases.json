@@ -1,0 +1,107 @@
+{
+  "function": "parse_query_string",
+  "cases": [
+    {
+      "id": "basic_nested_dict_and_list",
+      "args": [
+        "?user[name]=ada+lovelace&user[role]=admin&tags[]=math&tags[]=code"
+      ],
+      "value": {
+        "user": {
+          "name": "ada lovelace",
+          "role": "admin"
+        },
+        "tags": [
+          "math",
+          "code"
+        ]
+      }
+    },
+    {
+      "id": "encoded_delimiters_and_scalar_overwrite",
+      "args": [
+        "&&a%5Bb%5D=1%262&a[b]=3=4&flag&"
+      ],
+      "value": {
+        "a": {
+          "b": "3=4"
+        },
+        "flag": ""
+      }
+    },
+    {
+      "id": "list_of_dicts_packing",
+      "args": [
+        "users[][id]=1&users[][role]=admin&users[][id]=2&users[][role]=guest"
+      ],
+      "value": {
+        "users": [
+          {
+            "id": "1",
+            "role": "admin"
+          },
+          {
+            "id": "2",
+            "role": "guest"
+          }
+        ]
+      }
+    },
+    {
+      "id": "list_of_nested_dicts_packing",
+      "args": [
+        "items[][meta][k]=a&items[][meta][v]=1&items[][meta][k]=b"
+      ],
+      "value": {
+        "items": [
+          {
+            "meta": {
+              "k": "a",
+              "v": "1"
+            }
+          },
+          {
+            "meta": {
+              "k": "b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "error_scalar_overwrites_dict",
+      "args": [
+        "user[name]=ada&user=bob"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_scalar_overwrites_list",
+      "args": [
+        "tags[]=a&tags=b"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_dict_overwrites_scalar",
+      "args": [
+        "user=bob&user[name]=ada"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_invalid_brackets",
+      "args": [
+        "a[][]=1"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_bad_percent_encoding",
+      "args": [
+        "key=100%2"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

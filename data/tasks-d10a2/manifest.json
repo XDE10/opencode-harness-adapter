@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d10a2-inventory-reservation-expiry",
+      "split": "train",
+      "domain": "backend_codec",
+      "lines": 66,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

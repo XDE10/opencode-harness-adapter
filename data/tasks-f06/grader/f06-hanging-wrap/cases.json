@@ -1,0 +1,94 @@
+{
+  "function": "wrap_hanging",
+  "cases": [
+    {
+      "id": "basic_hanging_indent",
+      "args": [
+        "alpha beta gamma",
+        10,
+        0,
+        2
+      ],
+      "value": "alpha beta\n  gamma"
+    },
+    {
+      "id": "whitespace_only_returns_empty",
+      "args": [
+        "   \n\n  "
+      ],
+      "value": ""
+    },
+    {
+      "id": "multi_paragraph_crlf",
+      "args": [
+        "\nfirst para words\r\n\r\nsecond para\n",
+        12,
+        1,
+        3
+      ],
+      "value": " first para\n   words\n\n second para"
+    },
+    {
+      "id": "exact_fit_on_boundary",
+      "args": [
+        "aa bbb cc",
+        6,
+        0,
+        2
+      ],
+      "value": "aa bbb\n  cc"
+    },
+    {
+      "id": "zero_hanging_indent",
+      "args": [
+        "one two three",
+        8,
+        2,
+        0
+      ],
+      "value": "  one\ntwo\nthree"
+    },
+    {
+      "id": "continuation_uses_hanging_width",
+      "args": [
+        "aa bbb cc dd",
+        8,
+        0,
+        4
+      ],
+      "value": "aa bbb\n    cc\n    dd"
+    },
+    {
+      "id": "break_long_words_varying_widths",
+      "args": [
+        "abcdefghij",
+        6,
+        1,
+        3,
+        true
+      ],
+      "value": " abcde\n   fgh\n   ij"
+    },
+    {
+      "id": "intact_long_word_no_break",
+      "args": [
+        "hi superlongword ok",
+        8,
+        0,
+        2,
+        false
+      ],
+      "value": "hi\n  superlongword\n  ok"
+    },
+    {
+      "id": "width_not_greater_than_hanging_raises",
+      "args": [
+        "hello",
+        4,
+        0,
+        4
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

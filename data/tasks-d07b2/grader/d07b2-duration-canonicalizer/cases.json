@@ -1,0 +1,75 @@
+{
+  "function": "canonical_duration",
+  "cases": [
+    {
+      "id": "basic_seconds",
+      "args": [
+        "90s"
+      ],
+      "value": "1m 30s"
+    },
+    {
+      "id": "basic_zero",
+      "args": [
+        "0h 0m 0s"
+      ],
+      "value": "0s"
+    },
+    {
+      "id": "basic_day_hours",
+      "args": [
+        "1d 12h"
+      ],
+      "value": "1d 12h"
+    },
+    {
+      "id": "basic_hours_minutes",
+      "args": [
+        "3h 20m"
+      ],
+      "value": "3h 20m"
+    },
+    {
+      "id": "dup_minutes",
+      "args": [
+        "1m 2m"
+      ],
+      "value": "3m"
+    },
+    {
+      "id": "dup_seconds",
+      "args": [
+        "1s 2s 3s"
+      ],
+      "value": "6s"
+    },
+    {
+      "id": "dup_mixed",
+      "args": [
+        "1h 30m 30m"
+      ],
+      "value": "2h"
+    },
+    {
+      "id": "pad_hours",
+      "args": [
+        "2d 3h 4m"
+      ],
+      "value": "2d 3h 04m"
+    },
+    {
+      "id": "pad_full",
+      "args": [
+        "1w 2d 3h 4m 5s"
+      ],
+      "value": "1w 2d 3h 04m 05s"
+    },
+    {
+      "id": "invalid_double_space",
+      "args": [
+        "1h  2m"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

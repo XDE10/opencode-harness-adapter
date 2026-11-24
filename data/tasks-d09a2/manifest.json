@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d09a2-lcs-diff-hunks",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 58,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

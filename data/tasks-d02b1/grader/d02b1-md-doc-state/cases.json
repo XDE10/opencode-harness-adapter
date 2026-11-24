@@ -1,0 +1,365 @@
+{
+  "function": "run_markdown_session",
+  "cases": [
+    {
+      "id": "basic_headings_and_footnotes",
+      "args": [
+        [
+          {
+            "op": "heading",
+            "level": 1,
+            "text": "Intro!"
+          },
+          {
+            "op": "heading",
+            "level": 2,
+            "text": "Intro?"
+          },
+          {
+            "op": "footnote_def",
+            "label": "A",
+            "text": "First note"
+          },
+          {
+            "op": "render_line",
+            "line": "See [^a] and `[^a]`."
+          },
+          {
+            "op": "export"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "level": 1,
+          "slug": "intro"
+        },
+        {
+          "level": 2,
+          "slug": "intro-1"
+        },
+        null,
+        "See [1] and `[^a]`.",
+        {
+          "toc": [
+            {
+              "level": 1,
+              "slug": "intro"
+            },
+            {
+              "level": 2,
+              "slug": "intro-1"
+            }
+          ],
+          "footnotes": [
+            [
+              1,
+              "First note"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "empty_heading_fallback",
+      "args": [
+        [
+          {
+            "op": "heading",
+            "level": 3,
+            "text": "!!! --- ???"
+          },
+          {
+            "op": "heading",
+            "level": 3,
+            "text": "`...`"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "level": 3,
+          "slug": "section"
+        },
+        {
+          "level": 3,
+          "slug": "section-1"
+        }
+      ]
+    },
+    {
+      "id": "unreferenced_and_updated_footnotes",
+      "args": [
+        [
+          {
+            "op": "footnote_def",
+            "label": "b",
+            "text": "Unused"
+          },
+          {
+            "op": "footnote_def",
+            "label": "a",
+            "text": "Old text"
+          },
+          {
+            "op": "render_line",
+            "line": "Ref [^A]"
+          },
+          {
+            "op": "footnote_def",
+            "label": "A",
+            "text": "New text"
+          },
+          {
+            "op": "export"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        "Ref [1]",
+        null,
+        {
+          "toc": [],
+          "footnotes": [
+            [
+              1,
+              "New text"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unclosed_backtick_renders_footnote",
+      "args": [
+        [
+          {
+            "op": "footnote_def",
+            "label": "x",
+            "text": "Note X"
+          },
+          {
+            "op": "render_line",
+            "line": "Unclosed ` backtick [^x] works"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        "Unclosed ` backtick [1] works"
+      ]
+    },
+    {
+      "id": "invalid_heading_level_raises",
+      "args": [
+        [
+          {
+            "op": "heading",
+            "level": 7,
+            "text": "Bad"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "missing_footnote_raises_keyerror",
+      "args": [
+        [
+          {
+            "op": "render_line",
+            "line": "Missing [^missing]"
+          }
+        ]
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "reset_clears_footnote_numbering",
+      "args": [
+        [
+          {
+            "op": "footnote_def",
+            "label": "n1",
+            "text": "Old 1"
+          },
+          {
+            "op": "render_line",
+            "line": "Use [^n1]"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "footnote_def",
+            "label": "n2",
+            "text": "New 1"
+          },
+          {
+            "op": "render_line",
+            "line": "Use [^n2]"
+          },
+          {
+            "op": "export"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        "Use [1]",
+        null,
+        null,
+        "Use [1]",
+        {
+          "toc": [],
+          "footnotes": [
+            [
+              1,
+              "New 1"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_revokes_previous_referenced_label",
+      "args": [
+        [
+          {
+            "op": "footnote_def",
+            "label": "a",
+            "text": "Alpha"
+          },
+          {
+            "op": "render_line",
+            "line": "[^a]"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "footnote_def",
+            "label": "a",
+            "text": "Alpha 2"
+          },
+          {
+            "op": "footnote_def",
+            "label": "b",
+            "text": "Beta"
+          },
+          {
+            "op": "render_line",
+            "line": "[^b] then [^a]"
+          },
+          {
+            "op": "export"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        "[1]",
+        null,
+        null,
+        null,
+        "[1] then [2]",
+        {
+          "toc": [],
+          "footnotes": [
+            [
+              1,
+              "Beta"
+            ],
+            [
+              2,
+              "Alpha 2"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "slug_collision_with_explicit_numbered_heading",
+      "args": [
+        [
+          {
+            "op": "heading",
+            "level": 1,
+            "text": "Part 1"
+          },
+          {
+            "op": "heading",
+            "level": 1,
+            "text": "Part"
+          },
+          {
+            "op": "heading",
+            "level": 1,
+            "text": "Part"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "level": 1,
+          "slug": "part-1"
+        },
+        {
+          "level": 1,
+          "slug": "part"
+        },
+        {
+          "level": 1,
+          "slug": "part-2"
+        }
+      ]
+    },
+    {
+      "id": "slug_collision_explicit_after_auto",
+      "args": [
+        [
+          {
+            "op": "heading",
+            "level": 2,
+            "text": "API"
+          },
+          {
+            "op": "heading",
+            "level": 2,
+            "text": "API"
+          },
+          {
+            "op": "heading",
+            "level": 2,
+            "text": "API 1"
+          },
+          {
+            "op": "heading",
+            "level": 2,
+            "text": "API"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "level": 2,
+          "slug": "api"
+        },
+        {
+          "level": 2,
+          "slug": "api-1"
+        },
+        {
+          "level": 2,
+          "slug": "api-1-1"
+        },
+        {
+          "level": 2,
+          "slug": "api-2"
+        }
+      ]
+    }
+  ]
+}

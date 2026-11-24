@@ -1,0 +1,370 @@
+{
+  "function": "run_patch",
+  "cases": [
+    {
+      "id": "basic_replace",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-b",
+              "+B"
+            ]
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        [
+          "a",
+          "B",
+          "c"
+        ]
+      ]
+    },
+    {
+      "id": "basic_insert_explicit",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "x",
+              "y"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "+m"
+            ],
+            "start": 1
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        [
+          "x",
+          "m",
+          "y"
+        ]
+      ]
+    },
+    {
+      "id": "basic_delete_explicit",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "p",
+              "q",
+              "r"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-q"
+            ],
+            "start": 1
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        [
+          "p",
+          "r"
+        ]
+      ]
+    },
+    {
+      "id": "basic_no_match",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "a",
+              "b"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-z"
+            ]
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        false,
+        [
+          "a",
+          "b"
+        ]
+      ]
+    },
+    {
+      "id": "cursor_after_grow",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-b",
+              "+B1",
+              "+B2"
+            ]
+          },
+          {
+            "op": "cursor"
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        3,
+        [
+          "a",
+          "B1",
+          "B2",
+          "c"
+        ]
+      ]
+    },
+    {
+      "id": "cursor_after_shrink",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-b",
+              "-c",
+              "+X"
+            ]
+          },
+          {
+            "op": "cursor"
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        true,
+        2,
+        [
+          "a",
+          "X",
+          "d"
+        ]
+      ]
+    },
+    {
+      "id": "failed_apply_keeps_cursor",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ]
+          },
+          {
+            "op": "seek",
+            "index": 3
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-x"
+            ],
+            "start": 0
+          },
+          {
+            "op": "cursor"
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        false,
+        3,
+        [
+          "a",
+          "b",
+          "c",
+          "d"
+        ]
+      ]
+    },
+    {
+      "id": "context_after_mismatch",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "x",
+              "b",
+              "a"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-x",
+              " a",
+              "+X"
+            ],
+            "start": 0
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        false,
+        [
+          "x",
+          "b",
+          "a"
+        ]
+      ]
+    },
+    {
+      "id": "context_before_mismatch",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "b",
+              "x",
+              "c"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-b",
+              " c",
+              "+B"
+            ],
+            "start": 0
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        false,
+        [
+          "b",
+          "x",
+          "c"
+        ]
+      ]
+    },
+    {
+      "id": "context_search_wrong_match",
+      "args": [
+        [
+          {
+            "op": "load",
+            "lines": [
+              "z",
+              "b",
+              "q",
+              "a"
+            ]
+          },
+          {
+            "op": "apply",
+            "hunk": [
+              "-b",
+              " a",
+              "+B"
+            ]
+          },
+          {
+            "op": "get"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        false,
+        [
+          "z",
+          "b",
+          "q",
+          "a"
+        ]
+      ]
+    }
+  ]
+}

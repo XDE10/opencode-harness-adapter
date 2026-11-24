@@ -1,0 +1,126 @@
+{
+  "function": "expand_cron_field",
+  "cases": [
+    {
+      "id": "basic_single",
+      "args": [
+        "4",
+        1,
+        10
+      ],
+      "value": [
+        4
+      ]
+    },
+    {
+      "id": "basic_range",
+      "args": [
+        "2-6",
+        1,
+        10
+      ],
+      "value": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "step_no_endpoint",
+      "args": [
+        "1-9/3",
+        1,
+        10
+      ],
+      "value": [
+        1,
+        4,
+        7
+      ]
+    },
+    {
+      "id": "dedup_sort",
+      "args": [
+        "7,2-4,3,9-9",
+        1,
+        10
+      ],
+      "value": [
+        2,
+        3,
+        4,
+        7,
+        9
+      ]
+    },
+    {
+      "id": "range_step_endpoint",
+      "args": [
+        "2-8/3",
+        1,
+        10
+      ],
+      "value": [
+        2,
+        5,
+        8
+      ]
+    },
+    {
+      "id": "star_step_endpoint",
+      "args": [
+        "*/15",
+        0,
+        45
+      ],
+      "value": [
+        0,
+        15,
+        30,
+        45
+      ]
+    },
+    {
+      "id": "from_step_endpoint",
+      "args": [
+        "4/3",
+        4,
+        10
+      ],
+      "value": [
+        4,
+        7,
+        10
+      ]
+    },
+    {
+      "id": "descending_range",
+      "args": [
+        "5-3",
+        1,
+        10
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "descending_step",
+      "args": [
+        "8-2/2",
+        1,
+        10
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_step",
+      "args": [
+        "1-10/0",
+        1,
+        10
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

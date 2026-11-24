@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d13a2-price-time-book",
+      "split": "train",
+      "domain": "auction_ast",
+      "lines": 82,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

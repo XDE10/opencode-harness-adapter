@@ -1,0 +1,552 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_allow",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "viewer"
+            ],
+            "actions": [
+              "read"
+            ],
+            "resources": [
+              "/docs/*"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "u",
+            "roles": [
+              "viewer"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "read",
+            "resource": "/docs/a"
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "write",
+            "resource": "/docs/a"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "basic_role_reset",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "editor"
+            ],
+            "actions": [
+              "write"
+            ],
+            "resources": [
+              "/repo/*"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "u",
+            "roles": [
+              "editor"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "write",
+            "resource": "/repo/main"
+          },
+          {
+            "op": "set_roles",
+            "user": "u",
+            "roles": []
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "write",
+            "resource": "/repo/main"
+          },
+          {
+            "op": "add_role",
+            "user": "u",
+            "role": "editor"
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "write",
+            "resource": "/repo/main"
+          },
+          {
+            "op": "remove_role",
+            "user": "u",
+            "role": "editor"
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "write",
+            "resource": "/repo/main"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        true,
+        null,
+        false,
+        null,
+        true,
+        null,
+        false
+      ]
+    },
+    {
+      "id": "basic_disable_remove",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "ops"
+            ],
+            "actions": [
+              "restart"
+            ],
+            "resources": [
+              "/svc/*"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "u",
+            "roles": [
+              "ops"
+            ]
+          },
+          {
+            "op": "set_enabled",
+            "id": "p1",
+            "enabled": false
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "restart",
+            "resource": "/svc/api"
+          },
+          {
+            "op": "set_enabled",
+            "id": "p1",
+            "enabled": true
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "restart",
+            "resource": "/svc/api"
+          },
+          {
+            "op": "remove_policy",
+            "id": "p1"
+          },
+          {
+            "op": "check",
+            "user": "u",
+            "action": "restart",
+            "resource": "/svc/api"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        false,
+        null,
+        true,
+        null,
+        false
+      ]
+    },
+    {
+      "id": "deny_after_allow",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "allow",
+            "effect": "allow",
+            "roles": [
+              "member"
+            ],
+            "actions": [
+              "read"
+            ],
+            "resources": [
+              "/report"
+            ]
+          },
+          {
+            "op": "add_policy",
+            "id": "deny",
+            "effect": "deny",
+            "roles": [
+              "member"
+            ],
+            "actions": [
+              "read"
+            ],
+            "resources": [
+              "/report"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "alice",
+            "roles": [
+              "member"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "alice",
+            "action": "read",
+            "resource": "/report"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        false
+      ]
+    },
+    {
+      "id": "deny_after_allow_glob",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "allow",
+            "effect": "allow",
+            "roles": [
+              "staff"
+            ],
+            "actions": [
+              "read:*"
+            ],
+            "resources": [
+              "/files/*"
+            ]
+          },
+          {
+            "op": "add_policy",
+            "id": "deny",
+            "effect": "deny",
+            "roles": [
+              "staff"
+            ],
+            "actions": [
+              "read:*"
+            ],
+            "resources": [
+              "/files/secret"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "bob",
+            "roles": [
+              "staff"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "bob",
+            "action": "read:one",
+            "resource": "/files/secret"
+          },
+          {
+            "op": "check",
+            "user": "bob",
+            "action": "read:one",
+            "resource": "/files/public"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "deny_toggle_state",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "allow",
+            "effect": "allow",
+            "roles": [
+              "team"
+            ],
+            "actions": [
+              "deploy"
+            ],
+            "resources": [
+              "/svc/*"
+            ]
+          },
+          {
+            "op": "add_policy",
+            "id": "deny",
+            "effect": "deny",
+            "roles": [
+              "team"
+            ],
+            "actions": [
+              "deploy"
+            ],
+            "resources": [
+              "/svc/*"
+            ]
+          },
+          {
+            "op": "set_enabled",
+            "id": "deny",
+            "enabled": false
+          },
+          {
+            "op": "set_roles",
+            "user": "carol",
+            "roles": [
+              "team"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "carol",
+            "action": "deploy",
+            "resource": "/svc/api"
+          },
+          {
+            "op": "set_enabled",
+            "id": "deny",
+            "enabled": true
+          },
+          {
+            "op": "check",
+            "user": "carol",
+            "action": "deploy",
+            "resource": "/svc/api"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        true,
+        null,
+        false
+      ]
+    },
+    {
+      "id": "glob_resource_boundary",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "reader"
+            ],
+            "actions": [
+              "read"
+            ],
+            "resources": [
+              "/docs/*"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "dana",
+            "roles": [
+              "reader"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "dana",
+            "action": "read",
+            "resource": "/docs/a"
+          },
+          {
+            "op": "check",
+            "user": "dana",
+            "action": "read",
+            "resource": "/docs/a/b"
+          },
+          {
+            "op": "check",
+            "user": "dana",
+            "action": "read",
+            "resource": "/docs/"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "glob_action_boundary",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "runner"
+            ],
+            "actions": [
+              "job:*"
+            ],
+            "resources": [
+              "/run"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "erin",
+            "roles": [
+              "runner"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "erin",
+            "action": "job:nightly",
+            "resource": "/run"
+          },
+          {
+            "op": "check",
+            "user": "erin",
+            "action": "job:nightly/build",
+            "resource": "/run"
+          },
+          {
+            "op": "check",
+            "user": "erin",
+            "action": "job:",
+            "resource": "/run"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "id": "glob_question_boundary",
+      "args": [
+        [
+          {
+            "op": "add_policy",
+            "id": "p1",
+            "effect": "allow",
+            "roles": [
+              "q"
+            ],
+            "actions": [
+              "view"
+            ],
+            "resources": [
+              "/a/?/c"
+            ]
+          },
+          {
+            "op": "set_roles",
+            "user": "frank",
+            "roles": [
+              "q"
+            ]
+          },
+          {
+            "op": "check",
+            "user": "frank",
+            "action": "view",
+            "resource": "/a/x/c"
+          },
+          {
+            "op": "check",
+            "user": "frank",
+            "action": "view",
+            "resource": "/a///c"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        true,
+        false
+      ]
+    },
+    {
+      "id": "missing_policy_error",
+      "args": [
+        [
+          {
+            "op": "set_enabled",
+            "id": "nope",
+            "enabled": true
+          }
+        ]
+      ],
+      "raises": "KeyError"
+    }
+  ]
+}
