@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import shutil
 
 
 def pi_models_config(base_url: str, cfg: dict) -> dict:
@@ -48,9 +49,16 @@ class PiHarness:
             json.dumps(pi_models_config(base_url, cfg), indent=2) + "\n", encoding="utf-8"
         )
         tools = cfg.get("pi", {}).get("tools", "read,write,edit,bash")
+        path_parts = [str(Path(binary).parent)]
+        node_bin = shutil.which("node")
+        if node_bin:
+            node_dir = str(Path(node_bin).parent)
+            if node_dir not in path_parts:
+                path_parts.append(node_dir)
+        path_parts.extend(["/usr/local/bin", "/usr/bin", "/bin"])
         env = {
             "HOME": str(home),
-            "PATH": f"{Path(binary).parent}:/usr/local/bin:/usr/bin:/bin",
+            "PATH": ":".join(path_parts),
             "NO_COLOR": "1",
             "LANG": "C.UTF-8",
         }

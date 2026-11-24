@@ -119,9 +119,12 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
         if os.name != "nt":
             try:
                 import resource
-                resource.setrlimit(resource.RLIMIT_AS, (4 << 30, 4 << 30))
-                resource.setrlimit(resource.RLIMIT_FSIZE, (16 << 20, 16 << 20))
-                resource.setrlimit(resource.RLIMIT_NPROC, (128, 128))
+                # NOTE: Do NOT cap RLIMIT_AS or per-UID RLIMIT_NPROC tightly here:
+                # Node.js/Bun (OpenCode/Pi) mmap >4 GiB virtual address space and spawn
+                # ~10 threads per worker, so 32 concurrent `agent` trials share one UID.
+                # Isolation is enforced by `agent` UID + 0700 hidden graders + timeout killpg
+                # + strict per-worker rlimits inside `oca/grade.py`.
+                resource.setrlimit(resource.RLIMIT_FSIZE, (32 << 20, 32 << 20))
             except (ValueError, OSError):
                 pass
         if ids:
