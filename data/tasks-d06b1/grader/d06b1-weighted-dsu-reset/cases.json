@@ -1,0 +1,367 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_positive",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 3
+          },
+          {
+            "op": "diff",
+            "x": "a",
+            "y": "b"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 3
+        }
+      ]
+    },
+    {
+      "id": "basic_negative",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "x",
+            "y": "y",
+            "d": -4
+          },
+          {
+            "op": "diff",
+            "x": "y",
+            "y": "x"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 4
+        }
+      ]
+    },
+    {
+      "id": "unknown_components",
+      "args": [
+        [
+          {
+            "op": "diff",
+            "x": "solo",
+            "y": "solo"
+          },
+          {
+            "op": "diff",
+            "x": "p",
+            "y": "q"
+          },
+          {
+            "op": "components"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "connected": true,
+          "diff": 0
+        },
+        {
+          "connected": false,
+          "diff": null
+        },
+        [
+          [
+            "p"
+          ],
+          [
+            "q"
+          ],
+          [
+            "solo"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "reset_then_diff",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 1
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "diff",
+            "x": "a",
+            "y": "b"
+          },
+          {
+            "op": "components"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "connected": false,
+          "diff": null
+        },
+        [
+          [
+            "a"
+          ],
+          [
+            "b"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "multi_level_forward",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 1
+          },
+          {
+            "op": "add",
+            "x": "c",
+            "y": "d",
+            "d": 0
+          },
+          {
+            "op": "add",
+            "x": "a",
+            "y": "c",
+            "d": 5
+          },
+          {
+            "op": "diff",
+            "x": "a",
+            "y": "d"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 5
+        }
+      ]
+    },
+    {
+      "id": "multi_level_reverse",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 2
+          },
+          {
+            "op": "add",
+            "x": "c",
+            "y": "d",
+            "d": 1
+          },
+          {
+            "op": "add",
+            "x": "a",
+            "y": "c",
+            "d": -3
+          },
+          {
+            "op": "diff",
+            "x": "d",
+            "y": "b"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 4
+        }
+      ]
+    },
+    {
+      "id": "redundant_consistent",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 3
+          },
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 3
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "false_accept_inconsistent",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 3
+          },
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": -3
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "id": "reset_components_leak",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 1
+          },
+          {
+            "op": "diff",
+            "x": "c",
+            "y": "c"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "components"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 0
+        },
+        {
+          "ok": true
+        },
+        []
+      ]
+    },
+    {
+      "id": "reset_then_new_constraint",
+      "args": [
+        [
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 1
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "add",
+            "x": "a",
+            "y": "b",
+            "d": 4
+          },
+          {
+            "op": "diff",
+            "x": "a",
+            "y": "b"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "ok": true
+        },
+        {
+          "connected": true,
+          "diff": 4
+        }
+      ]
+    }
+  ]
+}

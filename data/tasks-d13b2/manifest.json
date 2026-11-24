@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d13b2-ast-fold-prune",
+      "split": "train",
+      "domain": "auction_ast",
+      "lines": 77,
+      "cases": 9,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    }
+  ]
+}

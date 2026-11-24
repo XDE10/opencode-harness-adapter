@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "f05-dotenv-interpolate",
+      "split": "train",
+      "domain": "config_tabular",
+      "lines": 107,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "f05-ini-cascading-sections",
+      "split": "train",
+      "domain": "config_tabular",
+      "lines": 105,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

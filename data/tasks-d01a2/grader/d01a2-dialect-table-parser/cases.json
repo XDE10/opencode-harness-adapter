@@ -1,0 +1,175 @@
+{
+  "function": "parse_table",
+  "cases": [
+    {
+      "id": "basic_csv",
+      "args": [
+        "Name,Age,Active\nAlice,30,true\nBob,-5,FALSE",
+        ",",
+        [
+          "",
+          "NULL",
+          "N/A"
+        ]
+      ],
+      "value": [
+        {
+          "active": true,
+          "age": 30,
+          "name": "Alice"
+        },
+        {
+          "active": false,
+          "age": -5,
+          "name": "Bob"
+        }
+      ]
+    },
+    {
+      "id": "comments_and_multiline_quotes",
+      "args": [
+        "  # Leading comment\nID | Note\n10 | \"Line 1\n# Not a comment\n\"\"Line 3\"\"\"\n\n20 | plain # tag",
+        "|",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "value": [
+        {
+          "id": 10,
+          "note": "Line 1\n# Not a comment\n\"Line 3\""
+        },
+        {
+          "id": 20,
+          "note": "plain # tag"
+        }
+      ]
+    },
+    {
+      "id": "header_collision_dedup",
+      "args": [
+        "A-B, a_b_2, A B, a__b\n1,2,3,4",
+        ",",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "value": [
+        {
+          "a_b": 1,
+          "a_b_2": 2,
+          "a_b_3": 3,
+          "a_b_4": 4
+        }
+      ]
+    },
+    {
+      "id": "quoted_null_and_empty_preserved",
+      "args": [
+        "Col1,Col2,Col3\n\"\",\"NULL\",NULL\n\"N/A\",,N/A",
+        ",",
+        [
+          "",
+          "NULL",
+          "N/A"
+        ]
+      ],
+      "value": [
+        {
+          "col1": "",
+          "col2": "NULL",
+          "col3": null
+        },
+        {
+          "col1": "N/A",
+          "col2": null,
+          "col3": null
+        }
+      ]
+    },
+    {
+      "id": "leading_zero_codes",
+      "args": [
+        "zip,delta,zero_val\n007,-01,+42\n0,-0,00",
+        ",",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "value": [
+        {
+          "delta": "-01",
+          "zip": "007",
+          "zero_val": 42
+        },
+        {
+          "delta": 0,
+          "zip": 0,
+          "zero_val": "00"
+        }
+      ]
+    },
+    {
+      "id": "tab_delimiter_with_leading_tab_empty_cell",
+      "args": [
+        "first\tsecond\tthird\n\t100\t200\n300\t\t400",
+        "\t",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "value": [
+        {
+          "first": null,
+          "second": 100,
+          "third": 200
+        },
+        {
+          "first": 300,
+          "second": null,
+          "third": 400
+        }
+      ]
+    },
+    {
+      "id": "unclosed_quote_raises",
+      "args": [
+        "a,b\n1,\"unclosed\n2,3",
+        ",",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "width_mismatch_raises",
+      "args": [
+        "a,b,c\n1,2",
+        ",",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_delimiter_raises",
+      "args": [
+        "a#b\n1#2",
+        "#",
+        [
+          "",
+          "NULL"
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

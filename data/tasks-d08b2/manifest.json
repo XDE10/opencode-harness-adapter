@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d08b2-json-pointer-ops",
+      "split": "train",
+      "domain": "sequence_tree",
+      "lines": 85,
+      "cases": 10,
+      "passed": {
+        "original": "6/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

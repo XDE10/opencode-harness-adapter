@@ -1,0 +1,79 @@
+{
+  "function": "coalesce_runs",
+  "cases": [
+    {
+      "id": "basic_overlapping",
+      "args": [
+        [[1, 5, 2], [3, 8, 4], [10, 12, 1]],
+        0
+      ],
+      "value": [[1, 8, 6], [10, 12, 1]]
+    },
+    {
+      "id": "empty_runs",
+      "args": [
+        [],
+        2,
+        0
+      ],
+      "value": []
+    },
+    {
+      "id": "touching_zero_gap",
+      "args": [
+        [[0, 3, 2], [3, 5, 4]],
+        0
+      ],
+      "value": [[0, 5, 6]]
+    },
+    {
+      "id": "exact_positive_gap",
+      "args": [
+        [[1, 4, 1], [6, 9, 2], [12, 13, 3]],
+        2
+      ],
+      "value": [[1, 9, 3], [12, 13, 3]]
+    },
+    {
+      "id": "nested_interval_end_preserved",
+      "args": [
+        [[1, 10, 3], [2, 5, 2], [8, 9, 1]],
+        0
+      ],
+      "value": [[1, 10, 6]]
+    },
+    {
+      "id": "min_weight_zero_filters_negative",
+      "args": [
+        [[1, 3, -2], [10, 12, 0], [20, 22, 3]],
+        0,
+        0
+      ],
+      "value": [[10, 12, 0], [20, 22, 3]]
+    },
+    {
+      "id": "min_weight_positive",
+      "args": [
+        [[1, 3, 1], [5, 7, 4]],
+        0,
+        2
+      ],
+      "value": [[5, 7, 4]]
+    },
+    {
+      "id": "unsorted_raises",
+      "args": [
+        [[5, 7, 1], [2, 4, 1]]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "negative_gap_raises",
+      "args": [
+        [[1, 2, 1]],
+        -1
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

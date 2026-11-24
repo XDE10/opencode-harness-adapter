@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "f03-fx-spread-tier-quote",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 76,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f03-marginal-fee-tiers",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 78,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f03-volume-rebate-ledger",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 86,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

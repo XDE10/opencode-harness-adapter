@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d20a2-bencode-canonical-codec",
+      "split": "heldout",
+      "domain": "wire_scheduler",
+      "lines": 67,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

@@ -1,0 +1,427 @@
+{
+  "function": "run_lfu_cache",
+  "cases": [
+    {
+      "id": "basic_lfu_eviction",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 2,
+            "key": "b",
+            "val": 20,
+            "ttl": null
+          },
+          {
+            "op": "get",
+            "t": 3,
+            "key": "a"
+          },
+          {
+            "op": "put",
+            "t": 4,
+            "key": "c",
+            "val": 30,
+            "ttl": null
+          },
+          {
+            "op": "get",
+            "t": 5,
+            "key": "b"
+          },
+          {
+            "op": "snapshot",
+            "t": 5
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        10,
+        true,
+        -1,
+        [
+          [
+            "a",
+            10,
+            2
+          ],
+          [
+            "c",
+            30,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "recency_tie_break_same_timestamp",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 10,
+            "key": "x",
+            "val": 1
+          },
+          {
+            "op": "put",
+            "t": 10,
+            "key": "y",
+            "val": 2
+          },
+          {
+            "op": "put",
+            "t": 10,
+            "key": "z",
+            "val": 3
+          },
+          {
+            "op": "snapshot",
+            "t": 10
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        true,
+        [
+          [
+            "z",
+            3,
+            1
+          ],
+          [
+            "y",
+            2,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "invalid_capacity_raises",
+      "args": [
+        0,
+        [
+          {
+            "op": "snapshot",
+            "t": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "unknown_op_raises",
+      "args": [
+        2,
+        [
+          {
+            "op": "clear",
+            "t": 1
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "exact_ttl_boundary_expiry",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 10,
+            "key": "a",
+            "val": 100,
+            "ttl": 5
+          },
+          {
+            "op": "get",
+            "t": 14,
+            "key": "a"
+          },
+          {
+            "op": "get",
+            "t": 15,
+            "key": "a"
+          },
+          {
+            "op": "snapshot",
+            "t": 15
+          }
+        ]
+      ],
+      "value": [
+        true,
+        100,
+        -1,
+        []
+      ]
+    },
+    {
+      "id": "expired_at_boundary_frees_capacity",
+      "args": [
+        1,
+        [
+          {
+            "op": "put",
+            "t": 0,
+            "key": "a",
+            "val": 1,
+            "ttl": 3
+          },
+          {
+            "op": "get",
+            "t": 1,
+            "key": "a"
+          },
+          {
+            "op": "get",
+            "t": 2,
+            "key": "a"
+          },
+          {
+            "op": "put",
+            "t": 3,
+            "key": "b",
+            "val": 2,
+            "ttl": 5
+          },
+          {
+            "op": "snapshot",
+            "t": 3
+          }
+        ]
+      ],
+      "value": [
+        true,
+        1,
+        1,
+        true,
+        [
+          [
+            "b",
+            2,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "overwrite_existing_increments_freq",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 2,
+            "key": "b",
+            "val": 20,
+            "ttl": null
+          },
+          {
+            "op": "get",
+            "t": 3,
+            "key": "b"
+          },
+          {
+            "op": "put",
+            "t": 4,
+            "key": "a",
+            "val": 15,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 5,
+            "key": "a",
+            "val": 18,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 6,
+            "key": "c",
+            "val": 30,
+            "ttl": null
+          },
+          {
+            "op": "snapshot",
+            "t": 6
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        20,
+        true,
+        true,
+        true,
+        [
+          [
+            "a",
+            18,
+            3
+          ],
+          [
+            "c",
+            30,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "reinsert_after_expiry_resets_freq",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": 2
+          },
+          {
+            "op": "get",
+            "t": 2,
+            "key": "a"
+          },
+          {
+            "op": "put",
+            "t": 3,
+            "key": "a",
+            "val": 99,
+            "ttl": 10
+          },
+          {
+            "op": "snapshot",
+            "t": 3
+          }
+        ]
+      ],
+      "value": [
+        true,
+        10,
+        true,
+        [
+          [
+            "a",
+            99,
+            1
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "non_positive_ttl_removes_existing_key",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": 10
+          },
+          {
+            "op": "put",
+            "t": 2,
+            "key": "a",
+            "val": 20,
+            "ttl": 0
+          },
+          {
+            "op": "get",
+            "t": 2,
+            "key": "a"
+          },
+          {
+            "op": "snapshot",
+            "t": 2
+          }
+        ]
+      ],
+      "value": [
+        true,
+        false,
+        -1,
+        []
+      ]
+    },
+    {
+      "id": "negative_ttl_removes_existing_and_delete",
+      "args": [
+        2,
+        [
+          {
+            "op": "put",
+            "t": 1,
+            "key": "k1",
+            "val": 5,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 2,
+            "key": "k2",
+            "val": 6,
+            "ttl": null
+          },
+          {
+            "op": "put",
+            "t": 3,
+            "key": "k1",
+            "val": 7,
+            "ttl": -2
+          },
+          {
+            "op": "delete",
+            "t": 4,
+            "key": "k1"
+          },
+          {
+            "op": "delete",
+            "t": 4,
+            "key": "k2"
+          },
+          {
+            "op": "snapshot",
+            "t": 4
+          }
+        ]
+      ],
+      "value": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        []
+      ]
+    }
+  ]
+}

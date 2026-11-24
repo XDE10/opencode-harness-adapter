@@ -1,0 +1,249 @@
+{
+  "function": "fold_expr",
+  "cases": [
+    {
+      "id": "basic_arith",
+      "args": [
+        {
+          "kind": "bin",
+          "op": "+",
+          "left": {
+            "kind": "lit",
+            "value": 2
+          },
+          "right": {
+            "kind": "lit",
+            "value": 3
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": 5
+      }
+    },
+    {
+      "id": "basic_short_circuit",
+      "args": [
+        {
+          "kind": "bin",
+          "op": "and",
+          "left": {
+            "kind": "lit",
+            "value": false
+          },
+          "right": {
+            "kind": "var",
+            "name": "x"
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": false
+      }
+    },
+    {
+      "id": "basic_nonliteral_if",
+      "args": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "var",
+            "name": "flag"
+          },
+          "then": {
+            "kind": "bin",
+            "op": "+",
+            "left": {
+              "kind": "lit",
+              "value": 1
+            },
+            "right": {
+              "kind": "lit",
+              "value": 2
+            }
+          },
+          "else": {
+            "kind": "lit",
+            "value": 99
+          }
+        }
+      ],
+      "value": {
+        "kind": "if",
+        "cond": {
+          "kind": "var",
+          "name": "flag"
+        },
+        "then": {
+          "kind": "lit",
+          "value": 3
+        },
+        "else": {
+          "kind": "lit",
+          "value": 99
+        }
+      }
+    },
+    {
+      "id": "prune_if_true",
+      "args": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "lit",
+            "value": true
+          },
+          "then": {
+            "kind": "lit",
+            "value": 7
+          },
+          "else": {
+            "kind": "bin",
+            "op": "//",
+            "left": {
+              "kind": "lit",
+              "value": 1
+            },
+            "right": {
+              "kind": "lit",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": 7
+      }
+    },
+    {
+      "id": "prune_if_false",
+      "args": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "lit",
+            "value": ""
+          },
+          "then": {
+            "kind": "bin",
+            "op": "//",
+            "left": {
+              "kind": "lit",
+              "value": 10
+            },
+            "right": {
+              "kind": "lit",
+              "value": 0
+            }
+          },
+          "else": {
+            "kind": "lit",
+            "value": "ok"
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": "ok"
+      }
+    },
+    {
+      "id": "prune_and_false",
+      "args": [
+        {
+          "kind": "bin",
+          "op": "and",
+          "left": {
+            "kind": "lit",
+            "value": false
+          },
+          "right": {
+            "kind": "bin",
+            "op": "//",
+            "left": {
+              "kind": "lit",
+              "value": 5
+            },
+            "right": {
+              "kind": "lit",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": false
+      }
+    },
+    {
+      "id": "eq_bool_int",
+      "args": [
+        {
+          "kind": "bin",
+          "op": "==",
+          "left": {
+            "kind": "lit",
+            "value": true
+          },
+          "right": {
+            "kind": "lit",
+            "value": 1
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": false
+      }
+    },
+    {
+      "id": "eq_false_zero",
+      "args": [
+        {
+          "kind": "bin",
+          "op": "==",
+          "left": {
+            "kind": "lit",
+            "value": false
+          },
+          "right": {
+            "kind": "lit",
+            "value": 0
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": false
+      }
+    },
+    {
+      "id": "eq_under_not",
+      "args": [
+        {
+          "kind": "not",
+          "expr": {
+            "kind": "bin",
+            "op": "==",
+            "left": {
+              "kind": "lit",
+              "value": true
+            },
+            "right": {
+              "kind": "lit",
+              "value": 1
+            }
+          }
+        }
+      ],
+      "value": {
+        "kind": "lit",
+        "value": true
+      }
+    }
+  ]
+}

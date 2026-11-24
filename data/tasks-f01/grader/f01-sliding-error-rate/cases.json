@@ -1,0 +1,130 @@
+{
+  "function": "detect_error_bursts",
+  "cases": [
+    {
+      "id": "basic_out_of_order",
+      "args": [
+        [
+          {"ts": 120, "service": "api", "status": 502},
+          {"ts": 100, "service": "api", "status": 500},
+          {"ts": 110, "service": "api", "status": 503}
+        ],
+        25,
+        2,
+        60
+      ],
+      "value": [
+        {"service": "api", "ts": 110, "errors": 2, "total": 2},
+        {"service": "api", "ts": 120, "errors": 3, "total": 3}
+      ]
+    },
+    {
+      "id": "inclusive_left_boundary",
+      "args": [
+        [
+          {"ts": 100, "service": "web", "status": 500},
+          {"ts": 150, "service": "web", "status": 503}
+        ],
+        50,
+        2,
+        75
+      ],
+      "value": [
+        {"service": "web", "ts": 150, "errors": 2, "total": 2}
+      ]
+    },
+    {
+      "id": "same_timestamp_batch",
+      "args": [
+        [
+          {"ts": 200, "service": "db", "status": 500},
+          {"ts": 200, "service": "db", "status": 500},
+          {"ts": 200, "service": "db", "status": 200}
+        ],
+        10,
+        3,
+        60
+      ],
+      "value": [
+        {"service": "db", "ts": 200, "errors": 2, "total": 3}
+      ]
+    },
+    {
+      "id": "exact_threshold_percentage",
+      "args": [
+        [
+          {"ts": 10, "service": "auth", "status": 500},
+          {"ts": 20, "service": "auth", "status": 200}
+        ],
+        10,
+        2,
+        50
+      ],
+      "value": [
+        {"service": "auth", "ts": 20, "errors": 1, "total": 2}
+      ]
+    },
+    {
+      "id": "multi_service_zero_window",
+      "args": [
+        [
+          {"ts": 30, "service": "b", "status": 500},
+          {"ts": 30, "service": "b", "status": 500},
+          {"ts": 30, "service": "a", "status": 503},
+          {"ts": 30, "service": "a", "status": 200}
+        ],
+        0,
+        2,
+        50
+      ],
+      "value": [
+        {"service": "a", "ts": 30, "errors": 1, "total": 2},
+        {"service": "b", "ts": 30, "errors": 2, "total": 2}
+      ]
+    },
+    {
+      "id": "below_min_events",
+      "args": [
+        [
+          {"ts": 10, "service": "api", "status": 500}
+        ],
+        10,
+        2,
+        50
+      ],
+      "value": []
+    },
+    {
+      "id": "missing_key_raises",
+      "args": [
+        [
+          {"ts": 10, "service": "api"}
+        ],
+        10,
+        1,
+        50
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "invalid_threshold_raises",
+      "args": [
+        [],
+        10,
+        1,
+        101
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "zero_min_events_raises",
+      "args": [
+        [],
+        10,
+        0,
+        50
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

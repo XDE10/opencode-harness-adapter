@@ -1,0 +1,556 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_add_get_emit",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 3
+          },
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 5
+          },
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 2
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 7
+          },
+          {
+            "op": "get",
+            "keys": [
+              "a"
+            ]
+          },
+          {
+            "op": "get",
+            "keys": [
+              "c"
+            ]
+          },
+          {
+            "op": "emit"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "keys": [
+            "a"
+          ],
+          "count": 3,
+          "sum": 10,
+          "min": 2,
+          "max": 5,
+          "last": 2
+        },
+        null,
+        [
+          {
+            "keys": [
+              "a"
+            ],
+            "count": 3,
+            "sum": 10,
+            "min": 2,
+            "max": 5,
+            "last": 2
+          },
+          {
+            "keys": [
+              "b"
+            ],
+            "count": 1,
+            "sum": 7,
+            "min": 7,
+            "max": 7,
+            "last": 7
+          }
+        ]
+      ]
+    },
+    {
+      "id": "update_last_max",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "x"
+            ],
+            "value": 4
+          },
+          {
+            "op": "add",
+            "keys": [
+              "x"
+            ],
+            "value": 9
+          },
+          {
+            "op": "add",
+            "keys": [
+              "y"
+            ],
+            "value": 1
+          },
+          {
+            "op": "add",
+            "keys": [
+              "x"
+            ],
+            "value": 6
+          },
+          {
+            "op": "get",
+            "keys": [
+              "x"
+            ]
+          },
+          {
+            "op": "get",
+            "keys": [
+              "y"
+            ]
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        {
+          "keys": [
+            "x"
+          ],
+          "count": 3,
+          "sum": 19,
+          "min": 4,
+          "max": 9,
+          "last": 6
+        },
+        {
+          "keys": [
+            "y"
+          ],
+          "count": 1,
+          "sum": 1,
+          "min": 1,
+          "max": 1,
+          "last": 1
+        }
+      ]
+    },
+    {
+      "id": "clear_boundary",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 2
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 8
+          },
+          {
+            "op": "clear"
+          },
+          {
+            "op": "emit"
+          },
+          {
+            "op": "get",
+            "keys": [
+              "a"
+            ]
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        [],
+        null
+      ]
+    },
+    {
+      "id": "reset_one_keep_others",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 2
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 3
+          },
+          {
+            "op": "add",
+            "keys": [
+              "c"
+            ],
+            "value": 4
+          },
+          {
+            "op": "reset",
+            "keys": [
+              "b"
+            ]
+          },
+          {
+            "op": "emit"
+          },
+          {
+            "op": "get",
+            "keys": [
+              "b"
+            ]
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        [
+          {
+            "keys": [
+              "a"
+            ],
+            "count": 1,
+            "sum": 2,
+            "min": 2,
+            "max": 2,
+            "last": 2
+          },
+          {
+            "keys": [
+              "c"
+            ],
+            "count": 1,
+            "sum": 4,
+            "min": 4,
+            "max": 4,
+            "last": 4
+          }
+        ],
+        null
+      ]
+    },
+    {
+      "id": "reset_missing_noop",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 5
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 6
+          },
+          {
+            "op": "reset",
+            "keys": [
+              "z"
+            ]
+          },
+          {
+            "op": "emit"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        [
+          {
+            "keys": [
+              "a"
+            ],
+            "count": 1,
+            "sum": 5,
+            "min": 5,
+            "max": 5,
+            "last": 5
+          },
+          {
+            "keys": [
+              "b"
+            ],
+            "count": 1,
+            "sum": 6,
+            "min": 6,
+            "max": 6,
+            "last": 6
+          }
+        ]
+      ]
+    },
+    {
+      "id": "reset_then_reinsert_order",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 2
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 3
+          },
+          {
+            "op": "reset",
+            "keys": [
+              "a"
+            ]
+          },
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 4
+          },
+          {
+            "op": "emit"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        [
+          {
+            "keys": [
+              "b"
+            ],
+            "count": 1,
+            "sum": 3,
+            "min": 3,
+            "max": 3,
+            "last": 3
+          },
+          {
+            "keys": [
+              "a"
+            ],
+            "count": 1,
+            "sum": 4,
+            "min": 4,
+            "max": 4,
+            "last": 4
+          }
+        ]
+      ]
+    },
+    {
+      "id": "zero_min",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "z"
+            ],
+            "value": 0
+          },
+          {
+            "op": "add",
+            "keys": [
+              "z"
+            ],
+            "value": 5
+          },
+          {
+            "op": "get",
+            "keys": [
+              "z"
+            ]
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        {
+          "keys": [
+            "z"
+          ],
+          "count": 2,
+          "sum": 5,
+          "min": 0,
+          "max": 5,
+          "last": 5
+        }
+      ]
+    },
+    {
+      "id": "zero_only",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "q"
+            ],
+            "value": 0
+          },
+          {
+            "op": "get",
+            "keys": [
+              "q"
+            ]
+          }
+        ]
+      ],
+      "value": [
+        null,
+        {
+          "keys": [
+            "q"
+          ],
+          "count": 1,
+          "sum": 0,
+          "min": 0,
+          "max": 0,
+          "last": 0
+        }
+      ]
+    },
+    {
+      "id": "mixed_zero_groups",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 0
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 7
+          },
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": 3
+          },
+          {
+            "op": "add",
+            "keys": [
+              "b"
+            ],
+            "value": 0
+          },
+          {
+            "op": "emit"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        null,
+        [
+          {
+            "keys": [
+              "a"
+            ],
+            "count": 2,
+            "sum": 3,
+            "min": 0,
+            "max": 3,
+            "last": 3
+          },
+          {
+            "keys": [
+              "b"
+            ],
+            "count": 2,
+            "sum": 7,
+            "min": 0,
+            "max": 7,
+            "last": 0
+          }
+        ]
+      ]
+    },
+    {
+      "id": "error_bad_value",
+      "args": [
+        [
+          {
+            "op": "add",
+            "keys": [
+              "a"
+            ],
+            "value": "x"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

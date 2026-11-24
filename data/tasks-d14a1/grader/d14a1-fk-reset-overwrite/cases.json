@@ -1,0 +1,292 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_valid",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 1
+          },
+          {
+            "op": "add_parent",
+            "id": 2
+          },
+          {
+            "op": "upsert_child",
+            "id": 10,
+            "pid": 1
+          },
+          {
+            "op": "upsert_child",
+            "id": 11,
+            "pid": 2
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [
+            1,
+            2
+          ],
+          "children": [
+            10,
+            11
+          ],
+          "bad_children": []
+        }
+      ]
+    },
+    {
+      "id": "basic_delete_parent",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 1
+          },
+          {
+            "op": "upsert_child",
+            "id": 10,
+            "pid": 1
+          },
+          {
+            "op": "del_parent",
+            "id": 1
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [],
+          "children": [
+            10
+          ],
+          "bad_children": [
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "id": "basic_delete_child",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 1
+          },
+          {
+            "op": "upsert_child",
+            "id": 10,
+            "pid": 1
+          },
+          {
+            "op": "del_child",
+            "id": 10
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [
+            1
+          ],
+          "children": [],
+          "bad_children": []
+        }
+      ]
+    },
+    {
+      "id": "error_duplicate_parent",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 4
+          },
+          {
+            "op": "add_parent",
+            "id": 4
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "overwrite_to_present_parent",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 2
+          },
+          {
+            "op": "upsert_child",
+            "id": 7,
+            "pid": 1
+          },
+          {
+            "op": "upsert_child",
+            "id": 7,
+            "pid": 2
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [
+            2
+          ],
+          "children": [
+            7
+          ],
+          "bad_children": []
+        }
+      ]
+    },
+    {
+      "id": "overwrite_to_none",
+      "args": [
+        [
+          {
+            "op": "upsert_child",
+            "id": 8,
+            "pid": 3
+          },
+          {
+            "op": "upsert_child",
+            "id": 8,
+            "pid": null
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [],
+          "children": [
+            8
+          ],
+          "bad_children": []
+        }
+      ]
+    },
+    {
+      "id": "reset_clears_state",
+      "args": [
+        [
+          {
+            "op": "upsert_child",
+            "id": 1,
+            "pid": 9
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [],
+          "children": [],
+          "bad_children": []
+        }
+      ]
+    },
+    {
+      "id": "reset_then_new_state",
+      "args": [
+        [
+          {
+            "op": "upsert_child",
+            "id": 1,
+            "pid": 9
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "add_parent",
+            "id": 5
+          },
+          {
+            "op": "upsert_child",
+            "id": 2,
+            "pid": 5
+          },
+          {
+            "op": "del_parent",
+            "id": 5
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [],
+          "children": [
+            2
+          ],
+          "bad_children": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_after_valid_child",
+      "args": [
+        [
+          {
+            "op": "add_parent",
+            "id": 1
+          },
+          {
+            "op": "upsert_child",
+            "id": 3,
+            "pid": 1
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "del_parent",
+            "id": 1
+          },
+          {
+            "op": "report"
+          }
+        ]
+      ],
+      "value": [
+        {
+          "parents": [],
+          "children": [],
+          "bad_children": []
+        }
+      ]
+    }
+  ]
+}

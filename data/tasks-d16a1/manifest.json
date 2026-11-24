@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d16a1-disjoint-range-run",
+      "split": "train",
+      "domain": "range_quota",
+      "lines": 74,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

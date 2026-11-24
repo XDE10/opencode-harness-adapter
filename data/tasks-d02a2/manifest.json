@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "d02a2-bracket-query-parser",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 116,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "d02a2-shell-brace-lexer",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 128,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

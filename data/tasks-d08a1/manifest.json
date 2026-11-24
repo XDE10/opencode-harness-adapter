@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d08a1-stable-group-rollup",
+      "split": "train",
+      "domain": "sequence_tree",
+      "lines": 80,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "function": "business_day_span",
+  "cases": [
+    {
+      "id": "basic_weekdays",
+      "args": ["2024-01-01", "2024-01-06"],
+      "value": {
+        "business_days": 5,
+        "calendar_days": 5,
+        "holiday_hits": 0,
+        "weekend_hits": 0
+      }
+    },
+    {
+      "id": "with_weekend_and_holiday",
+      "args": ["2024-01-01", "2024-01-08", ["2024-01-01"]],
+      "value": {
+        "business_days": 4,
+        "calendar_days": 7,
+        "holiday_hits": 1,
+        "weekend_hits": 2
+      }
+    },
+    {
+      "id": "empty_half_open",
+      "args": ["2024-01-05", "2024-01-05"],
+      "value": {
+        "business_days": 0,
+        "calendar_days": 0,
+        "holiday_hits": 0,
+        "weekend_hits": 0
+      }
+    },
+    {
+      "id": "inclusive_single_day",
+      "args": ["2024-01-05", "2024-01-05", [], null, true],
+      "value": {
+        "business_days": 1,
+        "calendar_days": 1,
+        "holiday_hits": 0,
+        "weekend_hits": 0
+      }
+    },
+    {
+      "id": "inclusive_range",
+      "args": ["2024-01-05", "2024-01-08", ["2024-01-08"], null, true],
+      "value": {
+        "business_days": 1,
+        "calendar_days": 4,
+        "holiday_hits": 1,
+        "weekend_hits": 2
+      }
+    },
+    {
+      "id": "holiday_on_weekend_and_dups",
+      "args": ["2024-01-05", "2024-01-09", ["2024-01-06", "2024-01-06", "2024-01-08"]],
+      "value": {
+        "business_days": 1,
+        "calendar_days": 4,
+        "holiday_hits": 1,
+        "weekend_hits": 2
+      }
+    },
+    {
+      "id": "empty_weekend_workweek",
+      "args": ["2024-01-05", "2024-01-08", [], []],
+      "value": {
+        "business_days": 3,
+        "calendar_days": 3,
+        "holiday_hits": 0,
+        "weekend_hits": 0
+      }
+    },
+    {
+      "id": "reversed_dates",
+      "args": ["2024-01-08", "2024-01-01"],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_weekday",
+      "args": ["2024-01-01", "2024-01-02", [], [7]],
+      "raises": "ValueError"
+    }
+  ]
+}

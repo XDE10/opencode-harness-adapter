@@ -1,0 +1,378 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_write_flush_read",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "read",
+            "t": 2,
+            "key": "a"
+          },
+          {
+            "op": "flush",
+            "t": 3
+          },
+          {
+            "op": "status",
+            "t": 3
+          }
+        ]
+      ],
+      "value": [
+        null,
+        10,
+        1,
+        {
+          "dirty": [],
+          "store": [
+            [
+              "a",
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auto_flush_oldest_dirty",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "b",
+            "val": 20,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 2,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 3,
+            "key": "c",
+            "val": 30,
+            "ttl": null
+          },
+          {
+            "op": "status",
+            "t": 3
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        {
+          "dirty": [
+            "a",
+            "c"
+          ],
+          "store": [
+            [
+              "b",
+              20
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invalid_max_dirty_raises",
+      "args": [
+        0,
+        [
+          {
+            "op": "status",
+            "t": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "non_positive_ttl_raises",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 5,
+            "ttl": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "exact_timestamp_expiry_before_flush",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": 5
+          },
+          {
+            "op": "write",
+            "t": 2,
+            "key": "b",
+            "val": 20,
+            "ttl": null
+          },
+          {
+            "op": "flush",
+            "t": 6
+          },
+          {
+            "op": "status",
+            "t": 6
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        1,
+        {
+          "dirty": [],
+          "store": [
+            [
+              "b",
+              20
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "overwrite_existing_dirty_does_not_evict",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 2,
+            "key": "b",
+            "val": 20,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 3,
+            "key": "b",
+            "val": 25,
+            "ttl": null
+          },
+          {
+            "op": "status",
+            "t": 3
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        {
+          "dirty": [
+            "a",
+            "b"
+          ],
+          "store": []
+        }
+      ]
+    },
+    {
+      "id": "expired_dirty_read_falls_back_to_store",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "flush",
+            "t": 2
+          },
+          {
+            "op": "write",
+            "t": 3,
+            "key": "a",
+            "val": 99,
+            "ttl": 4
+          },
+          {
+            "op": "read",
+            "t": 7,
+            "key": "a"
+          },
+          {
+            "op": "status",
+            "t": 7
+          }
+        ]
+      ],
+      "value": [
+        null,
+        1,
+        null,
+        10,
+        {
+          "dirty": [],
+          "store": [
+            [
+              "a",
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rollback_committed_key_clears_dirty_flag",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 10,
+            "ttl": null
+          },
+          {
+            "op": "flush",
+            "t": 2
+          },
+          {
+            "op": "write",
+            "t": 3,
+            "key": "a",
+            "val": 50,
+            "ttl": null
+          },
+          {
+            "op": "rollback",
+            "t": 4
+          },
+          {
+            "op": "status",
+            "t": 4
+          },
+          {
+            "op": "read",
+            "t": 5,
+            "key": "a"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        1,
+        null,
+        1,
+        {
+          "dirty": [],
+          "store": [
+            [
+              "a",
+              10
+            ]
+          ]
+        },
+        10
+      ]
+    },
+    {
+      "id": "rollback_uncommitted_and_tiebreak_evict",
+      "args": [
+        2,
+        [
+          {
+            "op": "write",
+            "t": 1,
+            "key": "b",
+            "val": 2,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 1,
+            "key": "a",
+            "val": 1,
+            "ttl": null
+          },
+          {
+            "op": "write",
+            "t": 2,
+            "key": "c",
+            "val": 3,
+            "ttl": null
+          },
+          {
+            "op": "rollback",
+            "t": 3
+          },
+          {
+            "op": "status",
+            "t": 3
+          },
+          {
+            "op": "read",
+            "t": 4,
+            "key": "b"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        2,
+        {
+          "dirty": [],
+          "store": [
+            [
+              "a",
+              1
+            ]
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

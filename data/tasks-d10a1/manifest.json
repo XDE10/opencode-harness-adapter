@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d10a1-job-retry-backoff",
+      "split": "train",
+      "domain": "backend_codec",
+      "lines": 72,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

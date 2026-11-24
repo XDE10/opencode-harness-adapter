@@ -1,0 +1,312 @@
+{
+  "function": "run_pointer",
+  "cases": [
+    {
+      "id": "basic_root_get_set",
+      "args": [
+        {
+          "a": 1,
+          "b": [
+            10,
+            20
+          ]
+        },
+        [
+          {
+            "op": "get",
+            "path": ""
+          },
+          {
+            "op": "set",
+            "path": "/a",
+            "value": 9
+          },
+          {
+            "op": "get",
+            "path": "/a"
+          },
+          {
+            "op": "get",
+            "path": "/b/1"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          {
+            "a": 1,
+            "b": [
+              10,
+              20
+            ]
+          },
+          null,
+          9,
+          20
+        ],
+        "doc": {
+          "a": 9,
+          "b": [
+            10,
+            20
+          ]
+        }
+      }
+    },
+    {
+      "id": "escaped_keys",
+      "args": [
+        {
+          "a/b": 1,
+          "m~n": 2,
+          "": 3
+        },
+        [
+          {
+            "op": "get",
+            "path": "/a~1b"
+          },
+          {
+            "op": "get",
+            "path": "/m~0n"
+          },
+          {
+            "op": "get",
+            "path": "/"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          1,
+          2,
+          3
+        ],
+        "doc": {
+          "a/b": 1,
+          "m~n": 2,
+          "": 3
+        }
+      }
+    },
+    {
+      "id": "array_set_append_and_replace",
+      "args": [
+        {
+          "xs": [
+            1,
+            2
+          ]
+        },
+        [
+          {
+            "op": "set",
+            "path": "/xs/-",
+            "value": 3
+          },
+          {
+            "op": "set",
+            "path": "/xs/1",
+            "value": 9
+          },
+          {
+            "op": "get",
+            "path": "/xs"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          null,
+          null,
+          [
+            1,
+            9,
+            3
+          ]
+        ],
+        "doc": {
+          "xs": [
+            1,
+            9,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "id": "remove_nested",
+      "args": [
+        {
+          "x": {
+            "y": 5
+          },
+          "arr": [
+            7,
+            8
+          ]
+        },
+        [
+          {
+            "op": "remove",
+            "path": "/x/y"
+          },
+          {
+            "op": "get",
+            "path": "/x"
+          },
+          {
+            "op": "remove",
+            "path": "/arr/0"
+          },
+          {
+            "op": "get",
+            "path": "/arr"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          null,
+          {},
+          null,
+          [
+            8
+          ]
+        ],
+        "doc": {
+          "x": {},
+          "arr": [
+            8
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid_path_no_slash",
+      "args": [
+        {
+          "a": 1
+        },
+        [
+          {
+            "op": "get",
+            "path": "a"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_escape",
+      "args": [
+        {
+          "a": 1
+        },
+        [
+          {
+            "op": "get",
+            "path": "/bad~2"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "tilde_zero_one_get",
+      "args": [
+        {
+          "~1": 42
+        },
+        [
+          {
+            "op": "get",
+            "path": "/~01"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          42
+        ],
+        "doc": {
+          "~1": 42
+        }
+      }
+    },
+    {
+      "id": "tilde_zero_one_set",
+      "args": [
+        {
+          "~1": 0
+        },
+        [
+          {
+            "op": "set",
+            "path": "/~01",
+            "value": 5
+          },
+          {
+            "op": "get",
+            "path": "/~01"
+          }
+        ]
+      ],
+      "value": {
+        "results": [
+          null,
+          5
+        ],
+        "doc": {
+          "~1": 5
+        }
+      }
+    },
+    {
+      "id": "array_set_past_end",
+      "args": [
+        {
+          "xs": [
+            1,
+            2
+          ]
+        },
+        [
+          {
+            "op": "set",
+            "path": "/xs/5",
+            "value": 9
+          }
+        ]
+      ],
+      "raises": "IndexError"
+    },
+    {
+      "id": "array_set_past_end_after_append",
+      "args": [
+        {
+          "xs": [
+            0
+          ]
+        },
+        [
+          {
+            "op": "set",
+            "path": "/xs/-",
+            "value": 1
+          },
+          {
+            "op": "set",
+            "path": "/xs/4",
+            "value": 2
+          },
+          {
+            "op": "get",
+            "path": "/xs"
+          }
+        ]
+      ],
+      "raises": "IndexError"
+    }
+  ]
+}

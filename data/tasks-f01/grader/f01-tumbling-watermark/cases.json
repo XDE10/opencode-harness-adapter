@@ -1,0 +1,106 @@
+{
+  "function": "aggregate_tumbling_windows",
+  "cases": [
+    {
+      "id": "basic_in_order",
+      "args": [
+        [
+          {"ts": 0, "key": "req", "delta": 2},
+          {"ts": 5, "key": "req", "delta": 3},
+          {"ts": 10, "key": "req", "delta": 7}
+        ],
+        10,
+        0
+      ],
+      "value": [
+        {"window_start": 0, "window_end": 10, "key": "req", "count": 2, "sum": 5, "min": 2, "max": 3},
+        {"window_start": 10, "window_end": 20, "key": "req", "count": 1, "sum": 7, "min": 7, "max": 7}
+      ]
+    },
+    {
+      "id": "zero_min_preserved",
+      "args": [
+        [
+          {"ts": 1, "key": "lat", "delta": 0},
+          {"ts": 4, "key": "lat", "delta": 8}
+        ],
+        10,
+        0
+      ],
+      "value": [
+        {"window_start": 0, "window_end": 10, "key": "lat", "count": 2, "sum": 8, "min": 0, "max": 8}
+      ]
+    },
+    {
+      "id": "same_ts_and_lateness_boundary",
+      "args": [
+        [
+          {"ts": 50, "key": "k", "delta": 1},
+          {"ts": 50, "key": "k", "delta": 4},
+          {"ts": 30, "key": "k", "delta": 2},
+          {"ts": 29, "key": "k", "delta": 9}
+        ],
+        100,
+        20
+      ],
+      "value": [
+        {"window_start": 0, "window_end": 100, "key": "k", "count": 3, "sum": 7, "min": 1, "max": 4}
+      ]
+    },
+    {
+      "id": "negative_deltas_and_ties",
+      "args": [
+        [
+          {"ts": 10, "key": "b", "delta": 100},
+          {"ts": 12, "key": "a", "delta": -5}
+        ],
+        20,
+        0
+      ],
+      "value": [
+        {"window_start": 0, "window_end": 20, "key": "a", "count": 1, "sum": -5, "min": -5, "max": -5},
+        {"window_start": 0, "window_end": 20, "key": "b", "count": 1, "sum": 100, "min": 100, "max": 100}
+      ]
+    },
+    {
+      "id": "empty_events",
+      "args": [
+        [],
+        100,
+        10
+      ],
+      "value": []
+    },
+    {
+      "id": "missing_key_raises",
+      "args": [
+        [
+          {"ts": 10, "key": "a"}
+        ],
+        10,
+        0
+      ],
+      "raises": "KeyError"
+    },
+    {
+      "id": "zero_window_raises",
+      "args": [
+        [],
+        0,
+        0
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "negative_ts_raises",
+      "args": [
+        [
+          {"ts": -1, "key": "a", "delta": 1}
+        ],
+        10,
+        0
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

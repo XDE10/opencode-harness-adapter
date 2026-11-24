@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d14a1-fk-reset-overwrite",
+      "split": "heldout",
+      "domain": "data_quality_framing",
+      "lines": 60,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    }
+  ]
+}

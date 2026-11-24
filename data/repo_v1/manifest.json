@@ -1,0 +1,64 @@
+{
+  "tasks": [
+    {
+      "id": "r01s1-mini-orm",
+      "split": "train",
+      "domain": "mini_orm",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
+      "id": "r02s1-config-cascade",
+      "split": "train",
+      "domain": "config_cascade",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r03s1-workflow-dag-runner",
+      "split": "train",
+      "domain": "workflow_dag",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r04s1-http-trie-middleware",
+      "split": "train",
+      "domain": "http_router",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r05s1-hierarchical-rate-quota",
+      "split": "train",
+      "domain": "rate_quota",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    }
+  ]
+}

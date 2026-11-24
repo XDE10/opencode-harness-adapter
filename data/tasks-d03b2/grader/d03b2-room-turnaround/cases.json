@@ -1,0 +1,327 @@
+{
+  "function": "allocate_rooms",
+  "cases": [
+    {
+      "id": "empty_requests",
+      "args": [
+        [],
+        3,
+        5
+      ],
+      "value": {
+        "assignments": [],
+        "rejected": [],
+        "rooms_used": 0
+      }
+    },
+    {
+      "id": "strictly_separated_reuse",
+      "args": [
+        [
+          {
+            "id": "a",
+            "start": 0,
+            "end": 10,
+            "priority": 1
+          },
+          {
+            "id": "b",
+            "start": 15,
+            "end": 25,
+            "priority": 1
+          }
+        ],
+        2,
+        0
+      ],
+      "value": {
+        "assignments": [
+          [
+            "a",
+            1
+          ],
+          [
+            "b",
+            1
+          ]
+        ],
+        "rejected": [],
+        "rooms_used": 1
+      }
+    },
+    {
+      "id": "invalid_zero_length_interval",
+      "args": [
+        [
+          {
+            "id": "bad",
+            "start": 10,
+            "end": 10,
+            "priority": 1
+          }
+        ],
+        1,
+        0
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_id_error",
+      "args": [
+        [
+          {
+            "id": "dup",
+            "start": 0,
+            "end": 5,
+            "priority": 1
+          },
+          {
+            "id": "dup",
+            "start": 10,
+            "end": 15,
+            "priority": 1
+          }
+        ],
+        2,
+        0
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "exact_touching_zero_turnaround",
+      "args": [
+        [
+          {
+            "id": "m1",
+            "start": 0,
+            "end": 10,
+            "priority": 1
+          },
+          {
+            "id": "m2",
+            "start": 10,
+            "end": 20,
+            "priority": 1
+          },
+          {
+            "id": "m3",
+            "start": 20,
+            "end": 30,
+            "priority": 1
+          }
+        ],
+        1,
+        0
+      ],
+      "value": {
+        "assignments": [
+          [
+            "m1",
+            1
+          ],
+          [
+            "m2",
+            1
+          ],
+          [
+            "m3",
+            1
+          ]
+        ],
+        "rejected": [],
+        "rooms_used": 1
+      }
+    },
+    {
+      "id": "exact_turnaround_boundary_and_tightest_fit",
+      "args": [
+        [
+          {
+            "id": "r1",
+            "start": 0,
+            "end": 10,
+            "priority": 1
+          },
+          {
+            "id": "r2",
+            "start": 5,
+            "end": 20,
+            "priority": 1
+          },
+          {
+            "id": "r3",
+            "start": 25,
+            "end": 35,
+            "priority": 1
+          }
+        ],
+        2,
+        5
+      ],
+      "value": {
+        "assignments": [
+          [
+            "r1",
+            1
+          ],
+          [
+            "r2",
+            2
+          ],
+          [
+            "r3",
+            2
+          ]
+        ],
+        "rejected": [],
+        "rooms_used": 2
+      }
+    },
+    {
+      "id": "turnaround_blocks_early_accepts_exact",
+      "args": [
+        [
+          {
+            "id": "m1",
+            "start": 10,
+            "end": 20,
+            "priority": 1
+          },
+          {
+            "id": "m2",
+            "start": 20,
+            "end": 30,
+            "priority": 1
+          },
+          {
+            "id": "m3",
+            "start": 25,
+            "end": 35,
+            "priority": 1
+          }
+        ],
+        1,
+        5
+      ],
+      "value": {
+        "assignments": [
+          [
+            "m1",
+            1
+          ],
+          [
+            "m3",
+            1
+          ]
+        ],
+        "rejected": [
+          "m2"
+        ],
+        "rooms_used": 1
+      }
+    },
+    {
+      "id": "priority_tie_break_same_start",
+      "args": [
+        [
+          {
+            "id": "low",
+            "start": 10,
+            "end": 20,
+            "priority": 1
+          },
+          {
+            "id": "high",
+            "start": 10,
+            "end": 25,
+            "priority": 10
+          },
+          {
+            "id": "mid",
+            "start": 10,
+            "end": 15,
+            "priority": 5
+          }
+        ],
+        2,
+        0
+      ],
+      "value": {
+        "assignments": [
+          [
+            "mid",
+            2
+          ],
+          [
+            "high",
+            1
+          ]
+        ],
+        "rejected": [
+          "low"
+        ],
+        "rooms_used": 2
+      }
+    },
+    {
+      "id": "priority_duration_id_full_tiebreak_with_turnaround",
+      "args": [
+        [
+          {
+            "id": "z_low",
+            "start": 0,
+            "end": 10,
+            "priority": -1
+          },
+          {
+            "id": "b_hi_long",
+            "start": 0,
+            "end": 15,
+            "priority": 5
+          },
+          {
+            "id": "c_hi_short",
+            "start": 0,
+            "end": 10,
+            "priority": 5
+          },
+          {
+            "id": "a_hi_short",
+            "start": 0,
+            "end": 10,
+            "priority": 5
+          },
+          {
+            "id": "next_slot",
+            "start": 12,
+            "end": 20,
+            "priority": 0
+          }
+        ],
+        2,
+        2
+      ],
+      "value": {
+        "assignments": [
+          [
+            "a_hi_short",
+            1
+          ],
+          [
+            "c_hi_short",
+            2
+          ],
+          [
+            "next_slot",
+            1
+          ]
+        ],
+        "rejected": [
+          "b_hi_long",
+          "z_low"
+        ],
+        "rooms_used": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "function": "filter_records",
+  "cases": [
+    {"id": "basic_and_list", "args": [[{"id": 1, "env": "prod", "tags": ["api", "v2"]}, {"id": 2, "env": "dev", "tags": ["api"]}], "env:prod AND tags:v2"], "value": [1]},
+    {"id": "substr_quoted", "args": [[{"id": 1, "msg": "Disk Full Error"}, {"id": 2, "msg": "OK"}], "msg~'disk full'"], "value": [1]},
+    {"id": "has_and_parens", "args": [[{"id": 1, "owner": "alice", "tier": 2}, {"id": 2, "owner": null, "tier": 2}], "has:owner AND (tier=1 OR tier=2)"], "value": [1]},
+    {"id": "and_tighter_than_or", "args": [[{"id": 1, "a": "x", "b": "y"}, {"id": 2, "a": "z", "b": "n"}], "a:x OR a:z AND b:y"], "value": [1]},
+    {"id": "falsy_zero_score", "args": [[{"id": 1, "score": 0, "ok": false}, {"id": 2, "score": 5, "ok": true}], "score=0 AND ok:false"], "value": [1]},
+    {"id": "double_not", "args": [[{"id": 1, "env": "prod"}, {"id": 2, "env": "dev"}], "NOT NOT env:prod"], "value": [1]},
+    {"id": "bool_not_int", "args": [[{"id": 1, "score": true}, {"id": 2, "score": 1}], "score=1"], "value": [2]},
+    {"id": "empty_query", "args": [[{"id": 1}], "   "], "raises": "ValueError"},
+    {"id": "unclosed_quote", "args": [[{"id": 1, "msg": "hi"}], "msg:'hi"], "raises": "ValueError"}
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "function": "match_route",
+  "cases": [
+    {
+      "id": "exact_ok",
+      "args": [
+        "/api/users",
+        "/api/users"
+      ],
+      "value": true
+    },
+    {
+      "id": "wildcards_ok",
+      "args": [
+        "/files/file?.txt",
+        "/files/file2.txt"
+      ],
+      "value": true
+    },
+    {
+      "id": "recursive_extra_ok",
+      "args": [
+        "/docs/**",
+        "/docs/guide/intro"
+      ],
+      "value": true
+    },
+    {
+      "id": "nonfinal_recursive_error",
+      "args": [
+        "a/**/b",
+        "a/x/b"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "star_empty_segment",
+      "args": [
+        "a/*",
+        "a/"
+      ],
+      "value": true
+    },
+    {
+      "id": "star_empty_prefix",
+      "args": [
+        "a/*-x",
+        "a/-x"
+      ],
+      "value": true
+    },
+    {
+      "id": "star_empty_both",
+      "args": [
+        "a/*b*",
+        "a/b"
+      ],
+      "value": true
+    },
+    {
+      "id": "recursive_zero_simple",
+      "args": [
+        "docs/**",
+        "docs"
+      ],
+      "value": true
+    },
+    {
+      "id": "recursive_zero_prefix",
+      "args": [
+        "/api/v1/**",
+        "/api/v1"
+      ],
+      "value": true
+    },
+    {
+      "id": "recursive_zero_rootish",
+      "args": [
+        "root/**",
+        "root"
+      ],
+      "value": true
+    }
+  ]
+}

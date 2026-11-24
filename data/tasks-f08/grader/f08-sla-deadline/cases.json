@@ -1,0 +1,55 @@
+{
+  "function": "compute_sla_deadline",
+  "cases": [
+    {
+      "id": "same_day_within_window",
+      "args": ["2024-01-04T10:30", 90],
+      "value": "2024-01-04T12:00"
+    },
+    {
+      "id": "roll_after_hours_and_weekend",
+      "args": ["2024-01-05T18:15", 60],
+      "value": "2024-01-08T10:00"
+    },
+    {
+      "id": "multi_day_with_holiday",
+      "args": ["2024-01-05T16:00", 180, "09:00", "17:00", ["2024-01-08"]],
+      "value": "2024-01-09T11:00"
+    },
+    {
+      "id": "exact_end_of_day",
+      "args": ["2024-01-04T09:00", 480],
+      "value": "2024-01-04T17:00"
+    },
+    {
+      "id": "exact_end_second_day",
+      "args": ["2024-01-04T15:00", 600],
+      "value": "2024-01-05T17:00"
+    },
+    {
+      "id": "zero_sla_outside_window",
+      "args": ["2024-01-06T12:00", 0],
+      "value": "2024-01-08T09:00"
+    },
+    {
+      "id": "zero_sla_inside_window",
+      "args": ["2024-01-04T11:05", 0],
+      "value": "2024-01-04T11:05"
+    },
+    {
+      "id": "empty_weekend_allowed",
+      "args": ["2024-01-05T16:30", 90, "09:00", "17:00", [], []],
+      "value": "2024-01-06T10:00"
+    },
+    {
+      "id": "invalid_work_window",
+      "args": ["2024-01-04T10:00", 30, "17:00", "09:00"],
+      "raises": "ValueError"
+    },
+    {
+      "id": "negative_sla",
+      "args": ["2024-01-04T10:00", -1],
+      "raises": "ValueError"
+    }
+  ]
+}

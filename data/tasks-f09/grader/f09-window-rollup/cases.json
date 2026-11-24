@@ -1,0 +1,105 @@
+{
+  "function": "windowed_rollup",
+  "cases": [
+    {
+      "id": "basic_partial_sum",
+      "args": [
+        [1, 2, 3, 4],
+        3,
+        2,
+        "sum",
+        null,
+        true
+      ],
+      "value": [6, 7]
+    },
+    {
+      "id": "empty_seq",
+      "args": [
+        [],
+        3,
+        1
+      ],
+      "value": []
+    },
+    {
+      "id": "full_windows_include_last",
+      "args": [
+        [1, 2, 3, 4],
+        2,
+        1,
+        "sum",
+        null,
+        false
+      ],
+      "value": [3, 5, 7]
+    },
+    {
+      "id": "pad_nonzero_last",
+      "args": [
+        [2, 5, 8],
+        2,
+        2,
+        "last",
+        9,
+        false
+      ],
+      "value": [5, 9]
+    },
+    {
+      "id": "pad_zero_min",
+      "args": [
+        [5, 7, 3],
+        2,
+        2,
+        "min",
+        0,
+        false
+      ],
+      "value": [5, 0]
+    },
+    {
+      "id": "pad_zero_span",
+      "args": [
+        [4],
+        3,
+        1,
+        "span",
+        0,
+        false
+      ],
+      "value": [4]
+    },
+    {
+      "id": "zero_step_raises",
+      "args": [
+        [1, 2, 3],
+        2,
+        0
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "invalid_agg_raises",
+      "args": [
+        [1, 2, 3],
+        2,
+        1,
+        "median"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "short_seq_no_partial_no_pad",
+      "args": [
+        [10, 20],
+        3,
+        1,
+        "max",
+        null,
+        false
+      ],
+      "value": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d05b1-crt-state",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 59,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "function": "eval_infix",
+  "cases": [
+    {"id": "basic_precedence", "args": ["1 + 2 * 3 - 7 // 2", null], "value": 4},
+    {"id": "parens_and_vars", "args": ["(a + b) * c % 7", {"a": 4, "b": 5, "c": 3}], "value": 6},
+    {"id": "unary_chain", "args": ["--x + +-y", {"x": 5, "y": 2}], "value": 3},
+    {"id": "unary_power", "args": ["-2 ^ 2 + 10", null], "value": 6},
+    {"id": "zero_variable", "args": ["x + 10", {"x": 0}], "value": 10},
+    {"id": "right_assoc_power", "args": ["2 ^ 3 ^ 2", null], "value": 512},
+    {"id": "neg_exponent", "args": ["2 ^ -1", null], "raises": "ValueError"},
+    {"id": "div_by_zero", "args": ["10 // (a - a)", {"a": 3}], "raises": "ZeroDivisionError"},
+    {"id": "trailing_tokens", "args": ["1 + 2 3", null], "raises": "ValueError"},
+    {"id": "missing_var", "args": ["x + 1", {}], "raises": "KeyError"}
+  ]
+}

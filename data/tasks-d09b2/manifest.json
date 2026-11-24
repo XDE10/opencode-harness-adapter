@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d09b2-pratt-eval",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 85,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

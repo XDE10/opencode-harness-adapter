@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d15a2-route-glob-matcher",
+      "split": "train",
+      "domain": "string_timeseries",
+      "lines": 58,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    }
+  ]
+}

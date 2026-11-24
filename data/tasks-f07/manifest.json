@@ -1,0 +1,52 @@
+{
+  "tasks": [
+    {
+      "id": "f07-bool-search-filter",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 140,
+      "cases": 9,
+      "passed": {
+        "original": "7/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f07-glob-star-class",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 92,
+      "cases": 10,
+      "passed": {
+        "original": "7/10",
+        "reference": "10/10",
+        "partial": "9/10"
+      }
+    },
+    {
+      "id": "f07-infix-arith-vars",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 114,
+      "cases": 10,
+      "passed": {
+        "original": "8/10",
+        "reference": "10/10",
+        "partial": "9/10"
+      }
+    },
+    {
+      "id": "f07-rpn-vm",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 96,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

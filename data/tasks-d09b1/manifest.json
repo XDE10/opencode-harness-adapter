@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d09b1-stack-vm-boundary-reset",
+      "split": "heldout",
+      "domain": "diff_interpreter",
+      "lines": 83,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    }
+  ]
+}

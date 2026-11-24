@@ -1,0 +1,102 @@
+{
+  "function": "parse_dotenv",
+  "cases": [
+    {
+      "id": "basic_export_and_interp",
+      "args": [
+        "# header\nexport HOST=localhost\nPORT=8080\nURL=\"http://${HOST}:${PORT}/api\"\n"
+      ],
+      "value": {
+        "HOST": "localhost",
+        "PORT": "8080",
+        "URL": "http://localhost:8080/api"
+      }
+    },
+    {
+      "id": "single_quote_literal",
+      "args": [
+        "A=1\nRAW='${A}\\n'\nESC=\"line1\\n\\$A\"\n"
+      ],
+      "value": {
+        "A": "1",
+        "RAW": "${A}\\n",
+        "ESC": "line1\n$A"
+      }
+    },
+    {
+      "id": "overrides_literal",
+      "args": [
+        "BASE=/opt\nDATA=${BASE}/data\n",
+        {
+          "BASE": "/srv/${X}"
+        }
+      ],
+      "value": {
+        "BASE": "/srv/${X}",
+        "DATA": "/srv/${X}/data"
+      }
+    },
+    {
+      "id": "quoted_hash_and_url_fragment",
+      "args": [
+        "COLOR=\"#ff00aa\" # hex\nTAG='#v1'\nLINK=https://example.com#frag # trailing\n"
+      ],
+      "value": {
+        "COLOR": "#ff00aa",
+        "TAG": "#v1",
+        "LINK": "https://example.com#frag"
+      }
+    },
+    {
+      "id": "dash_vs_colon_dash_empty",
+      "args": [
+        "EMPTY=\nA=${EMPTY-fallback}\nB=${EMPTY:-fallback}\nC=${MISSING-alt}\n"
+      ],
+      "value": {
+        "EMPTY": "",
+        "A": "",
+        "B": "fallback",
+        "C": "alt"
+      }
+    },
+    {
+      "id": "diamond_reuse_not_cycle",
+      "args": [
+        "OUT=${A}_${A}\nA=${LEAF:-x}\nLEAF=ok\n"
+      ],
+      "value": {
+        "OUT": "ok_ok",
+        "A": "ok",
+        "LEAF": "ok"
+      }
+    },
+    {
+      "id": "nested_default_with_overrides",
+      "args": [
+        "PORT=${ENV_PORT:-${FALLBACK_PORT:-3000}}\nFALLBACK_PORT=4000\n",
+        {
+          "ENV_PORT": ""
+        }
+      ],
+      "value": {
+        "PORT": "4000",
+        "FALLBACK_PORT": "4000",
+        "ENV_PORT": ""
+      }
+    },
+    {
+      "id": "cycle_raises",
+      "args": [
+        "A=${B}\nB=${A}\n"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "unclosed_quote_raises",
+      "args": [
+        "KEY=\"abc\n"
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

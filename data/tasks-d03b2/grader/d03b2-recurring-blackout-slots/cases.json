@@ -1,0 +1,487 @@
+{
+  "function": "build_schedule",
+  "cases": [
+    {
+      "id": "basic_recurrence_and_conflict",
+      "args": [
+        [
+          {
+            "name": "s1",
+            "start": 0,
+            "duration": 10,
+            "step": 20,
+            "count": 2,
+            "min_chunk": 3
+          },
+          {
+            "name": "s2",
+            "start": 5,
+            "duration": 10,
+            "step": 20,
+            "count": 2,
+            "min_chunk": 3
+          }
+        ],
+        [],
+        [
+          0,
+          32
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            10,
+            "s1"
+          ],
+          [
+            5,
+            15,
+            "s2"
+          ],
+          [
+            20,
+            30,
+            "s1"
+          ],
+          [
+            25,
+            32,
+            "s2"
+          ]
+        ],
+        "conflicts": [
+          [
+            5,
+            10,
+            [
+              "s1",
+              "s2"
+            ]
+          ],
+          [
+            25,
+            30,
+            [
+              "s1",
+              "s2"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "edge_blackout_trimming",
+      "args": [
+        [
+          {
+            "name": "work",
+            "start": 10,
+            "duration": 20,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 5
+          }
+        ],
+        [
+          [
+            5,
+            14
+          ],
+          [
+            25,
+            35
+          ]
+        ],
+        [
+          0,
+          50
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            14,
+            25,
+            "work"
+          ]
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "id": "invalid_blackout_raises",
+      "args": [
+        [
+          {
+            "name": "s1",
+            "start": 0,
+            "duration": 10,
+            "step": 10,
+            "count": 1,
+            "min_chunk": 1
+          }
+        ],
+        [
+          [
+            15,
+            10
+          ]
+        ],
+        [
+          0,
+          20
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "duplicate_series_name_raises",
+      "args": [
+        [
+          {
+            "name": "dup",
+            "start": 0,
+            "duration": 10,
+            "step": 10,
+            "count": 1,
+            "min_chunk": 1
+          },
+          {
+            "name": "dup",
+            "start": 5,
+            "duration": 10,
+            "step": 10,
+            "count": 1,
+            "min_chunk": 1
+          }
+        ],
+        [],
+        [
+          0,
+          20
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "interior_blackout_split_with_conflicts",
+      "args": [
+        [
+          {
+            "name": "alpha",
+            "start": 0,
+            "duration": 20,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 2
+          },
+          {
+            "name": "beta",
+            "start": 5,
+            "duration": 15,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 2
+          }
+        ],
+        [
+          [
+            8,
+            12
+          ]
+        ],
+        [
+          0,
+          25
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            8,
+            "alpha"
+          ],
+          [
+            5,
+            8,
+            "beta"
+          ],
+          [
+            12,
+            20,
+            "alpha"
+          ],
+          [
+            12,
+            20,
+            "beta"
+          ]
+        ],
+        "conflicts": [
+          [
+            5,
+            8,
+            [
+              "alpha",
+              "beta"
+            ]
+          ],
+          [
+            12,
+            20,
+            [
+              "alpha",
+              "beta"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "multiple_interior_blackouts_single_occurrence",
+      "args": [
+        [
+          {
+            "name": "long",
+            "start": 0,
+            "duration": 30,
+            "step": 50,
+            "count": 1,
+            "min_chunk": 3
+          }
+        ],
+        [
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ],
+        [
+          0,
+          40
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            5,
+            "long"
+          ],
+          [
+            10,
+            15,
+            "long"
+          ],
+          [
+            20,
+            30,
+            "long"
+          ]
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "id": "exact_min_chunk_boundary",
+      "args": [
+        [
+          {
+            "name": "exact",
+            "start": 0,
+            "duration": 5,
+            "step": 10,
+            "count": 2,
+            "min_chunk": 5
+          }
+        ],
+        [],
+        [
+          0,
+          20
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            5,
+            "exact"
+          ],
+          [
+            10,
+            15,
+            "exact"
+          ]
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "id": "split_fragments_at_exact_min_chunk_and_intra_merge",
+      "args": [
+        [
+          {
+            "name": "s1",
+            "start": 0,
+            "duration": 14,
+            "step": 12,
+            "count": 2,
+            "min_chunk": 4
+          },
+          {
+            "name": "s2",
+            "start": 10,
+            "duration": 6,
+            "step": 20,
+            "count": 1,
+            "min_chunk": 6
+          }
+        ],
+        [
+          [
+            4,
+            10
+          ]
+        ],
+        [
+          0,
+          30
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            4,
+            "s1"
+          ],
+          [
+            10,
+            16,
+            "s2"
+          ],
+          [
+            10,
+            26,
+            "s1"
+          ]
+        ],
+        "conflicts": [
+          [
+            10,
+            16,
+            [
+              "s1",
+              "s2"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "three_way_conflict_coalescing_with_exact_chunks",
+      "args": [
+        [
+          {
+            "name": "a",
+            "start": 0,
+            "duration": 20,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 5
+          },
+          {
+            "name": "b",
+            "start": 0,
+            "duration": 20,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 5
+          },
+          {
+            "name": "c",
+            "start": 5,
+            "duration": 5,
+            "step": 30,
+            "count": 1,
+            "min_chunk": 5
+          }
+        ],
+        [
+          [
+            10,
+            15
+          ]
+        ],
+        [
+          0,
+          20
+        ]
+      ],
+      "value": {
+        "slots": [
+          [
+            0,
+            10,
+            "a"
+          ],
+          [
+            0,
+            10,
+            "b"
+          ],
+          [
+            5,
+            10,
+            "c"
+          ],
+          [
+            15,
+            20,
+            "a"
+          ],
+          [
+            15,
+            20,
+            "b"
+          ]
+        ],
+        "conflicts": [
+          [
+            0,
+            5,
+            [
+              "a",
+              "b"
+            ]
+          ],
+          [
+            5,
+            10,
+            [
+              "a",
+              "b",
+              "c"
+            ]
+          ],
+          [
+            15,
+            20,
+            [
+              "a",
+              "b"
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

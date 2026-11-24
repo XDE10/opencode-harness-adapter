@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "f09-coalesce-runs",
+      "split": "train",
+      "domain": "sequence_tree",
+      "lines": 46,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f09-sorted-join",
+      "split": "train",
+      "domain": "sequence_tree",
+      "lines": 62,
+      "cases": 9,
+      "passed": {
+        "original": "6/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    },
+    {
+      "id": "f09-window-rollup",
+      "split": "train",
+      "domain": "sequence_tree",
+      "lines": 56,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

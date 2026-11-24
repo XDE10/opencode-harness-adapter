@@ -1,0 +1,354 @@
+{
+  "function": "run_fx_ledger",
+  "cases": [
+    {
+      "id": "basic_deposit_and_convert_to_base",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "EUR",
+            "num": 11,
+            "den": 10
+          },
+          {
+            "op": "deposit",
+            "currency": "EUR",
+            "amount": 100,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "set_rate",
+            "currency": "EUR",
+            "num": 12,
+            "den": 10
+          },
+          {
+            "op": "convert",
+            "from": "EUR",
+            "to": "USD",
+            "amount": 50,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "convert",
+            "from": "EUR",
+            "to": "USD",
+            "amount": 50,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        100,
+        null,
+        {
+          "from_bal": 50,
+          "to_amount": 60,
+          "to_bal": 60
+        },
+        {
+          "from_bal": 0,
+          "to_amount": 60,
+          "to_bal": 120
+        },
+        {
+          "period_pnl": 10,
+          "total_nav": 120
+        }
+      ]
+    },
+    {
+      "id": "rounding_half_up_vs_half_even_on_deposit",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "CAD",
+            "num": 3,
+            "den": 2
+          },
+          {
+            "op": "deposit",
+            "currency": "CAD",
+            "amount": 1,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "deposit",
+            "currency": "CAD",
+            "amount": 1,
+            "rounding": "HALF_UP"
+          },
+          {
+            "op": "convert",
+            "from": "CAD",
+            "to": "USD",
+            "amount": 2,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        1,
+        2,
+        {
+          "from_bal": 0,
+          "to_amount": 3,
+          "to_bal": 3
+        },
+        {
+          "period_pnl": -1,
+          "total_nav": 3
+        }
+      ]
+    },
+    {
+      "id": "exact_cross_currency_rational_convert",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "AAA",
+            "num": 1,
+            "den": 3
+          },
+          {
+            "op": "set_rate",
+            "currency": "BBB",
+            "num": 1,
+            "den": 6
+          },
+          {
+            "op": "deposit",
+            "currency": "AAA",
+            "amount": 10,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "convert",
+            "from": "AAA",
+            "to": "BBB",
+            "amount": 10,
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        10,
+        {
+          "from_bal": 0,
+          "to_amount": 20,
+          "to_bal": 20
+        }
+      ]
+    },
+    {
+      "id": "cross_currency_halfway_rounding",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "GBP",
+            "num": 5,
+            "den": 4
+          },
+          {
+            "op": "set_rate",
+            "currency": "CHF",
+            "num": 5,
+            "den": 2
+          },
+          {
+            "op": "deposit",
+            "currency": "GBP",
+            "amount": 3,
+            "rounding": "HALF_UP"
+          },
+          {
+            "op": "convert",
+            "from": "GBP",
+            "to": "CHF",
+            "amount": 3,
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        3,
+        {
+          "from_bal": 0,
+          "to_amount": 2,
+          "to_bal": 2
+        }
+      ]
+    },
+    {
+      "id": "roll_period_updates_nav_and_basis",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "EUR",
+            "num": 11,
+            "den": 10
+          },
+          {
+            "op": "deposit",
+            "currency": "EUR",
+            "amount": 100,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "set_rate",
+            "currency": "EUR",
+            "num": 12,
+            "den": 10
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        100,
+        null,
+        {
+          "period_pnl": 10,
+          "total_nav": 120
+        },
+        {
+          "period_pnl": 0,
+          "total_nav": 120
+        }
+      ]
+    },
+    {
+      "id": "roll_period_then_partial_sale_pnl",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "JPY",
+            "num": 1,
+            "den": 100
+          },
+          {
+            "op": "deposit",
+            "currency": "JPY",
+            "amount": 10000,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "set_rate",
+            "currency": "JPY",
+            "num": 2,
+            "den": 100
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "convert",
+            "from": "JPY",
+            "to": "USD",
+            "amount": 5000,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "roll_period",
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        10000,
+        null,
+        {
+          "period_pnl": 100,
+          "total_nav": 200
+        },
+        {
+          "from_bal": 5000,
+          "to_amount": 100,
+          "to_bal": 100
+        },
+        {
+          "period_pnl": 0,
+          "total_nav": 200
+        }
+      ]
+    },
+    {
+      "id": "error_overdraft_convert",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "EUR",
+            "num": 1,
+            "den": 1
+          },
+          {
+            "op": "deposit",
+            "currency": "EUR",
+            "amount": 50,
+            "rounding": "HALF_EVEN"
+          },
+          {
+            "op": "convert",
+            "from": "EUR",
+            "to": "USD",
+            "amount": 51,
+            "rounding": "HALF_EVEN"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "error_set_base_currency_rate",
+      "args": [
+        "USD",
+        [
+          {
+            "op": "set_rate",
+            "currency": "USD",
+            "num": 2,
+            "den": 1
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

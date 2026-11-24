@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "id": "f06-box-table",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 83,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "f06-hanging-wrap",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 97,
+      "cases": 9,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "f06-md-table-extract",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 77,
+      "cases": 9,
+      "passed": {
+        "original": "7/9",
+        "reference": "9/9",
+        "partial": "8/9"
+      }
+    }
+  ]
+}

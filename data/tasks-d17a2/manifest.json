@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d17a2-outline-numbering",
+      "split": "train",
+      "domain": "table_combinatorics",
+      "lines": 59,
+      "cases": 10,
+      "passed": {
+        "original": "4/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

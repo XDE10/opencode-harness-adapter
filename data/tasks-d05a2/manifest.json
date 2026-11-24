@@ -1,0 +1,28 @@
+{
+  "tasks": [
+    {
+      "id": "d05a2-split-payout-alloc",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 92,
+      "cases": 10,
+      "passed": {
+        "original": "5/10",
+        "reference": "10/10",
+        "partial": "7/10"
+      }
+    },
+    {
+      "id": "d05a2-tiered-fx-tax-ledger",
+      "split": "train",
+      "domain": "money_numeric",
+      "lines": 109,
+      "cases": 9,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

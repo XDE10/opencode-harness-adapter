@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d04b2-nested-tx-kv",
+      "split": "train",
+      "domain": "stateful_cache_kv",
+      "lines": 90,
+      "cases": 9,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    }
+  ]
+}

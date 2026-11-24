@@ -1,0 +1,299 @@
+{
+  "function": "run",
+  "cases": [
+    {
+      "id": "basic_coprime",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 2,
+            "m": 3
+          },
+          {
+            "op": "add",
+            "r": 3,
+            "m": 5
+          },
+          {
+            "op": "solve"
+          },
+          {
+            "op": "add",
+            "r": 2,
+            "m": 7
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          8,
+          15
+        ],
+        null,
+        [
+          23,
+          105
+        ]
+      ]
+    },
+    {
+      "id": "basic_noncoprime_consistent",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 1,
+            "m": 2
+          },
+          {
+            "op": "add",
+            "r": 3,
+            "m": 4
+          },
+          {
+            "op": "solve"
+          },
+          {
+            "op": "add",
+            "r": 5,
+            "m": 6
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          3,
+          4
+        ],
+        null,
+        [
+          11,
+          12
+        ]
+      ]
+    },
+    {
+      "id": "basic_empty_and_mod_one",
+      "args": [
+        [
+          {
+            "op": "solve"
+          },
+          {
+            "op": "add",
+            "r": 7,
+            "m": 1
+          },
+          {
+            "op": "solve"
+          },
+          {
+            "op": "add",
+            "r": 0,
+            "m": 8
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        [
+          0,
+          1
+        ],
+        null,
+        [
+          0,
+          1
+        ],
+        null,
+        [
+          0,
+          8
+        ]
+      ]
+    },
+    {
+      "id": "basic_invalid_modulus",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 1,
+            "m": 0
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "negative_single",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": -1,
+            "m": 5
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "negative_after_existing",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 2,
+            "m": 3
+          },
+          {
+            "op": "add",
+            "r": -2,
+            "m": 5
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "id": "reset_clears_state",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 7,
+            "m": 10
+          },
+          {
+            "op": "solve"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        [
+          7,
+          10
+        ],
+        null,
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "reset_then_new_system",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 4,
+            "m": 9
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "add",
+            "r": 1,
+            "m": 4
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "value": [
+        null,
+        null,
+        null,
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "id": "inconsistent_gcd",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 1,
+            "m": 2
+          },
+          {
+            "op": "add",
+            "r": 0,
+            "m": 4
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "inconsistent_later",
+      "args": [
+        [
+          {
+            "op": "add",
+            "r": 3,
+            "m": 6
+          },
+          {
+            "op": "add",
+            "r": 2,
+            "m": 8
+          },
+          {
+            "op": "solve"
+          }
+        ]
+      ],
+      "raises": "ValueError"
+    }
+  ]
+}

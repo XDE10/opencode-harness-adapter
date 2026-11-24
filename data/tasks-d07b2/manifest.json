@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d07b2-duration-canonicalizer",
+      "split": "train",
+      "domain": "text_formatting",
+      "lines": 60,
+      "cases": 10,
+      "passed": {
+        "original": "5/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

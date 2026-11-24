@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "d02b1-md-doc-state",
+      "split": "train",
+      "domain": "markup_tokenizer",
+      "lines": 87,
+      "cases": 10,
+      "passed": {
+        "original": "6/10",
+        "reference": "10/10",
+        "partial": "8/10"
+      }
+    }
+  ]
+}

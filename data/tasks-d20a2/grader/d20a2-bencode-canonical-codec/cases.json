@@ -1,0 +1,111 @@
+{
+  "function": "bencode_codec",
+  "cases": [
+    {
+      "id": "encode_basic",
+      "args": [
+        "encode",
+        [
+          7,
+          "hi"
+        ]
+      ],
+      "value": "li7e2:hie"
+    },
+    {
+      "id": "decode_basic",
+      "args": [
+        "decode",
+        "li1e3:abce"
+      ],
+      "value": [
+        1,
+        "abc"
+      ]
+    },
+    {
+      "id": "decode_dict",
+      "args": [
+        "decode",
+        "d1:a1:x1:bli2eee"
+      ],
+      "value": {
+        "a": "x",
+        "b": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "duplicate_key",
+      "args": [
+        "decode",
+        "d1:a1:x1:a1:ye"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "encode_unsorted_keys",
+      "args": [
+        "encode",
+        {
+          "b": 1,
+          "a": 2,
+          "c": 3
+        }
+      ],
+      "value": "d1:ai2e1:bi1e1:ci3ee"
+    },
+    {
+      "id": "encode_nested_unsorted",
+      "args": [
+        "encode",
+        {
+          "z": {
+            "y": 1,
+            "x": [
+              2
+            ]
+          },
+          "a": "q"
+        }
+      ],
+      "value": "d1:a1:q1:zd1:xli2ee1:yi1eee"
+    },
+    {
+      "id": "bad_int_leading_zero",
+      "args": [
+        "decode",
+        "i03e"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "bad_int_negative_zero",
+      "args": [
+        "decode",
+        "i-0e"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "utf8_string_length",
+      "args": [
+        "decode",
+        "2:\u00e9"
+      ],
+      "value": "\u00e9"
+    },
+    {
+      "id": "utf8_inside_list",
+      "args": [
+        "decode",
+        "l1:a2:\u00e9e"
+      ],
+      "value": [
+        "a",
+        "\u00e9"
+      ]
+    }
+  ]
+}

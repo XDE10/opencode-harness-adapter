@@ -1,0 +1,63 @@
+{
+  "id": "oca-v4",
+  "model": {
+    "id": "Qwen/Qwen3-8B",
+    "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+    "local_path": "/content/models/Qwen3-8B",
+    "served_name": "qwen3-8b"
+  },
+  "opencode": {
+    "version": "2.2.7",
+    "bin": "/content/tools/opencode/bin/opencode",
+    "permission": {
+      "*": "deny",
+      "read": "allow",
+      "edit": "allow",
+      "write": "allow",
+      "list": "allow",
+      "glob": "allow",
+      "grep": "allow",
+      "bash": "allow"
+    }
+  },
+  "pi": {
+    "package": "@earendil-works/pi-coding-agent",
+    "bin": "/content/tools/pi/bin/pi",
+    "tools": "read,write,edit,bash"
+  },
+  "rollout": {
+    "temperature": 0.8,
+    "top_p": 1.0,
+    "enable_thinking": false,
+    "max_context_tokens": 32768,
+    "max_output_tokens_per_call": 2048,
+    "max_output_tokens_per_trial": 8192,
+    "max_model_calls": 20,
+    "timeout_seconds": 300,
+    "concurrency": 32
+  },
+  "grade": {
+    "timeout_seconds": 15
+  },
+  "train": {
+    "group_size": 8,
+    "tasks_per_step": 8,
+    "oversample_factor": 1.5,
+    "steps": 60,
+    "rank": 32,
+    "alpha": 64,
+    "targets": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    "lr": 2e-5,
+    "loss_mode": "tis_clip",
+    "norm_mode": "token",
+    "prefix_merge": true,
+    "clip_low": 0.2,
+    "clip_high": 0.28,
+    "max_grad_norm": 1.0,
+    "minibatches": 2,
+    "tis_cap": 2.0,
+    "efficiency_weight": 0.1,
+    "efficiency_budget": 15,
+    "vllm_gpu_memory_utilization": 0.62
+  }
+}
