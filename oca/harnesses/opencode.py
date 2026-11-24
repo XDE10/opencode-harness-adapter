@@ -91,12 +91,19 @@ class OpenCodeHarness:
     def prepare(self, home: Path, base_url: str, binary: str, prompt: str, cfg: dict) -> tuple[list[str], dict[str, str]]:
         if _CACHE_TEMPLATE.is_dir():
             shutil.copytree(_CACHE_TEMPLATE, home / ".cache", dirs_exist_ok=True)
+        path_parts = [str(Path(binary).parent)]
+        node_bin = shutil.which("node")
+        if node_bin:
+            node_dir = str(Path(node_bin).parent)
+            if node_dir not in path_parts:
+                path_parts.append(node_dir)
+        path_parts.extend(["/usr/local/bin", "/usr/bin", "/bin"])
         env = {
             "HOME": str(home),
             "XDG_CACHE_HOME": str(home / ".cache"),
             "XDG_DATA_HOME": str(home / ".local" / "share"),
             "XDG_STATE_HOME": str(home / ".local" / "state"),
-            "PATH": f"{Path(binary).parent}:/usr/local/bin:/usr/bin:/bin",
+            "PATH": ":".join(path_parts),
             "OPENCODE_CONFIG_CONTENT": json.dumps(opencode_config(base_url, cfg)),
             "OPENCODE_DISABLE_MODELS_FETCH": "1",
             "OPENCODE_DISABLE_AUTOUPDATE": "1",

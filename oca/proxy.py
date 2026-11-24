@@ -115,7 +115,11 @@ class CaptureProxy:
             if not aux:
                 trial.last_request_messages = body.get("messages")
         if stream:
-            return await self._sse(request, data, body)
+            try:
+                return await self._sse(request, data, body)
+            except (ConnectionResetError, BrokenPipeError, Exception):
+                # Client process was killed on trial timeout while upstream was generating
+                return web.Response(status=499)
         data.pop("prompt_token_ids", None)
         choice.pop("token_ids", None)
         choice.pop("logprobs", None)
