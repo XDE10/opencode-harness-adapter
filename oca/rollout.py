@@ -46,6 +46,14 @@ def _agent_ids():
         return None
 
 
+def _copy_lf(src: Path, dst: Path):
+    """Copy a text file normalizing CRLF -> LF so Linux edit tools always match cleanly."""
+    raw = src.read_bytes()
+    if b"\x00" not in raw:
+        raw = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    dst.write_bytes(raw)
+
+
 def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
     """Copy visible task files into `work`; return (original_file_texts, protected_test_paths)."""
     original = {}
@@ -60,7 +68,7 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
                 if sp.is_symlink():
                     continue
                 dp = work / rel_dir / fn
-                shutil.copyfile(sp, dp)
+                _copy_lf(sp, dp)
                 rel_s = (rel_dir / fn).as_posix()
                 if fn == "TASK.md" or fn.endswith(".py"):
                     original[rel_s] = dp.read_text(encoding="utf-8", errors="replace")
@@ -68,7 +76,7 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
                     protected.append(rel_s)
     else:
         for name in ("TASK.md", "solution.py"):
-            shutil.copyfile(task.task_dir / name, work / name)
+            _copy_lf(task.task_dir / name, work / name)
             original[name] = (work / name).read_text(encoding="utf-8", errors="replace")
     return original, sorted(protected)
 
