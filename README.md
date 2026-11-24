@@ -1,6 +1,6 @@
 # OpenCode & Pi Harness Adapter
 
-Single-GPU colocated Agentic Reinforcement Learning (**LoRA GRPO**) that adapts lightweight open-weight models (`Qwen/Qwen3-8B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7** & **Pi**), inspired by Hugging Face's *Harness Adapters* (Nov 2026).
+Single-GPU colocated Agentic Reinforcement Learning (**LoRA GRPO**) that adapts lightweight open-weight models (`Qwen/Qwen3.5-9B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7** & **Pi**), inspired by Hugging Face's *Harness Adapters* (Nov 2026).
 
 Instead of requiring multi-GPU asynchronous clusters (e.g., 2×B200), this framework runs the complete **Rollout → Engine Token/Logprob Capture → Hidden Test Verification → Prefix-Merged LoRA Update → Runtime Hot-Swap** loop on a **single 96 GB GPU** (RTX PRO 6000 Blackwell on Colab G4), with zero Docker daemon dependency and zero vLLM restarts.
 
@@ -57,8 +57,10 @@ flowchart LR
 | Check / Milestone | Status | Measured Result |
 | --- | --- | --- |
 | Local Unit Test & Adversarial CI (`tests/test_oca_v4.py`) | Passing | **11/11 tests** (incl. 10/10 anti-hack blocks, `repo_pytest` triple-control, prefix-merge packing & compaction split) |
-| Colab G4 Hardware Probe (`artifacts/smoke_g4/probe_report.json`) | Verified | RTX PRO 6000 Blackwell 97.9 GB, 48 vCPU, 176 GB RAM; Sleep/Wake roundtrip **2.37s** |
-| Single-Card Colocated Step 1 (`artifacts/smoke_g4/step_001_metrics.json`) | Verified | Sleep **0.43s**, LoRA hot-swap **0.085s**, peak train VRAM **24.3 GB**, max `\|Δlogp\|` **0.891 nats** (handled smoothly by TIS) |
+| Colab G4 Hardware Probe (`artifacts/smoke_g4/probe_report.json`) | Verified | RTX PRO 6000 Blackwell 97.9 GB, 48 vCPU, 176 GB RAM; `Qwen/Qwen3.5-9B` Sleep/Wake **2.71s** (52.3 → 1.9 → 52.4 GiB) |
+| 3-Model Live G4 Base Bake-Off (12 tasks × 2 seeds, LF-fixed) | Verified | `Qwen3-8B`: **8.3%** (repo `0.0%`), `Qwen3-14B`: **4.2%** (repo `0.0%`), **`Qwen3.5-9B`: 41.7%** (single `41.7%`, multi-file `repo_pytest` **`41.7%`**, `pass@2=50.0%`) |
+| Prefix-Merged Multi-Turn Packing (`Qwen/Qwen3.5-9B` + FLA) | Verified | **13.51× wall-clock speedup** (`304.1s → 22.5s`, 67 turns → 8 segments, 8.38× compression, grad cosine `0.989`) + Chunked LM-Head for 248K vocab |
+| Dual-Harness Smoke (`OpenCode 2.2.7` + `Pi 0.73.1`) | Verified | `Qwen/Qwen3.5-9B` passes both single-file (`6/6`) and 4-module `repo_pytest` (`8/8`) under OpenCode & Pi with exact token/logprob capture |
 | Full Training & Super-Adapter Evaluation (60-step OpenCode + Pi) | In Progress | *Metrics table to be populated upon completion of G4 runs* |
 
 ---
@@ -76,7 +78,7 @@ python -m oca.colab.pack_repo   # builds artifacts/oca_repo.tar.gz (~350 KiB)
 ### 2. Colab G4 Single-GPU Workflow
 
 ```bash
-# 1) Provision environment (vLLM, PEFT, pytest, OpenCode 2.2.7, Pi CLI, Qwen3-8B weights)
+# 1) Provision environment (vLLM, PEFT, FLA, pytest, OpenCode 2.2.7, Pi CLI, Qwen3.5-9B weights)
 python -m oca.colab.probe_env
 
 # 2) Phase 0/1: Failure diagnosis, Base Thinking-ON upper bound, Pi smoke & Prefix-Merge speedup benchmark

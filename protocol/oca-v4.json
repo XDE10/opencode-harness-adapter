@@ -1,10 +1,10 @@
 {
   "id": "oca-v4",
   "model": {
-    "id": "Qwen/Qwen3-8B",
-    "revision": "b968826d9c46dd6066d109eabc6255188de91218",
-    "local_path": "/content/models/Qwen3-8B",
-    "served_name": "qwen3-8b"
+    "id": "Qwen/Qwen3.5-9B",
+    "local_path": "/content/models/qwen35-9b",
+    "served_name": "qwen35-9b",
+    "tool_call_parser": "qwen3_coder"
   },
   "opencode": {
     "version": "2.2.7",
@@ -58,6 +58,6 @@
     "tis_cap": 2.0,
     "efficiency_weight": 0.1,
     "efficiency_budget": 15,
-    "vllm_gpu_memory_utilization": 0.62
+    "vllm_gpu_memory_utilization": 0.58
   }
 }

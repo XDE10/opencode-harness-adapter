@@ -66,7 +66,7 @@ def merge_super_adapter(
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--base-model", type=Path, default=Path("/content/models/Qwen3-8B"))
+    ap.add_argument("--base-model", type=Path, default=Path("/content/models/qwen35-9b"))
     ap.add_argument("--adapter", action="append", required=True, help="name=path[:weight], e.g. opencode=/path:0.5")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--method", choices=("linear", "ties", "dare_ties"), default="ties")

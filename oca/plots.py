@@ -116,7 +116,7 @@ def render_failure_taxonomy(eval_report_json: Path, out_svg: Path, lora_key: str
     els = [f'<text x="{W//2}" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">'
            f'Held-out Outcome &amp; Failure-Mode Shift: Base Qwen3-8B vs {lora_key}</text>']
     bar_x, bar_w = 150, 560
-    for row_idx, (arm_label, tax) in enumerate((("Base Qwen3-8B", b_tax), (f"Adapted ({lora_key})", l_tax))):
+    for row_idx, (arm_label, tax) in enumerate((("Base Qwen3.5-9B", b_tax), (f"Adapted ({lora_key})", l_tax))):
         y = 65 + row_idx * 65
         tot = max(1, sum(tax.values()))
         els.append(f'<text x="{bar_x-12}" y="{y+24}" text-anchor="end" font-size="13" font-weight="600" fill="#1f2937">'
@@ -215,8 +215,8 @@ def main():
     ap.add_argument("--transfer-matrix", type=Path)
     ap.add_argument("--out-dir", type=Path, default=Path("docs/figures"))
     ap.add_argument("--merge-lora", type=Path, default=None)
-    ap.add_argument("--base-model", type=Path, default=Path("/content/models/Qwen3-8B"))
-    ap.add_argument("--merged-out", type=Path, default=Path("/content/models/Qwen3-8B-opencode-merged"))
+    ap.add_argument("--base-model", type=Path, default=Path("/content/models/qwen35-9b"))
+    ap.add_argument("--merged-out", type=Path, default=Path("/content/models/qwen35-9b-opencode-merged"))
     args = ap.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

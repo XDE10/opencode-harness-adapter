@@ -74,7 +74,7 @@ def ensure_vllm_running(vllm_url: str, cfg: dict, log_path: Path):
         "--max-model-len", str(r["max_context_tokens"]),
         "--gpu-memory-utilization", str(t["vllm_gpu_memory_utilization"]),
         "--enable-sleep-mode",
-        "--enable-auto-tool-choice", "--tool-call-parser", "hermes",
+        "--enable-auto-tool-choice", "--tool-call-parser", m.get("tool_call_parser", "qwen3_coder"),
         "--enable-lora", "--max-lora-rank", str(max(32, t["rank"])), "--max-loras", "2",
         "--logprobs-mode", "processed_logprobs", "--enable-prefix-caching",
     ]
@@ -201,6 +201,19 @@ def pack_trajectory_segments(turns: list[dict], adv: float, max_seq: int = 24576
     return segments, stats
 
 
+def _split_backbone_lm_head(model):
+    """Return (backbone, lm_head) for chunked logits on large-vocab models (e.g. Qwen3.5 248K)."""
+    base = model.get_base_model() if hasattr(model, "get_base_model") else model
+    lm_head = (base.get_output_embeddings() if hasattr(base, "get_output_embeddings")
+               else getattr(base, "lm_head", None))
+    backbone = getattr(base, "model", None) or getattr(base, "transformer", None)
+    if backbone is not None and hasattr(backbone, "language_model"):
+        backbone = backbone.language_model
+    if backbone is None or lm_head is None:
+        return None, None
+    return backbone, lm_head
+
+
 def _forward_target_logits(model, ids, pos_tensor, seq_len: int, min_pos: int):
     """Extract logits strictly at `pos_tensor` positions without materializing full [L, V] logits."""
     try:
@@ -214,6 +227,123 @@ def _forward_target_logits(model, ids, pos_tensor, seq_len: int, min_pos: int):
     out = model(input_ids=ids, logits_to_keep=keep_n, use_cache=False).logits[0]
     rel = pos_tensor - min_pos
     return out.index_select(0, rel).float()
+
+
+def _compute_target_logprobs_nograd(model, ids, pos_tensor, tgt_tensor, temp: float, chunk_size: int = 512):
+    """Compute exact per-token logprobs under no_grad with chunked lm_head (~0.5 GB peak logits VRAM)."""
+    import torch
+    from torch.nn import functional as F
+    backbone, lm_head = _split_backbone_lm_head(model)
+    with torch.no_grad():
+        if backbone is not None and lm_head is not None:
+            h = backbone(input_ids=ids, use_cache=False).last_hidden_state[0].index_select(0, pos_tensor)
+            out = []
+            for s in range(0, h.shape[0], chunk_size):
+                e = min(h.shape[0], s + chunk_size)
+                lg = lm_head(h[s:e]).float() / temp
+                out.append(-F.cross_entropy(lg, tgt_tensor[s:e], reduction="none"))
+            return torch.cat(out, dim=0)
+        logits = _forward_target_logits(model, ids, pos_tensor, int(ids.shape[1]), int(pos_tensor[0].item()))
+        return -F.cross_entropy(logits / temp, tgt_tensor, reduction="none")
+
+
+def _chunked_segment_loss_backward(
+    model, seg: dict, temp: float, denom: float, loss_mode: str, tcfg: dict, chunk_size: int = 512,
+) -> tuple[float, list[float], float, int, int]:
+    """Exact GRPO/TIS-Clip loss & backward with chunked lm_head so 248K-vocab logits never OOM.
+
+    Runs the transformer backbone forward once, computes exact per-chunk dL/dh over frozen lm_head
+    in slices of `chunk_size` tokens (~0.5 GB peak VRAM), then runs backbone backward once with
+    `h.backward(h_leaf.grad)`. Mathematically identical to full-tensor backward.
+    """
+    import torch
+    from torch.nn import functional as F
+
+    ids = torch.tensor([seg["input_ids"]], dtype=torch.long, device="cuda")
+    pos = torch.tensor(seg["target_positions"], dtype=torch.long, device="cuda")
+    tgt = torch.tensor(seg["target_ids"], dtype=torch.long, device="cuda")
+    vllm_lp = torch.tensor(seg["old_logps"], dtype=torch.float32, device="cuda")
+    hf_old_full = (torch.tensor(seg["hf_old_lp"], dtype=torch.float32, device="cuda")
+                   if "hf_old_lp" in seg else None)
+    adv = float(seg["adv"])
+    n_tok = int(tgt.shape[0])
+
+    def _slice_loss(scaled_logits, tgt_c, vllm_c, hf_old_c):
+        log_probs = F.log_softmax(scaled_logits, dim=-1)
+        cur_lp = log_probs.gather(-1, tgt_c.unsqueeze(-1)).squeeze(-1)
+        with torch.no_grad():
+            ent_sum = float((-(log_probs.exp() * log_probs).sum(dim=-1)).sum().item())
+        hf_old = hf_old_c if hf_old_c is not None else cur_lp.detach()
+        abs_err = (hf_old - vllm_c).abs()
+        tis_c = 0
+        ppo_c = 0
+        if loss_mode == "tis_clip":
+            log_r_eng = (hf_old - vllm_c).clamp(-10.0, 10.0)
+            raw_eng = log_r_eng.exp()
+            tis_cap = float(tcfg["tis_cap"])
+            tis_c = int((raw_eng > tis_cap).sum().item())
+            tis_w = raw_eng.clamp(max=tis_cap) * (abs_err <= 5.0).float()
+
+            ratio = (cur_lp - hf_old).clamp(-10.0, 10.0).exp()
+            clamped = ratio.clamp(1.0 - tcfg["clip_low"], 1.0 + tcfg["clip_high"])
+            ppo_c = int((ratio.detach() != clamped.detach()).sum().item())
+            loss_c = -(tis_w * torch.minimum(ratio * adv, clamped * adv)).sum() / denom
+        elif loss_mode == "tis":
+            log_r = (cur_lp.detach() - vllm_c).clamp(-10.0, 10.0)
+            raw_r = log_r.exp()
+            tis_cap = float(tcfg["tis_cap"])
+            tis_c = int((raw_r > tis_cap).sum().item())
+            tis_w = raw_r.clamp(max=tis_cap) * (abs_err <= 5.0).float()
+            loss_c = -(tis_w * adv * cur_lp).sum() / denom
+        elif loss_mode == "ppo_clip":
+            ratio = (cur_lp - vllm_c).clamp(-10.0, 10.0).exp()
+            clamped = ratio.clamp(1.0 - tcfg["clip_low"], 1.0 + tcfg["clip_high"])
+            ppo_c = int((ratio.detach() != clamped.detach()).sum().item())
+            loss_c = -torch.minimum(ratio * adv, clamped * adv).sum() / denom
+        else:
+            loss_c = -(adv * cur_lp).sum() / denom
+        return loss_c, abs_err.detach().cpu().tolist(), ent_sum, tis_c, ppo_c
+
+    backbone, lm_head = _split_backbone_lm_head(model)
+    loss_acc = 0.0
+    errs_out: list[float] = []
+    ent_total = 0.0
+    tis_total = 0
+    ppo_total = 0
+
+    if backbone is not None and lm_head is not None:
+        h = backbone(input_ids=ids, use_cache=False).last_hidden_state[0].index_select(0, pos)
+        h_leaf = h.detach().requires_grad_(True)
+        for s in range(0, n_tok, chunk_size):
+            e = min(n_tok, s + chunk_size)
+            scaled = lm_head(h_leaf[s:e]).float() / temp
+            hf_c = hf_old_full[s:e] if hf_old_full is not None else None
+            loss_c, err_c, ent_c, tc, pc = _slice_loss(scaled, tgt[s:e], vllm_lp[s:e], hf_c)
+            if loss_c.requires_grad:
+                loss_c.backward()
+            loss_acc += float(loss_c.detach().item())
+            errs_out.extend(err_c)
+            ent_total += ent_c
+            tis_total += tc
+            ppo_total += pc
+            del scaled, loss_c
+        if h_leaf.grad is not None:
+            h.backward(h_leaf.grad)
+        del h, h_leaf
+    else:
+        logits = _forward_target_logits(model, ids, pos, len(seg["input_ids"]), seg["target_positions"][0])
+        loss_c, err_c, ent_c, tc, pc = _slice_loss(logits / temp, tgt, vllm_lp, hf_old_full)
+        if loss_c.requires_grad:
+            loss_c.backward()
+        loss_acc = float(loss_c.detach().item())
+        errs_out = err_c
+        ent_total = ent_c
+        tis_total = tc
+        ppo_total = pc
+        del logits, loss_c
+
+    del ids, pos, tgt, vllm_lp, hf_old_full
+    return loss_acc, errs_out, (ent_total / max(1, n_tok)), tis_total, ppo_total
 
 
 async def run_screen(args, cfg: dict):
@@ -385,7 +515,7 @@ def run_train(args, cfg: dict):
     active_alias = None
 
     base = AutoModelForCausalLM.from_pretrained(
-        cfg["model"]["local_path"], local_files_only=True, torch_dtype=torch.bfloat16,
+        cfg["model"]["local_path"], local_files_only=True, dtype=torch.bfloat16,
         attn_implementation="sdpa", device_map={"": 0},
     )
     base.requires_grad_(False)
@@ -544,20 +674,20 @@ def run_train(args, cfg: dict):
         mb_executed = 0
 
         if segments and total_tokens > 0:
-            # When using multiple minibatches, pre-cache HF reference logprobs (pi_HF,old) before any opt.step()
             effective_mb = min(minibatches, len(segments))
+            rng.shuffle(segments)
+            chunks = [segments[i::effective_mb] for i in range(effective_mb)]
+            # Pre-cache pi_HF,old only for chunks[1:] (chunk 0 runs before any opt.step(), so cur_lp == hf_old)
             if effective_mb > 1:
-                with torch.no_grad():
-                    for seg in segments:
+                for chunk in chunks[1:]:
+                    for seg in chunk:
                         ids = torch.tensor([seg["input_ids"]], dtype=torch.long, device="cuda")
                         pos = torch.tensor(seg["target_positions"], dtype=torch.long, device="cuda")
                         tgt = torch.tensor(seg["target_ids"], dtype=torch.long, device="cuda")
-                        logits = _forward_target_logits(model, ids, pos, len(seg["input_ids"]), seg["target_positions"][0])
-                        seg["hf_old_lp"] = (-F.cross_entropy(logits / temp, tgt, reduction="none")).cpu().tolist()
-                        del ids, pos, tgt, logits
+                        lp = _compute_target_logprobs_nograd(model, ids, pos, tgt, temp, chunk_size=512)
+                        seg["hf_old_lp"] = lp.cpu().tolist()
+                        del ids, pos, tgt, lp
 
-            rng.shuffle(segments)
-            chunks = [segments[i::effective_mb] for i in range(effective_mb)]
             for chunk in chunks:
                 if not chunk:
                     continue
@@ -567,58 +697,15 @@ def run_train(args, cfg: dict):
                 mb_loss_acc = 0.0
 
                 for seg in chunk:
-                    ids = torch.tensor([seg["input_ids"]], dtype=torch.long, device="cuda")
-                    pos = torch.tensor(seg["target_positions"], dtype=torch.long, device="cuda")
-                    tgt = torch.tensor(seg["target_ids"], dtype=torch.long, device="cuda")
-                    vllm_lp = torch.tensor(seg["old_logps"], dtype=torch.float32, device="cuda")
-                    adv = seg["adv"]
-
-                    logits = _forward_target_logits(model, ids, pos, len(seg["input_ids"]), seg["target_positions"][0])
-                    scaled = logits / temp
-                    log_probs = F.log_softmax(scaled, dim=-1)
-                    cur_lp = log_probs.gather(-1, tgt.unsqueeze(-1)).squeeze(-1)
-
-                    # Zero extra forward cost policy entropy monitor
-                    with torch.no_grad():
-                        ent = -(log_probs.exp() * log_probs).sum(dim=-1)
-                        entropies.append(float(ent.mean().item()))
-
-                    hf_old = (torch.tensor(seg["hf_old_lp"], dtype=torch.float32, device="cuda")
-                              if "hf_old_lp" in seg else cur_lp.detach())
-                    abs_err = (hf_old - vllm_lp).abs()
-                    errs.extend(abs_err.cpu().tolist())
-
-                    denom = (seg["traj_tokens"] * mb_trajs) if norm_mode == "trajectory" else mb_tokens
-
-                    if loss_mode == "tis_clip":
-                        log_r_eng = (hf_old - vllm_lp).clamp(-10.0, 10.0)
-                        raw_eng = log_r_eng.exp()
-                        tis_cap = float(tcfg["tis_cap"])
-                        tis_clipped += int((raw_eng > tis_cap).sum().item())
-                        tis_w = raw_eng.clamp(max=tis_cap) * (abs_err <= 5.0).float()
-
-                        ratio = (cur_lp - hf_old).clamp(-10.0, 10.0).exp()
-                        clamped = ratio.clamp(1.0 - tcfg["clip_low"], 1.0 + tcfg["clip_high"])
-                        ppo_clipped += int((ratio.detach() != clamped.detach()).sum().item())
-                        loss = -(tis_w * torch.minimum(ratio * adv, clamped * adv)).sum() / denom
-                    elif loss_mode == "tis":
-                        log_r = (cur_lp.detach() - vllm_lp).clamp(-10.0, 10.0)
-                        raw_r = log_r.exp()
-                        tis_cap = float(tcfg["tis_cap"])
-                        tis_clipped += int((raw_r > tis_cap).sum().item())
-                        tis_w = raw_r.clamp(max=tis_cap) * (abs_err <= 5.0).float()
-                        loss = -(tis_w * adv * cur_lp).sum() / denom
-                    elif loss_mode == "ppo_clip":
-                        ratio = (cur_lp - vllm_lp).clamp(-10.0, 10.0).exp()
-                        clamped = ratio.clamp(1.0 - tcfg["clip_low"], 1.0 + tcfg["clip_high"])
-                        ppo_clipped += int((ratio.detach() != clamped.detach()).sum().item())
-                        loss = -torch.minimum(ratio * adv, clamped * adv).sum() / denom
-                    else:
-                        loss = -(adv * cur_lp).sum() / denom
-
-                    loss.backward()
-                    mb_loss_acc += float(loss.detach().item())
-                    del logits, scaled, log_probs, cur_lp, loss, ids, pos, tgt, vllm_lp
+                    denom = float((seg["traj_tokens"] * mb_trajs) if norm_mode == "trajectory" else mb_tokens)
+                    l_val, seg_errs, seg_ent, seg_tis, seg_ppo = _chunked_segment_loss_backward(
+                        model, seg, temp, denom, loss_mode, tcfg, chunk_size=512,
+                    )
+                    mb_loss_acc += l_val
+                    errs.extend(seg_errs)
+                    entropies.append(seg_ent)
+                    tis_clipped += seg_tis
+                    ppo_clipped += seg_ppo
 
                 gn = float(torch.nn.utils.clip_grad_norm_(trainable, tcfg["max_grad_norm"]).item())
                 if math.isfinite(gn) and gn > 0:

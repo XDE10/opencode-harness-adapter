@@ -30,6 +30,7 @@ from ..rollout import run_batch
 from ..tasks import load
 from ..train import (
     _forward_target_logits,
+    _split_backbone_lm_head,
     ensure_vllm_running,
     lock_grader_permissions,
     pack_trajectory_segments,
@@ -75,7 +76,7 @@ def benchmark_prefix_merge(vllm_url: str, sample_records: list[dict], cfg: dict)
 
     vllm_http(vllm_url, "/sleep?level=1", "POST")
     base = AutoModelForCausalLM.from_pretrained(
-        cfg["model"]["local_path"], local_files_only=True, torch_dtype=torch.bfloat16,
+        cfg["model"]["local_path"], local_files_only=True, dtype=torch.bfloat16,
         attn_implementation="sdpa", device_map={"": 0},
     )
     base.requires_grad_(False)
@@ -103,17 +104,32 @@ def benchmark_prefix_merge(vllm_url: str, sample_records: list[dict], cfg: dict)
         total_toks = sum(len(s["target_ids"]) for s in segs)
         for p in trainable:
             p.grad = None
+        backbone, lm_head = _split_backbone_lm_head(model)
         torch.cuda.synchronize()
         t0 = time.time()
         for seg in segs:
             ids = torch.tensor([seg["input_ids"]], dtype=torch.long, device="cuda")
             pos = torch.tensor(seg["target_positions"], dtype=torch.long, device="cuda")
             tgt = torch.tensor(seg["target_ids"], dtype=torch.long, device="cuda")
-            logits = _forward_target_logits(model, ids, pos, len(seg["input_ids"]), seg["target_positions"][0])
-            cur_lp = -F.cross_entropy(logits / temp, tgt, reduction="none")
-            loss = -(seg["adv"] * cur_lp).sum() / max(1, total_toks)
-            loss.backward()
-            del ids, pos, tgt, logits, cur_lp, loss
+            if backbone is not None and lm_head is not None:
+                h = backbone(input_ids=ids, use_cache=False).last_hidden_state[0].index_select(0, pos)
+                h_leaf = h.detach().requires_grad_(True)
+                for s in range(0, h_leaf.shape[0], 512):
+                    e = min(h_leaf.shape[0], s + 512)
+                    lg = lm_head(h_leaf[s:e]).float() / temp
+                    cur_lp = -F.cross_entropy(lg, tgt[s:e], reduction="none")
+                    loss_c = -(seg["adv"] * cur_lp).sum() / max(1, total_toks)
+                    loss_c.backward()
+                    del lg, cur_lp, loss_c
+                h.backward(h_leaf.grad)
+                del h, h_leaf
+            else:
+                logits = _forward_target_logits(model, ids, pos, len(seg["input_ids"]), seg["target_positions"][0])
+                cur_lp = -F.cross_entropy(logits / temp, tgt, reduction="none")
+                loss = -(seg["adv"] * cur_lp).sum() / max(1, total_toks)
+                loss.backward()
+                del logits, cur_lp, loss
+            del ids, pos, tgt
         torch.cuda.synchronize()
         elapsed = time.time() - t0
         grads = [p.grad.detach().float().cpu().clone() for p in trainable if p.grad is not None]
