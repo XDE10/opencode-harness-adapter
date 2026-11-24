@@ -422,7 +422,7 @@ async def run_screen(args, cfg: dict):
 def hot_load_lora(vllm_url: str, new_alias: str, ckpt_dir: Path, prev_alias: str | None) -> dict:
     t0 = time.time()
     st_load, r_load = vllm_http(vllm_url, "/v1/load_lora_adapter", "POST", {
-        "lora_name": new_alias, "lora_path": str(ckpt_dir.resolve()),
+        "lora_name": new_alias, "lora_path": str(ckpt_dir.resolve()), "load_inplace": True,
     })
     if st_load != 200:
         raise RuntimeError(f"load_lora_adapter failed ({st_load}): {r_load}")
