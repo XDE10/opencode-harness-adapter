@@ -53,8 +53,8 @@ for k, c in {
 sh("id -u agent >/dev/null 2>&1 || useradd -m -s /bin/bash agent")
 REPORT["agent_uid"] = sh("id agent")[1]
 
-# 2. Python packages (vLLM, PEFT, aiohttp, pytest, hf_transfer; remove stale preinstalled torchao that breaks peft)
-sh("pip install -q uv && uv pip install --system -q vllm peft aiohttp pytest hf_transfer && uv pip uninstall --system -q torchao 2>&1 | tail -8", timeout=2400)
+# 2. Python packages (vLLM, PEFT, aiohttp, pytest, flash-linear-attention; remove stale torchao)
+sh("pip install -q uv && uv pip install --system -q vllm peft aiohttp pytest flash-linear-attention hf_transfer && uv pip uninstall --system -q torchao 2>&1 | tail -8", timeout=2400)
 REPORT["versions"] = sh(
     "python3 -c 'import json, vllm, torch, transformers, peft, aiohttp, pytest; "
     "print(json.dumps({\"vllm\": vllm.__version__, \"torch\": torch.__version__, "
@@ -77,25 +77,25 @@ REPORT["pi"] = sh(
     "/content/tools/pi/bin/pi --version"
 )[1]
 
-# 4. Model weights
+# 4. Model weights (Qwen/Qwen3.5-9B)
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 sh(
     "python3 -c 'from huggingface_hub import snapshot_download; "
-    "snapshot_download(\"Qwen/Qwen3-8B\", revision=\"b968826d9c46dd6066d109eabc6255188de91218\", "
-    "local_dir=\"/content/models/Qwen3-8B\", ignore_patterns=[\"*.msgpack\", \"*.h5\"])'",
+    "snapshot_download(\"Qwen/Qwen3.5-9B\", "
+    "local_dir=\"/content/models/qwen35-9b\", ignore_patterns=[\"*.msgpack\", \"*.h5\"])'",
     timeout=1800,
     check=True,
 )
-REPORT["weights"] = sh("du -sh /content/models/Qwen3-8B")[1]
+REPORT["weights"] = sh("du -sh /content/models/qwen35-9b")[1]
 
 # 5. Start vLLM with sleep mode + runtime LoRA updating
-sh("pkill -f 'vllm serve' || true; sleep 2")
+sh("pkill -9 -f 'VLLM|vllm' || true; sleep 2")
 vllm_cmd = (
     "VLLM_SERVER_DEV_MODE=1 VLLM_ALLOW_RUNTIME_LORA_UPDATING=True VLLM_NO_USAGE_STATS=1 "
-    "nohup vllm serve /content/models/Qwen3-8B "
-    "--served-model-name qwen3-8b --host 127.0.0.1 --port 8000 --dtype bfloat16 "
-    "--generation-config vllm --max-model-len 32768 --gpu-memory-utilization 0.55 "
-    "--enable-sleep-mode --enable-auto-tool-choice --tool-call-parser hermes "
+    "nohup vllm serve /content/models/qwen35-9b "
+    "--served-model-name qwen35-9b --host 127.0.0.1 --port 8000 --dtype bfloat16 "
+    "--generation-config vllm --max-model-len 32768 --gpu-memory-utilization 0.58 "
+    "--enable-sleep-mode --enable-auto-tool-choice --tool-call-parser qwen3_coder "
     "--enable-lora --max-lora-rank 32 --max-loras 2 "
     "--logprobs-mode processed_logprobs --enable-prefix-caching "
     "> /content/vllm.log 2>&1 &"
@@ -121,7 +121,7 @@ REPORT["vram_active_mib"] = sh("nvidia-smi --query-gpu=memory.used --format=csv,
 
 # 6. Test token_ids + processed logprobs capture
 st, resp = http_req("http://127.0.0.1:8000/v1/chat/completions", "POST", {
-    "model": "qwen3-8b",
+    "model": "qwen35-9b",
     "messages": [{"role": "user", "content": "Reply with 3 words."}],
     "max_tokens": 16,
     "temperature": 0.8,
