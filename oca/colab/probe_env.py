@@ -71,7 +71,8 @@ REPORT["opencode"] = sh(
 )[1]
 REPORT["pi"] = sh(
     "([ -x /content/tools/pi/bin/pi ] || "
-    "npm install -g --prefix /content/tools/pi --no-audit --no-fund --ignore-scripts @earendil-works/pi-coding-agent >/tmp/npm_pi.log 2>&1) && "
+    "npm install -g --prefix /content/tools/pi --no-audit --no-fund @mariozechner/pi-coding-agent >/tmp/npm_pi.log 2>&1 || "
+    "npm install -g --prefix /content/tools/pi --no-audit --no-fund @earendil-works/pi-coding-agent >>/tmp/npm_pi.log 2>&1) && "
     "chmod -R a+rX /content/tools/pi && "
     "/content/tools/pi/bin/pi --version"
 )[1]
