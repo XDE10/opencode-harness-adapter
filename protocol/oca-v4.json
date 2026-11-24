@@ -40,10 +40,10 @@
     "timeout_seconds": 45
   },
   "train": {
-    "group_size": 8,
-    "tasks_per_step": 8,
-    "oversample_factor": 1.5,
-    "steps": 60,
+    "group_size": 4,
+    "tasks_per_step": 6,
+    "oversample_factor": 1.34,
+    "steps": 50,
     "rank": 32,
     "alpha": 64,
     "targets": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
@@ -57,7 +57,7 @@
     "minibatches": 2,
     "tis_cap": 2.0,
     "efficiency_weight": 0.1,
-    "efficiency_budget": 15,
+    "efficiency_budget": 24,
     "vllm_gpu_memory_utilization": 0.58
   }
 }
