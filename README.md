@@ -61,7 +61,8 @@ flowchart LR
 | 3-Model Live G4 Base Bake-Off (12 tasks × 2 seeds, LF-fixed) | Verified | `Qwen3-8B`: **8.3%** (repo `0.0%`), `Qwen3-14B`: **4.2%** (repo `0.0%`), **`Qwen3.5-9B`: 41.7%** (single `41.7%`, multi-file `repo_pytest` **`41.7%`**, `pass@2=50.0%`) |
 | Prefix-Merged Multi-Turn Packing (`Qwen/Qwen3.5-9B` + FLA) | Verified | **13.51× wall-clock speedup** (`304.1s → 22.5s`, 67 turns → 8 segments, 8.38× compression, grad cosine `0.989`) + Chunked LM-Head for 248K vocab |
 | Dual-Harness Smoke (`OpenCode 2.2.7` + `Pi 0.73.1`) | Verified | `Qwen/Qwen3.5-9B` passes both single-file (`6/6`) and 4-module `repo_pytest` (`8/8`) under OpenCode & Pi with exact token/logprob capture |
-| Full Training & Super-Adapter Evaluation (60-step OpenCode + Pi) | In Progress | *Metrics table to be populated upon completion of G4 runs* |
+| 98-Task × 4-Seed Screening (`protocol/screen_qwen35_9b.json`) | Verified | Base `pass@1` **46.94%** (Single `48.24%`, Repo `43.52%`); **45/98 (45.9%) informative (`1..3/4`)** tasks (33 single + 12 multi-file repos); mean **6,479 tokens / 16.9 turns** |
+| Full Training & Super-Adapter Evaluation (50-step OpenCode + Pi) | In Progress | *Metrics table to be populated upon completion of G4 runs* |
 
 ---
 
