@@ -1,0 +1,146 @@
+{
+  "total_ood_heldout": 17,
+  "repos": [
+    "oss_click",
+    "oss_more_itertools",
+    "oss_packaging"
+  ],
+  "tasks": [
+    {
+      "id": "ood-click-90a2973-add-context-settings-parameter-t",
+      "commit": "90a2973f",
+      "passed": {
+        "original": "301/325",
+        "reference": "325/325"
+      }
+    },
+    {
+      "id": "ood-click-c4dd0cd-stop-passing-a-deprecated-comman",
+      "commit": "c4dd0cd9",
+      "passed": {
+        "original": "103/104",
+        "reference": "104/104"
+      }
+    },
+    {
+      "id": "ood-click-c53d373-fix-show-envvar-output-for-a-seq",
+      "commit": "c53d3732",
+      "passed": {
+        "original": "667/676",
+        "reference": "676/676"
+      }
+    },
+    {
+      "id": "ood-click-f67c2bb-fix-short-help-abbreviation",
+      "commit": "f67c2bb6",
+      "passed": {
+        "original": "30/36",
+        "reference": "36/36"
+      }
+    },
+    {
+      "id": "ood-click-f8c5a8e-print-x04-and-x1a-input-bytes-as",
+      "commit": "f8c5a8ef",
+      "passed": {
+        "original": "36/43",
+        "reference": "43/43"
+      }
+    },
+    {
+      "id": "ood-more_itertools-2b8d5cd-issue-1284-don-t-let-a-bucket-lo",
+      "commit": "2b8d5cdd",
+      "passed": {
+        "original": "609/613",
+        "reference": "613/613"
+      }
+    },
+    {
+      "id": "ood-more_itertools-67fcf64-fix-honour-a-falsey-validator-in",
+      "commit": "67fcf640",
+      "passed": {
+        "original": "619/620",
+        "reference": "620/620"
+      }
+    },
+    {
+      "id": "ood-more_itertools-71e070b-fix-honour-a-falsey-key-in-all-u",
+      "commit": "71e070b3",
+      "passed": {
+        "original": "620/621",
+        "reference": "621/621"
+      }
+    },
+    {
+      "id": "ood-more_itertools-ce676d2-do-not-yield-an-empty-list-for-a",
+      "commit": "ce676d24",
+      "passed": {
+        "original": "595/598",
+        "reference": "598/598"
+      }
+    },
+    {
+      "id": "ood-more_itertools-e6ce1b0-fix-peekable-slice-with-negative",
+      "commit": "e6ce1b0f",
+      "passed": {
+        "original": "620/621",
+        "reference": "621/621"
+      }
+    },
+    {
+      "id": "ood-more_itertools-f89d7a3-issue-1304-make-ichunked-match-c",
+      "commit": "f89d7a33",
+      "passed": {
+        "original": "617/619",
+        "reference": "619/619"
+      }
+    },
+    {
+      "id": "ood-packaging-0efe21a-feat-expose-syntax-error-details",
+      "commit": "0efe21aa",
+      "passed": {
+        "original": "7915/7921",
+        "reference": "7921/7921"
+      }
+    },
+    {
+      "id": "ood-packaging-5a7d338-fix-requirements-parse-followed",
+      "commit": "5a7d3386",
+      "passed": {
+        "original": "5407/5411",
+        "reference": "5411/5411"
+      }
+    },
+    {
+      "id": "ood-packaging-7d0611d-feat-allow-set-of-extras-1438",
+      "commit": "7d0611d4",
+      "passed": {
+        "original": "2422/2484",
+        "reference": "2484/2484"
+      }
+    },
+    {
+      "id": "ood-packaging-8efde60-fix-dependency-groups-report-sel",
+      "commit": "8efde605",
+      "passed": {
+        "original": "46/50",
+        "reference": "50/50"
+      }
+    },
+    {
+      "id": "ood-packaging-b8ecefd-perf-ranges-reuse-the-least-vers",
+      "commit": "b8ecefd3",
+      "passed": {
+        "original": "1612/1613",
+        "reference": "1613/1613"
+      }
+    },
+    {
+      "id": "ood-packaging-f91ea79-fix-defer-formatting-parse-excep",
+      "commit": "f91ea793",
+      "passed": {
+        "original": "7921/7923",
+        "reference": "7923/7923"
+      }
+    }
+  ]
+}

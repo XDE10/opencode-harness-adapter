@@ -13,6 +13,30 @@
       }
     },
     {
+      "id": "r01s2-miniorm-upsert-query",
+      "split": "train",
+      "domain": "mini_orm",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r01s3-mini-orm",
+      "split": "train",
+      "domain": "mini_orm",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
       "id": "r02s1-config-cascade",
       "split": "train",
       "domain": "config_cascade",
@@ -20,6 +44,30 @@
       "src_modules": 4,
       "passed": {
         "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r02s2-config-cascade",
+      "split": "train",
+      "domain": "config_cascade",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r02s3-config-cascade",
+      "split": "train",
+      "domain": "config_cascade",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
         "reference": "9/9",
         "partial": "6/9"
       }
@@ -37,6 +85,30 @@
       }
     },
     {
+      "id": "r03s2-dag-invalidation-runner",
+      "split": "train",
+      "domain": "workflow_dag",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r03s3-workflow-dag-runner",
+      "split": "train",
+      "domain": "workflow_dag",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
       "id": "r04s1-http-trie-middleware",
       "split": "train",
       "domain": "http_router",
@@ -49,6 +121,30 @@
       }
     },
     {
+      "id": "r04s2-http-router-trie-rollback",
+      "split": "train",
+      "domain": "http_router",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r04s3-http-router-trie-middleware",
+      "split": "train",
+      "domain": "http_router",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
       "id": "r05s1-hierarchical-rate-quota",
       "split": "train",
       "domain": "rate_quota",
@@ -58,6 +154,318 @@
         "original": "4/8",
         "reference": "8/8",
         "partial": "6/8"
+      }
+    },
+    {
+      "id": "r05s2-hierarchical-quota-enforcer",
+      "split": "train",
+      "domain": "rate_quota",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
+      "id": "r05s3-rate-quota-enforcer",
+      "split": "train",
+      "domain": "rate_quota",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r06s1-template-kit",
+      "split": "train",
+      "domain": "template_kit",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
+      "id": "r06s2-template-kit",
+      "split": "train",
+      "domain": "template_kit",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r06s3-template-kit",
+      "split": "train",
+      "domain": "template_kit",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r07s1-double-entry-ledger",
+      "split": "train",
+      "domain": "ledger_book",
+      "kind": "repo_pytest",
+      "src_modules": 3,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
+      "id": "r07s2-ledger-book",
+      "split": "train",
+      "domain": "ledger_book",
+      "kind": "repo_pytest",
+      "src_modules": 3,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r07s3-double-entry-ledger",
+      "split": "train",
+      "domain": "ledger_book",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r08s1-semver-pkg-resolver",
+      "split": "train",
+      "domain": "pkg_resolver",
+      "kind": "repo_pytest",
+      "src_modules": 3,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r08s2-semver-lock-planner",
+      "split": "train",
+      "domain": "pkg_resolver",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "r08s3-semver-lock-planner",
+      "split": "train",
+      "domain": "pkg_resolver",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "0/1",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r09s1-event-bus-broker",
+      "split": "train",
+      "domain": "event_bus",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r09s2-event-bus-broker",
+      "split": "train",
+      "domain": "event_bus",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r09s3-pubsub-broker",
+      "split": "train",
+      "domain": "event_bus",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/8",
+        "reference": "8/8",
+        "partial": "5/8"
+      }
+    },
+    {
+      "id": "r10s1-phrase-index-ranker",
+      "split": "heldout",
+      "domain": "doc_indexer",
+      "kind": "repo_pytest",
+      "src_modules": 3,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "r10s2-doc-indexer",
+      "split": "heldout",
+      "domain": "doc_indexer",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r10s3-doc-indexer",
+      "split": "heldout",
+      "domain": "doc_indexer",
+      "kind": "repo_pytest",
+      "src_modules": 3,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "r12s1-tiercache",
+      "split": "heldout",
+      "domain": "cache_proxy",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "5/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "r12s2-cache-proxy",
+      "split": "heldout",
+      "domain": "cache_proxy",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "7/9"
+      }
+    },
+    {
+      "id": "r12s3-cache-proxy-coordinator",
+      "split": "heldout",
+      "domain": "cache_proxy",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r13s1-cron-blackout-planner",
+      "split": "heldout",
+      "domain": "cron_sched",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "5/9"
+      }
+    },
+    {
+      "id": "r13s2-cron-planner",
+      "split": "heldout",
+      "domain": "cron_sched",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "3/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r14s1-unified-patch-engine",
+      "split": "heldout",
+      "domain": "patch_vcs",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "6/9"
+      }
+    },
+    {
+      "id": "r14s2-patch-vcs-toolkit",
+      "split": "heldout",
+      "domain": "patch_vcs",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r15s1-ast-rule-linter",
+      "split": "heldout",
+      "domain": "rule_linter",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/8",
+        "reference": "8/8",
+        "partial": "6/8"
+      }
+    },
+    {
+      "id": "r15s2-ast-scope-linter",
+      "split": "heldout",
+      "domain": "rule_linter",
+      "kind": "repo_pytest",
+      "src_modules": 4,
+      "passed": {
+        "original": "4/9",
+        "reference": "9/9",
+        "partial": "7/9"
       }
     }
   ]

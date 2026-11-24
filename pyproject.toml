@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opencode-harness-adapter"
+version = "0.4.0"
+description = "Single-GPU colocated Agentic RL (LoRA GRPO + Prefix-Merged TIS) for OpenCode & Pi coding harnesses"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.9",
+    "pytest>=8.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "vllm>=0.8.5",
+    "torch>=2.5",
+    "transformers>=4.49",
+    "peft>=0.14",
+    "accelerate>=1.0",
+    "hf-transfer>=0.1.8",
+]
+
+[tool.setuptools.packages.find]
+include = ["oca*"]
