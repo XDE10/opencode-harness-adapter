@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="380" viewBox="0 0 760 380" style="font-family:Inter,Segoe UI,Arial,sans-serif;background:#ffffff">
+<text x="380" y="26" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">On-Policy Harness RL Training Pass Rate (Rollout Batch)</text>
+<line x1="65" y1="325.0" x2="730" y2="325.0" stroke="#e5e7eb" stroke-width="1"/>
+<text x="57" y="329.0" text-anchor="end" font-size="11" fill="#6b7280">0%</text>
+<line x1="65" y1="255.0" x2="730" y2="255.0" stroke="#e5e7eb" stroke-width="1"/>
+<text x="57" y="259.0" text-anchor="end" font-size="11" fill="#6b7280">25%</text>
+<line x1="65" y1="185.0" x2="730" y2="185.0" stroke="#e5e7eb" stroke-width="1"/>
+<text x="57" y="189.0" text-anchor="end" font-size="11" fill="#6b7280">50%</text>
+<line x1="65" y1="115.0" x2="730" y2="115.0" stroke="#e5e7eb" stroke-width="1"/>
+<text x="57" y="119.0" text-anchor="end" font-size="11" fill="#6b7280">75%</text>
+<line x1="65" y1="45.0" x2="730" y2="45.0" stroke="#e5e7eb" stroke-width="1"/>
+<text x="57" y="49.0" text-anchor="end" font-size="11" fill="#6b7280">100%</text>
+<text x="65.0" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 1</text>
+<text x="146.4" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 7</text>
+<text x="227.9" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 13</text>
+<text x="309.3" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 19</text>
+<text x="390.7" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 25</text>
+<text x="472.1" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 31</text>
+<text x="553.6" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 37</text>
+<text x="635.0" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 43</text>
+<text x="716.4" y="343" text-anchor="middle" font-size="11" fill="#6b7280">Step 49</text>
+<polyline fill="none" stroke="#2563eb" stroke-width="2.5" points="65.0,138.3 78.6,177.2 92.1,146.1 105.7,138.3 119.3,115.0 132.9,161.7 146.4,169.4 160.0,122.8 173.6,153.9 187.1,138.3 200.7,130.6 214.3,138.3 227.9,122.8 241.4,138.3 255.0,161.7 268.6,138.3 282.1,169.4 295.7,130.6 309.3,146.1 322.9,146.1 336.4,76.1 350.0,107.2 363.6,153.9 377.1,122.8 390.7,130.6 404.3,91.7 417.9,130.6 431.4,130.6 445.0,99.4 458.6,146.1 472.1,83.9 485.7,122.8 499.3,68.3 512.9,107.2 526.4,122.8 540.0,115.0 553.6,107.2 567.1,138.3 580.7,122.8 594.3,146.1 607.9,83.9 621.4,115.0 635.0,107.2 648.6,115.0 662.1,130.6 675.7,91.7 689.3,130.6 702.9,99.4 716.4,153.9 730.0,99.4"/>
+<circle cx="65.0" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="78.6" cy="177.2" r="3" fill="#2563eb"/>
+<circle cx="92.1" cy="146.1" r="3" fill="#2563eb"/>
+<circle cx="105.7" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="119.3" cy="115.0" r="3" fill="#2563eb"/>
+<circle cx="132.9" cy="161.7" r="3" fill="#2563eb"/>
+<circle cx="146.4" cy="169.4" r="3" fill="#2563eb"/>
+<circle cx="160.0" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="173.6" cy="153.9" r="3" fill="#2563eb"/>
+<circle cx="187.1" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="200.7" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="214.3" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="227.9" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="241.4" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="255.0" cy="161.7" r="3" fill="#2563eb"/>
+<circle cx="268.6" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="282.1" cy="169.4" r="3" fill="#2563eb"/>
+<circle cx="295.7" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="309.3" cy="146.1" r="3" fill="#2563eb"/>
+<circle cx="322.9" cy="146.1" r="3" fill="#2563eb"/>
+<circle cx="336.4" cy="76.1" r="3" fill="#2563eb"/>
+<circle cx="350.0" cy="107.2" r="3" fill="#2563eb"/>
+<circle cx="363.6" cy="153.9" r="3" fill="#2563eb"/>
+<circle cx="377.1" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="390.7" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="404.3" cy="91.7" r="3" fill="#2563eb"/>
+<circle cx="417.9" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="431.4" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="445.0" cy="99.4" r="3" fill="#2563eb"/>
+<circle cx="458.6" cy="146.1" r="3" fill="#2563eb"/>
+<circle cx="472.1" cy="83.9" r="3" fill="#2563eb"/>
+<circle cx="485.7" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="499.3" cy="68.3" r="3" fill="#2563eb"/>
+<circle cx="512.9" cy="107.2" r="3" fill="#2563eb"/>
+<circle cx="526.4" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="540.0" cy="115.0" r="3" fill="#2563eb"/>
+<circle cx="553.6" cy="107.2" r="3" fill="#2563eb"/>
+<circle cx="567.1" cy="138.3" r="3" fill="#2563eb"/>
+<circle cx="580.7" cy="122.8" r="3" fill="#2563eb"/>
+<circle cx="594.3" cy="146.1" r="3" fill="#2563eb"/>
+<circle cx="607.9" cy="83.9" r="3" fill="#2563eb"/>
+<circle cx="621.4" cy="115.0" r="3" fill="#2563eb"/>
+<circle cx="635.0" cy="107.2" r="3" fill="#2563eb"/>
+<circle cx="648.6" cy="115.0" r="3" fill="#2563eb"/>
+<circle cx="662.1" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="675.7" cy="91.7" r="3" fill="#2563eb"/>
+<circle cx="689.3" cy="130.6" r="3" fill="#2563eb"/>
+<circle cx="702.9" cy="99.4" r="3" fill="#2563eb"/>
+<circle cx="716.4" cy="153.9" r="3" fill="#2563eb"/>
+<circle cx="730.0" cy="99.4" r="3" fill="#2563eb"/>
+<rect x="65" y="360" width="14" height="4" fill="#2563eb"/>
+<text x="85" y="366" font-size="12" fill="#374151">Pi-LoRA (TIS x DAPO Clip, 50 steps)</text>
+<polyline fill="none" stroke="#dc2626" stroke-width="2.5" points="65.0,192.8 78.6,115.0 92.1,107.2 105.7,146.1 119.3,153.9 132.9,153.9 146.4,122.8 160.0,122.8 173.6,115.0 187.1,115.0 200.7,115.0 214.3,138.3 227.9,138.3 241.4,138.3 255.0,122.8 268.6,177.2 282.1,138.3 295.7,161.7 309.3,83.9 322.9,130.6 336.4,138.3 350.0,153.9 363.6,76.1 377.1,115.0 390.7,185.0 404.3,107.2 417.9,107.2 431.4,107.2 445.0,177.2 458.6,192.8 472.1,146.1 485.7,115.0 499.3,169.4 512.9,130.6 526.4,138.3 540.0,185.0 553.6,130.6 567.1,99.4 580.7,169.4 594.3,146.1"/>
+<circle cx="65.0" cy="192.8" r="3" fill="#dc2626"/>
+<circle cx="78.6" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="92.1" cy="107.2" r="3" fill="#dc2626"/>
+<circle cx="105.7" cy="146.1" r="3" fill="#dc2626"/>
+<circle cx="119.3" cy="153.9" r="3" fill="#dc2626"/>
+<circle cx="132.9" cy="153.9" r="3" fill="#dc2626"/>
+<circle cx="146.4" cy="122.8" r="3" fill="#dc2626"/>
+<circle cx="160.0" cy="122.8" r="3" fill="#dc2626"/>
+<circle cx="173.6" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="187.1" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="200.7" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="214.3" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="227.9" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="241.4" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="255.0" cy="122.8" r="3" fill="#dc2626"/>
+<circle cx="268.6" cy="177.2" r="3" fill="#dc2626"/>
+<circle cx="282.1" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="295.7" cy="161.7" r="3" fill="#dc2626"/>
+<circle cx="309.3" cy="83.9" r="3" fill="#dc2626"/>
+<circle cx="322.9" cy="130.6" r="3" fill="#dc2626"/>
+<circle cx="336.4" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="350.0" cy="153.9" r="3" fill="#dc2626"/>
+<circle cx="363.6" cy="76.1" r="3" fill="#dc2626"/>
+<circle cx="377.1" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="390.7" cy="185.0" r="3" fill="#dc2626"/>
+<circle cx="404.3" cy="107.2" r="3" fill="#dc2626"/>
+<circle cx="417.9" cy="107.2" r="3" fill="#dc2626"/>
+<circle cx="431.4" cy="107.2" r="3" fill="#dc2626"/>
+<circle cx="445.0" cy="177.2" r="3" fill="#dc2626"/>
+<circle cx="458.6" cy="192.8" r="3" fill="#dc2626"/>
+<circle cx="472.1" cy="146.1" r="3" fill="#dc2626"/>
+<circle cx="485.7" cy="115.0" r="3" fill="#dc2626"/>
+<circle cx="499.3" cy="169.4" r="3" fill="#dc2626"/>
+<circle cx="512.9" cy="130.6" r="3" fill="#dc2626"/>
+<circle cx="526.4" cy="138.3" r="3" fill="#dc2626"/>
+<circle cx="540.0" cy="185.0" r="3" fill="#dc2626"/>
+<circle cx="553.6" cy="130.6" r="3" fill="#dc2626"/>
+<circle cx="567.1" cy="99.4" r="3" fill="#dc2626"/>
+<circle cx="580.7" cy="169.4" r="3" fill="#dc2626"/>
+<circle cx="594.3" cy="146.1" r="3" fill="#dc2626"/>
+<rect x="305" y="360" width="14" height="4" fill="#dc2626"/>
+<text x="325" y="366" font-size="12" fill="#374151">Ablation A: Naive PPO-Clip (40 steps)</text>
+</svg>

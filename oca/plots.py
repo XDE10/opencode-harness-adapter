@@ -31,7 +31,7 @@ def render_training_curve(history_jsonl: Path, out_svg: Path, compare_jsonl: Pat
         return round(x, 1), round(y, 1)
 
     els = [f'<text x="{W//2}" y="26" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">'
-           f'On-Policy OpenCode RL Training Pass Rate (Rollout Batch)</text>']
+           f'On-Policy Harness RL Training Pass Rate (Rollout Batch)</text>']
     for pct in (0.0, 0.25, 0.5, 0.75, 1.0):
         _, y = xy(1, pct)
         els.append(f'<line x1="{pad_l}" y1="{y}" x2="{W-pad_r}" y2="{y}" stroke="#e5e7eb" stroke-width="1"/>')
@@ -114,7 +114,7 @@ def render_failure_taxonomy(eval_report_json: Path, out_svg: Path, lora_key: str
     ]
     W, H = 760, 280
     els = [f'<text x="{W//2}" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">'
-           f'Held-out Outcome &amp; Failure-Mode Shift: Base Qwen3-8B vs {lora_key}</text>']
+           f'Held-out Outcome &amp; Failure-Mode Shift: Base Qwen3.5-9B vs {lora_key}</text>']
     bar_x, bar_w = 150, 560
     for row_idx, (arm_label, tax) in enumerate((("Base Qwen3.5-9B", b_tax), (f"Adapted ({lora_key})", l_tax))):
         y = 65 + row_idx * 65
@@ -166,14 +166,14 @@ def render_transfer_matrix(matrix_json: Path, out_svg: Path):
         els.append(f'<text x="{cx}" y="68" text-anchor="middle" font-size="13" font-weight="600" fill="#374151">{col}</text>')
 
     def cell_color(v: float) -> tuple[str, str]:
-        # Soft blue-green scale from 0.0 to 1.0
+        # High-contrast scale tailored to multi-tier coding pass@1 (35%-55%+)
         cl = max(0.0, min(1.0, v))
-        if cl >= 0.65:
+        if cl >= 0.47:
             return "#16a34a", "#ffffff"
-        if cl >= 0.45:
+        if cl >= 0.42:
             return "#2563eb", "#ffffff"
-        if cl >= 0.25:
-            return "#93c5fd", "#111827"
+        if cl >= 0.39:
+            return "#60a5fa", "#ffffff"
         return "#e5e7eb", "#111827"
 
     for i, m in enumerate(models):
