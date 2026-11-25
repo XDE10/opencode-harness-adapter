@@ -21,6 +21,9 @@ gpu = [
     "transformers>=4.49",
     "peft>=0.14",
     "accelerate>=1.0",
+    "safetensors>=0.4.5",
+    "flash-linear-attention>=0.1",
+    "huggingface-hub>=0.26",
     "hf-transfer>=0.1.8",
 ]
 

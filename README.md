@@ -96,21 +96,27 @@ All evaluations run on **65 strictly unseen tasks × 4 seeds (260 trials per cel
 
 ## Quick Start
 
-### 1. Local CPU Verification (Win11 / WSL2 / Linux)
+### 1. Clone & 30-Second Local CPU Verification (Win11 / macOS / Linux)
 
 ```bash
-python -m unittest tests/test_oca_v4.py -v
+git clone https://github.com/XDE10/opencode-harness-adapter.git
+cd opencode-harness-adapter
+pip install -e .
+
+# Verify all 11 unit tests (L1/L2/L3 dataset isolation, prefix-merge packing, proxy, 10/10 anti-hack, SVG plots)
+python -m unittest discover -s tests -v
 python -m oca.adversarial
-python -m oca.colab.pack_repo   # builds LF-normalized artifacts/oca_repo.tar.gz
 ```
 
-### 2. Single-GPU Colab G4 Workflow
+### 2. Single-GPU Reproduction (Linux / Colab G4 96 GB)
 
 ```bash
-# 1) Provision environment (vLLM, PEFT, FLA, pytest, OpenCode 2.2.7, Pi CLI, Qwen3.5-9B weights)
+pip install -e ".[gpu]"
+
+# 1) Provision vLLM, FLA, OpenCode 2.2.7, Pi CLI 0.73.1 & Qwen/Qwen3.5-9B weights
 python -m oca.colab.probe_env
 
-# 2) 4-seed difficulty screening (3-card shardable via --shard 0/3..2/3)
+# 2) (Optional) Re-run 4-seed difficulty screening (frozen summary already in protocol/screen_qwen35_9b.json)
 python -m oca.train --mode screen --harness opencode --out-dir /content/runs/screen_oc --k 4 --concurrency 32
 
 # 3) 50-step colocated LoRA GRPO (rank 32, Prefix-Merged, Chunked LM-Head, Dual-Ratio TIS x Clip)

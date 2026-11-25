@@ -4,7 +4,7 @@ Verifies:
 1. GPU (RTX PRO 6000 Blackwell 96 GB), CPU, RAM, disk, non-root `agent` user creation
 2. vLLM + PEFT + Transformers + aiohttp install & versions
 3. OpenCode CLI 2.2.7 install + shared XDG_CACHE_HOME warmup
-4. Qwen/Qwen3-8B (pinned revision) download to /content/models/Qwen3-8B
+4. Qwen/Qwen3.5-9B download to /content/models/qwen35-9b
 5. vLLM serve with:
    --enable-sleep-mode, VLLM_SERVER_DEV_MODE=1, VLLM_ALLOW_RUNTIME_LORA_UPDATING=True,
    --enable-lora, --tool-call-parser hermes, --logprobs-mode processed_logprobs
