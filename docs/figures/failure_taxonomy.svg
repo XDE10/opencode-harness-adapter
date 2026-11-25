@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="280" viewBox="0 0 760 280" style="font-family:Inter,Segoe UI,Arial,sans-serif;background:#ffffff">
+<text x="380" y="28" text-anchor="middle" font-size="15" font-weight="600" fill="#111827">Held-out Outcome &amp; Failure-Mode Shift: Base Qwen3.5-9B vs pi_lora</text>
+<text x="138" y="89" text-anchor="end" font-size="13" font-weight="600" fill="#1f2937">Base Qwen3.5-9B</text>
+<rect x="150.0" y="65" width="228.3" height="36" fill="#16a34a"/>
+<text x="264.2" y="88" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">41%</text>
+<rect x="378.3" y="65" width="90.5" height="36" fill="#60a5fa"/>
+<text x="423.5" y="88" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">16%</text>
+<rect x="468.8" y="65" width="228.3" height="36" fill="#ef4444"/>
+<text x="582.9" y="88" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">41%</text>
+<rect x="697.1" y="65" width="12.9" height="36" fill="#111827"/>
+<text x="138" y="154" text-anchor="end" font-size="13" font-weight="600" fill="#1f2937">Adapted (pi_lora)</text>
+<rect x="150.0" y="130" width="271.4" height="36" fill="#16a34a"/>
+<text x="285.7" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">48%</text>
+<rect x="421.4" y="130" width="84.0" height="36" fill="#60a5fa"/>
+<text x="463.4" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">15%</text>
+<rect x="505.4" y="130" width="200.3" height="36" fill="#ef4444"/>
+<text x="605.5" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">36%</text>
+<rect x="705.7" y="130" width="2.2" height="36" fill="#8b5cf6"/>
+<rect x="707.8" y="130" width="2.2" height="36" fill="#111827"/>
+<rect x="60" y="195" width="12" height="12" fill="#16a34a" rx="2"/>
+<text x="78" y="205" font-size="11" fill="#374151">Solved (100% cases)</text>
+<rect x="295" y="195" width="12" height="12" fill="#60a5fa" rx="2"/>
+<text x="313" y="205" font-size="11" fill="#374151">Partial Fix (Edge Case Miss)</text>
+<rect x="295" y="219" width="12" height="12" fill="#ef4444" rx="2"/>
+<text x="313" y="229" font-size="11" fill="#374151">Budget / Timeout Exhausted</text>
+<rect x="530" y="219" width="12" height="12" fill="#8b5cf6" rx="2"/>
+<text x="548" y="229" font-size="11" fill="#374151">Premature Stop (No Edit)</text>
+<rect x="295" y="243" width="12" height="12" fill="#111827" rx="2"/>
+<text x="313" y="253" font-size="11" fill="#374151">Reward Hack Blocked</text>
+</svg>
