@@ -29,7 +29,7 @@ def _to_wsl_path(p: Path) -> str:
 
 
 def _colab(args: list[str], timeout: int = 120, check: bool = True) -> subprocess.CompletedProcess:
-    colab_bin = os.environ.get("COLAB_BIN", "/home/xde10/.local/bin/colab")
+    colab_bin = os.environ.get("COLAB_BIN", "colab")
     if os.name == "nt":
         # Invoke via WSL bash with proxy env loaded
         quoted = " ".join(subprocess.list2cmdline([a]) if " " in a else a for a in args)
@@ -50,7 +50,7 @@ def _colab(args: list[str], timeout: int = 120, check: bool = True) -> subproces
 
 
 def _session_exists(session: str) -> bool:
-    colab_bin = os.environ.get("COLAB_BIN", "/home/xde10/.local/bin/colab")
+    colab_bin = os.environ.get("COLAB_BIN", "colab")
     if os.name == "nt":
         cmd = ["wsl", "-d", "Ubuntu", "--", "bash", "-lc",
                f'[ -f ~/.proxy_env.sh ] && source ~/.proxy_env.sh || true; "{colab_bin}" sessions']
@@ -111,7 +111,7 @@ def build_job_spec(phase: str, steps: int, concurrency: int, loss_mode: str, eff
         out = f"/content/runs/{tag}"
         args = [
             "--mode", "train", "--harness", harness, "--out-dir", out,
-            "--task-ids-file", "/content/runs/screen_oc/screen_summary.json",
+            "--task-ids-file", "/content/repo/protocol/screen_qwen35_9b.json",
             "--steps", str(steps), "--loss-mode", loss_mode, "--concurrency", str(concurrency),
         ]
         if eff_w is not None:
@@ -123,24 +123,24 @@ def build_job_spec(phase: str, steps: int, concurrency: int, loss_mode: str, eff
     if phase == "merge":
         oc_ckpt = f"/content/runs/opencode_tis_clip/checkpoints/step_{steps:03d}"
         pi_ckpt = f"/content/runs/pi_tis_clip/checkpoints/step_{steps:03d}"
-        out = "/content/runs/super_adapter_ties"
+        out = "/content/runs/super_adapter_svd"
         spec = {
             "module": "oca.merge",
             "args": [
-                "--method", "ties", "--density", "0.5",
+                "--method", "qr_svd",
                 "--adapter", f"opencode={oc_ckpt}:0.5",
                 "--adapter", f"pi={pi_ckpt}:0.5",
                 "--out-dir", out,
             ],
             "log_file": f"{out}/merge.log",
         }
-        dl = [(f"{out}/merge_meta.json", "artifacts/super_adapter_ties/merge_meta.json")]
+        dl = [(f"{out}/merge_meta.json", "artifacts/super_adapter_svd/merge_meta.json")]
         return spec, dl
 
     if phase == "eval_all":
         oc_ckpt = f"/content/runs/opencode_tis_clip/checkpoints/step_{steps:03d}"
         pi_ckpt = f"/content/runs/pi_tis_clip/checkpoints/step_{steps:03d}"
-        sup_ckpt = "/content/runs/super_adapter_ties"
+        sup_ckpt = "/content/runs/super_adapter_svd"
         out = "/content/runs/eval_opencode_final"
         spec = {
             "module": "oca.eval",
@@ -165,7 +165,7 @@ def main():
     ap.add_argument("--gpu", default="G4", choices=("G4", "A100", "H100", "L4"))
     ap.add_argument("--phase", required=True,
                     choices=("phase0_1", "screen", "train_oc", "train_pi", "merge", "eval_all"))
-    ap.add_argument("--steps", type=int, default=60)
+    ap.add_argument("--steps", type=int, default=50)
     ap.add_argument("--concurrency", type=int, default=32)
     ap.add_argument("--loss-mode", default="tis_clip")
     ap.add_argument("--efficiency-weight", type=float, default=None)
