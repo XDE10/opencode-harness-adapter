@@ -30,9 +30,22 @@ from .swe_verified import (
     parse_swe_test_list,
 )
 
-# Lightweight pure-Python repos (0% overlap with SWE-bench Verified!)
-PREFERRED_SMITH_REPOS = {
+# Proven 100%-verified lightweight pure-Python repos (0% overlap with SWE-bench Verified!)
+PROVEN_SMITH_REPOS = {
+    "hukkin/tomli": ["pytest"],
+    "jd/tenacity": ["pytest"],
     "oauthlib/oauthlib": ["pytest", "cryptography", "pyjwt", "blinker"],
+    "andialbrecht/sqlparse": ["pytest"],
+    "bottlepy/bottle": ["pytest"],
+    "chardet/chardet": ["pytest"],
+    "google/textfsm": ["pytest", "six"],
+    "keleshev/schema": ["pytest"],
+    "luozhouyang/python-string-similarity": ["pytest"],
+    "Knio/dominate": ["pytest"],
+}
+
+PREFERRED_SMITH_REPOS = {
+    **PROVEN_SMITH_REPOS,
     "pypa/packaging": ["pytest"],
     "pallets/click": ["pytest"],
     "pallets/jinja": ["pytest", "markupsafe"],
@@ -42,25 +55,10 @@ PREFERRED_SMITH_REPOS = {
     "python-attrs/attrs": ["pytest", "hypothesis"],
     "marshmallow-code/marshmallow": ["pytest"],
     "Textualize/rich": ["pytest", "markdown-it-py", "pygments"],
-    "hukkin/tomli": ["pytest"],
     "yaml/pyyaml": ["pytest"],
     "dateutil/dateutil": ["pytest", "six", "hypothesis"],
     "pyjwt/pyjwt": ["pytest", "cryptography"],
-    "jd/tenacity": ["pytest"],
     "facelessuser/soupsieve": ["pytest"],
-    "jpadilla/pyjwt": ["pytest", "cryptography"],
-    "psf/black": ["pytest", "click", "mypy-extensions", "pathspec", "platformdirs", "packaging"],
-    "pallets/werkzeug": ["pytest", "markupsafe"],
-    "pallets/markupsafe": ["pytest"],
-    "encode/starlette": ["pytest", "anyio", "httpx"],
-    "urllib3/urllib3": ["pytest"],
-    "pypa/pip": ["pytest"],
-    "tornadoweb/tornado": ["pytest"],
-    "aio-libs/aiohttp": ["pytest"],
-    "tiangolo/fastapi": ["pytest", "starlette", "pydantic", "httpx"],
-    "pydantic/pydantic": ["pytest"],
-    "sqlfluff/sqlfluff": ["pytest"],
-    "Textualize/textual": ["pytest"],
 }
 
 assert not (set(PREFERRED_SMITH_REPOS) & SWE_VERIFIED_ALL_REPOS), "Repo leakage with SWE-bench Verified!"
@@ -169,10 +167,14 @@ def build_swe_smith_train(
         if scanned >= 25_000:
             break
 
-    # Prioritize curated lightweight pure-Python repos first, then other discovered pure-Python repos
+    # Prioritize proven 100%-verified repos first (saves ~5 min probing broken repos on fresh VMs)
     ordered_repos = sorted(
         by_raw_repo.keys(),
-        key=lambda rr: (0 if _normalize_repo_name(rr) in PREFERRED_SMITH_REPOS else 1, -len(by_raw_repo[rr]), rr),
+        key=lambda rr: (
+            0 if _normalize_repo_name(rr) in PROVEN_SMITH_REPOS else (1 if _normalize_repo_name(rr) in PREFERRED_SMITH_REPOS else 2),
+            -len(by_raw_repo[rr]),
+            rr,
+        ),
     )
     print(f"[swe_smith] discovered {len(ordered_repos)} non-Verified repos from {scanned} rows", flush=True)
 
