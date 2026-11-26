@@ -80,7 +80,11 @@ def ensure_session(session: str, gpu: str, retries: int = 5, retry_wait: int = 3
         _colab(["exec", "-s", session, "--timeout", "900", "-f", probe_path], timeout=2400)
 
 
-def build_job_spec(phase: str, steps: int, concurrency: int, loss_mode: str, eff_w: float | None) -> tuple[dict, list[tuple[str, str]]]:
+def build_job_spec(
+    phase: str, steps: int, concurrency: int, loss_mode: str, eff_w: float | None,
+    harness: str = "pi", adv_mode: str = "dr_grpo", credit_mode: str = "outcome",
+    use_deltanet: bool = False, tag_override: str = "",
+) -> tuple[dict, list[tuple[str, str]]]:
     """Return (job_spec_dict, [(remote_path, local_rel_path), ...])."""
     if phase == "phase0_1":
         spec = {
@@ -95,35 +99,59 @@ def build_job_spec(phase: str, steps: int, concurrency: int, loss_mode: str, eff
         ]
         return spec, dl
 
+    if phase == "build_swe":
+        spec = {
+            "module": "oca.benchmarks.swe_verified",
+            "args": ["--out-dir", "/content/repo/data/swe_verified_v1", "--max-total", "60",
+                     "--freeze-protocol", "/content/runs/swe_verified_60.json"],
+            "log_file": "/content/runs/build_swe.log",
+        }
+        dl = [("/content/runs/swe_verified_60.json", "protocol/swe_verified_60.json")]
+        return spec, dl
+
+    if phase == "build_smith":
+        spec = {
+            "module": "oca.benchmarks.swe_smith_train",
+            "args": ["--out-dir", "/content/repo/data/swe_smith_v1", "--max-total", "160", "--max-per-repo", "20"],
+            "log_file": "/content/runs/build_smith.log",
+        }
+        dl = [("/content/repo/data/swe_smith_v1/summary.json", "artifacts/v5/swe_smith_summary.json")]
+        return spec, dl
+
     if phase == "screen":
         spec = {
             "module": "oca.train",
-            "args": ["--mode", "screen", "--harness", "opencode", "--out-dir", "/content/runs/screen_oc",
+            "args": ["--config", "/content/repo/protocol/oca-v5.json",
+                     "--mode", "screen", "--harness", harness, "--out-dir", f"/content/runs/screen_v5_{harness}",
                      "--k", "4", "--concurrency", str(concurrency)],
-            "log_file": "/content/runs/screen_oc/job.log",
+            "log_file": f"/content/runs/screen_v5_{harness}/job.log",
         }
-        dl = [("/content/runs/screen_oc/screen_summary.json", "artifacts/screen_oc/screen_summary.json")]
+        dl = [(f"/content/runs/screen_v5_{harness}/screen_summary.json", f"artifacts/v5/screen_{harness}_summary.json")]
         return spec, dl
 
-    if phase in ("train_oc", "train_pi"):
-        harness = "opencode" if phase == "train_oc" else "pi"
-        tag = f"{harness}_{loss_mode}" + (f"_eff{eff_w}" if eff_w is not None else "")
+    if phase in ("train_oc", "train_pi", "train_v5"):
+        use_h = "opencode" if phase == "train_oc" else ("pi" if phase == "train_pi" else harness)
+        tag = tag_override or f"v5_{use_h}_{loss_mode}_{adv_mode}_{credit_mode}"
         out = f"/content/runs/{tag}"
         args = [
-            "--mode", "train", "--harness", harness, "--out-dir", out,
-            "--task-ids-file", "/content/repo/protocol/screen_qwen35_9b.json",
-            "--steps", str(steps), "--loss-mode", loss_mode, "--concurrency", str(concurrency),
+            "--config", "/content/repo/protocol/oca-v5.json",
+            "--mode", "train", "--harness", use_h, "--out-dir", out,
+            "--steps", str(steps), "--loss-mode", loss_mode,
+            "--adv-mode", adv_mode, "--credit-mode", credit_mode,
+            "--concurrency", str(concurrency),
         ]
         if eff_w is not None:
             args += ["--efficiency-weight", str(eff_w)]
+        if use_deltanet:
+            args.append("--use-deltanet-lora")
         spec = {"module": "oca.train", "args": args, "log_file": f"{out}/job.log"}
-        dl = [(f"{out}/history.jsonl", f"artifacts/{tag}/history.jsonl")]
+        dl = [(f"{out}/history.jsonl", f"artifacts/v5/{tag}/history.jsonl")]
         return spec, dl
 
     if phase == "merge":
-        oc_ckpt = f"/content/runs/opencode_tis_clip/checkpoints/step_{steps:03d}"
-        pi_ckpt = f"/content/runs/pi_tis_clip/checkpoints/step_{steps:03d}"
-        out = "/content/runs/super_adapter_svd"
+        oc_ckpt = f"/content/runs/v5_opencode_{loss_mode}_{adv_mode}_{credit_mode}/checkpoints/step_{steps:03d}"
+        pi_ckpt = f"/content/runs/v5_pi_{loss_mode}_{adv_mode}_{credit_mode}/checkpoints/step_{steps:03d}"
+        out = "/content/runs/v5_super_adapter_svd"
         spec = {
             "module": "oca.merge",
             "args": [
@@ -134,26 +162,23 @@ def build_job_spec(phase: str, steps: int, concurrency: int, loss_mode: str, eff
             ],
             "log_file": f"{out}/merge.log",
         }
-        dl = [(f"{out}/merge_meta.json", "artifacts/super_adapter_svd/merge_meta.json")]
+        dl = [(f"{out}/merge_meta.json", "artifacts/v5/super_adapter_svd/merge_meta.json")]
         return spec, dl
 
-    if phase == "eval_all":
-        oc_ckpt = f"/content/runs/opencode_tis_clip/checkpoints/step_{steps:03d}"
-        pi_ckpt = f"/content/runs/pi_tis_clip/checkpoints/step_{steps:03d}"
-        sup_ckpt = "/content/runs/super_adapter_svd"
-        out = "/content/runs/eval_opencode_final"
+    if phase in ("eval_all", "eval_swe"):
+        split = "swe_verified" if phase == "eval_swe" else "heldout"
+        seeds = ["101", "102"] if phase == "eval_swe" else ["101", "102", "103", "104"]
+        out = f"/content/runs/v5_eval_{split}_{harness}"
         spec = {
             "module": "oca.eval",
             "args": [
-                "--harness", "opencode", "--split", "heldout", "--out-dir", out,
-                "--concurrency", str(concurrency),
-                "--lora", f"opencode={oc_ckpt}",
-                "--lora", f"pi={pi_ckpt}",
-                "--lora", f"super={sup_ckpt}",
+                "--config", "/content/repo/protocol/oca-v5.json",
+                "--harness", harness, "--split", split, "--out-dir", out,
+                "--seeds", *seeds, "--concurrency", str(concurrency),
             ],
             "log_file": f"{out}/eval.log",
         }
-        dl = [(f"{out}/eval_report.json", "artifacts/eval_final/eval_opencode_report.json")]
+        dl = [(f"{out}/eval_report.json", f"artifacts/v5/eval_{split}_{harness}_report.json")]
         return spec, dl
 
     raise ValueError(f"Unknown phase: {phase}")
@@ -164,10 +189,16 @@ def main():
     ap.add_argument("--session", "-s", default="oca-g4", help="Dedicated Colab session name")
     ap.add_argument("--gpu", default="G4", choices=("G4", "A100", "H100", "L4"))
     ap.add_argument("--phase", required=True,
-                    choices=("phase0_1", "screen", "train_oc", "train_pi", "merge", "eval_all"))
+                    choices=("phase0_1", "build_swe", "build_smith", "screen",
+                             "train_oc", "train_pi", "train_v5", "merge", "eval_all", "eval_swe"))
+    ap.add_argument("--harness", default="pi", choices=("opencode", "pi"))
     ap.add_argument("--steps", type=int, default=50)
     ap.add_argument("--concurrency", type=int, default=32)
     ap.add_argument("--loss-mode", default="tis_clip")
+    ap.add_argument("--adv-mode", default="dr_grpo")
+    ap.add_argument("--credit-mode", default="outcome")
+    ap.add_argument("--use-deltanet-lora", action="store_true")
+    ap.add_argument("--tag", default="")
     ap.add_argument("--efficiency-weight", type=float, default=None)
     ap.add_argument("--retries", type=int, default=5)
     ap.add_argument("--skip-probe", action="store_true")
@@ -183,7 +214,11 @@ def main():
     print(f"[launch] Uploading repo tarball to {args.session}...", flush=True)
     _colab(["upload", "-s", args.session, _to_wsl_path(tar_path), "/content/oca_repo.tar.gz"], timeout=180)
 
-    spec, downloads = build_job_spec(args.phase, args.steps, args.concurrency, args.loss_mode, args.efficiency_weight)
+    spec, downloads = build_job_spec(
+        args.phase, args.steps, args.concurrency, args.loss_mode, args.efficiency_weight,
+        harness=args.harness, adv_mode=args.adv_mode, credit_mode=args.credit_mode,
+        use_deltanet=args.use_deltanet_lora, tag_override=args.tag,
+    )
     with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as jf:
         json.dump(spec, jf, indent=2)
         spec_path = Path(jf.name)

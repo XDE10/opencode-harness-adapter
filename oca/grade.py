@@ -132,7 +132,8 @@ def _parse_pytest_counts(output: str) -> dict[str, int]:
     return counts
 
 
-def grade_repo(grader_dir: Path, work_dir: Path, timeout: int = 15, tests_subdir: str = "tests_hidden"):
+def grade_repo(grader_dir: Path, work_dir: Path, timeout: int = 15, tests_subdir: str = "tests_hidden",
+               venv_dir: Path | str | None = None):
     """Run hidden pytest suite against a multi-file Python repository in an isolated temp directory."""
     started = time.monotonic()
     grader_dir, work_dir = Path(grader_dir), Path(work_dir)
@@ -161,14 +162,21 @@ def grade_repo(grader_dir: Path, work_dir: Path, timeout: int = 15, tests_subdir
             "PYTHONPATH": os.pathsep.join(py_paths),
             "PYTHONDONTWRITEBYTECODE": "1",
         }
+        py_exe = sys.executable
+        if venv_dir:
+            cand = Path(venv_dir) / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+            if cand.is_file():
+                py_exe = str(cand)
+                env["VIRTUAL_ENV"] = str(venv_dir)
         if os.name == "nt":
             for k in ("SYSTEMROOT", "TEMP", "TMP", "PATH"):
                 if k in os.environ:
                     env[k] = os.environ[k]
         else:
-            env["PATH"] = "/usr/local/bin:/usr/bin:/bin"
+            path_head = f"{Path(py_exe).parent}:" if venv_dir else ""
+            env["PATH"] = f"{path_head}/usr/local/bin:/usr/bin:/bin"
 
-        cmd = [sys.executable, "-B", "-m", "pytest", "-q", "--tb=short",
+        cmd = [py_exe, "-B", "-m", "pytest", "-q", "--tb=short",
                "-o", "cache_dir=/tmp/oca_pytest_cache_unused", "-p", "no:cacheprovider",
                str(hidden_dst)]
         try:
@@ -196,8 +204,12 @@ def grade_repo(grader_dir: Path, work_dir: Path, timeout: int = 15, tests_subdir
 
 
 def grade_task(task, work_dir: Path, timeout: int = 15):
-    if getattr(task, "kind", "single_file") == "repo_pytest":
-        return grade_repo(task.grader_dir, work_dir, timeout=timeout)
+    kind = getattr(task, "kind", "single_file")
+    if kind == "swe_verified":
+        from .benchmarks.swe_verified import grade_swe_workspace
+        return grade_swe_workspace(task, work_dir, timeout=max(timeout, 60))
+    if kind == "repo_pytest":
+        return grade_repo(task.grader_dir, work_dir, timeout=timeout, venv_dir=getattr(task, "venv_dir", None))
     return grade_file(task.grader_dir, Path(work_dir) / "solution.py", timeout=timeout)
 
 

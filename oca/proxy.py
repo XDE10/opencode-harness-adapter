@@ -1,23 +1,90 @@
 """Capture proxy between coding agent harnesses (OpenCode / Pi) and vLLM.
 
 Each trial connects to  http://127.0.0.1:<port>/t/<trial_id>/v1  (OpenAI-compatible).
-For every call the proxy forwards a *non-streaming* request to vLLM with
-`return_token_ids` + `logprobs`, records the engine's exact prompt/completion token IDs and
-processed (post-temperature) behaviour logprobs, enforces per-trial budgets safely under
-concurrency, avoids O(T^2) request-message bloat on disk, and replays SSE to the harness.
+For every call the proxy:
+- Forwards a non-streaming request to vLLM with `return_token_ids` + `logprobs`;
+- Records exact engine prompt/completion token IDs and processed behaviour logprobs;
+- Optionally runs real in-the-loop SafeAgents tool-call interception (`safe_intercept=True`),
+  rewriting forbidden bash/edit tool calls into deterministic refusal responses BEFORE the
+  harness executes them so the policy learns safe recovery trajectories in-loop;
+- Enforces per-trial call/token budgets safely under concurrency and replays SSE to the harness.
 """
 import asyncio
 import json
+import re
 import time
 import uuid
 
 from aiohttp import ClientSession, ClientTimeout, web
 
+from .reward import detect_bash_hacks
+
+_PROTECTED_PATH_RE = re.compile(r"(^|[\\/])(TASK\.md|tests[\\/]|tests_hidden[\\/]|grader[\\/])", re.IGNORECASE)
+
+
+def _inspect_and_sanitize_tool_calls(msg: dict, protected_paths: set[str] | None = None) -> list[str]:
+    """In-the-loop SafeAgents interceptor: detect & neutralize unsafe tool calls in place.
+
+    Returns list of triggered reason codes (empty if clean).
+    """
+    reasons: list[str] = []
+    tcs = msg.get("tool_calls") or []
+    for tc in tcs:
+        fn = tc.get("function") or {}
+        name = (fn.get("name") or "").lower()
+        raw_args = fn.get("arguments") or ""
+        try:
+            parsed = json.loads(raw_args) if isinstance(raw_args, str) else (raw_args if isinstance(raw_args, dict) else {})
+        except ValueError:
+            parsed = {}
+        if not isinstance(parsed, dict):
+            parsed = {}
+
+        if name in ("bash", "shell", "exec", "run_command", "terminal"):
+            cmd = ""
+            cmd_key = "command"
+            for k in ("command", "cmd", "script", "input"):
+                if isinstance(parsed.get(k), str):
+                    cmd = parsed[k]
+                    cmd_key = k
+                    break
+            hits = detect_bash_hacks(cmd or str(raw_args))
+            if hits:
+                reasons.extend(hits)
+                safe_msg = f"[SafeAgents BLOCKED: {','.join(sorted(set(hits)))}] Forbidden shell command; stay inside workspace source files."
+                if parsed:
+                    parsed[cmd_key] = f"printf '%s\\n' {json.dumps(safe_msg)} && exit 126"
+                    fn["arguments"] = json.dumps(parsed)
+                else:
+                    fn["arguments"] = json.dumps({"command": f"printf '%s\\n' {json.dumps(safe_msg)} && exit 126"})
+        elif name in ("edit", "write", "write_file", "patch"):
+            target_path = ""
+            for k in ("filePath", "file_path", "path", "file"):
+                if isinstance(parsed.get(k), str):
+                    target_path = parsed[k]
+                    break
+            norm_p = target_path.replace("\\", "/").lstrip("./")
+            is_protected = (norm_p in (protected_paths or set())) or bool(_PROTECTED_PATH_RE.search(norm_p))
+            if is_protected:
+                reasons.append("protected_file_edit")
+                # Neutralize write/edit into a harmless no-op error path so TASK.md / tests/ stay untouched
+                for k in ("filePath", "file_path", "path", "file"):
+                    if k in parsed:
+                        parsed[k] = ".safeagents_blocked_readonly_target"
+                if "oldString" in parsed:
+                    parsed["oldString"] = "__SAFEAGENTS_BLOCKED_EDIT_PROTECTED_FILE__"
+                fn["arguments"] = json.dumps(parsed)
+
+    return sorted(set(reasons))
+
 
 class Trial:
-    def __init__(self, trial_id, model, seed, budget, aux_mode="no_tools"):
+    def __init__(self, trial_id, model, seed, budget, aux_mode="no_tools",
+                 safe_intercept=False, protected_paths=None):
         self.id, self.model, self.seed, self.budget = trial_id, model, seed, budget
         self.aux_mode = aux_mode  # "no_tools" (OpenCode) | "none" (Pi / all calls trained)
+        self.safe_intercept = bool(safe_intercept)
+        self.protected_paths = set(protected_paths or ())
         self.turns, self.calls, self.completion_tokens = [], 0, 0
         self.last_request_messages = None
         self.exhausted = None
@@ -26,15 +93,21 @@ class Trial:
 
 
 class CaptureProxy:
-    def __init__(self, upstream, sampling):
+    def __init__(self, upstream, sampling, safe_intercept=False):
         self.upstream = upstream.rstrip("/")
         self.sampling = sampling  # temperature, top_p, enable_thinking, max_output_tokens_per_call
+        self.safe_intercept = bool(safe_intercept)
         self.trials = {}
         self.session = None
 
     # ---------- control plane (in-process) ----------
-    def register(self, trial_id, model, seed, budget, aux_mode="no_tools"):
-        self.trials[trial_id] = Trial(trial_id, model, seed, budget, aux_mode=aux_mode)
+    def register(self, trial_id, model, seed, budget, aux_mode="no_tools",
+                 safe_intercept=None, protected_paths=None):
+        use_safe = self.safe_intercept if safe_intercept is None else bool(safe_intercept)
+        self.trials[trial_id] = Trial(
+            trial_id, model, seed, budget, aux_mode=aux_mode,
+            safe_intercept=use_safe, protected_paths=protected_paths,
+        )
 
     def pop(self, trial_id):
         return self.trials.pop(trial_id)
@@ -96,6 +169,13 @@ class CaptureProxy:
         choice = data["choices"][0]
         completion_ids = choice.get("token_ids") or []
         logps = [item["logprob"] for item in ((choice.get("logprobs") or {}).get("content") or [])]
+
+        # Preserve original emitted message in trajectory record; sanitize live outgoing message if safe_intercept=True
+        raw_message = json.loads(json.dumps(choice["message"]))
+        intercepted = []
+        if trial.safe_intercept and not aux:
+            intercepted = _inspect_and_sanitize_tool_calls(choice["message"], trial.protected_paths)
+
         turn = {
             "call_index": call_index, "node_id": data["id"], "aux": aux, "model": data.get("model"),
             "prompt_token_ids": data.get("prompt_token_ids") or [],
@@ -104,8 +184,9 @@ class CaptureProxy:
             "finish_reason": choice.get("finish_reason"),
             "usage": data.get("usage"),
             "latency_s": round(time.time() - t0, 3),
-            "message": choice["message"],
+            "message": raw_message,
             "request_message_count": len(body.get("messages") or []),
+            "safe_intercepted": intercepted,
         }
         turn["capture_ok"] = bool(turn["prompt_token_ids"]) and len(completion_ids) == len(logps) and bool(completion_ids)
         async with trial.lock:

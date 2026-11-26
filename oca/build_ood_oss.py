@@ -129,9 +129,23 @@ def _prune_tree(root: Path, src_root: str, test_root: str, keep_tests: list[str]
 
 
 def _format_task_md(spec: dict, sha: str, subject: str, body: str, src_files: list[str],
-                    fail_summary: str) -> str:
+                    fail_summary: str, blind_spec: bool = False) -> str:
     clean_body = re.sub(r"(?im)^(signed-off-by|co-authored-by|reviewed-by):.*$", "", body or "").strip()
     clean_body = clean_body[:900]
+    if blind_spec:
+        # Realistic issue-only spec: omit exact modified file paths and hidden test file names
+        clean_fail = re.sub(r"_oca_hidden_tests/[^\s:]+::", "", fail_summary or "")
+        return (
+            f"# Issue in `{spec['slug']}`: {subject}\n\n"
+            f"This repository snapshot comes from `{spec['slug']}` (license: {spec['license']}).\n\n"
+            f"## Problem Summary\n"
+            f"{subject}\n\n"
+            + (f"{clean_body}\n\n" if clean_body else "")
+            + f"## Scope\n"
+            f"Explore the repository, locate the root cause in the library source code, and implement a clean fix.\n"
+            f"Run `pytest` to verify your changes and avoid regressions.\n\n"
+            + (f"## Observed Symptom\n```text\n{clean_fail[:500]}\n```\n" if clean_fail.strip() else "")
+        )
     src_bullets = "\n".join(f"- `{f}`" for f in src_files)
     return (
         f"# Issue in `{spec['slug']}`: {subject}\n\n"
@@ -147,7 +161,7 @@ def _format_task_md(spec: dict, sha: str, subject: str, body: str, src_files: li
     )
 
 
-def mine_repo(spec: dict, out_base: Path, target: int) -> list[dict]:
+def mine_repo(spec: dict, out_base: Path, target: int, blind_spec: bool = False) -> list[dict]:
     repo = ensure_clone(spec)
     log_out = _git(repo, "log", "--no-merges", "--format=%H%x1f%s%x1f%b%x1e", "-n", "260")
     entries = [e.strip() for e in log_out.split("\x1e") if e.strip()]
@@ -276,7 +290,8 @@ def mine_repo(spec: dict, out_base: Path, target: int) -> list[dict]:
             shutil.copytree(fixed, gdir / "reference")
             shutil.copytree(hidden_dir, gdir / "tests_hidden")
             (tdir / "TASK.md").write_text(
-                _format_task_md(spec, sha, subject, body, src_files, fail_excerpt), encoding="utf-8"
+                _format_task_md(spec, sha, subject, body, src_files, fail_excerpt, blind_spec=blind_spec),
+                encoding="utf-8",
             )
             shutil.copy2(tdir / "TASK.md", gdir / "reference" / "TASK.md")
 
@@ -301,6 +316,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out-dir", type=Path, default=ROOT / "data" / "ood_oss")
     ap.add_argument("--max-total", type=int, default=18)
+    ap.add_argument("--blind-spec", action="store_true", help="Omit modified src_files paths & hidden test file names from TASK.md")
     args = ap.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -310,7 +326,7 @@ def main():
             break
         want = min(spec["max_tasks"], args.max_total - len(all_rows))
         try:
-            all_rows.extend(mine_repo(spec, args.out_dir, target=want))
+            all_rows.extend(mine_repo(spec, args.out_dir, target=want, blind_spec=args.blind_spec))
         except Exception as e:
             print(f"[ood:{spec['slug']}] skipped due to error: {e}", flush=True)
 

@@ -1,4 +1,4 @@
-"""Task registry: v3 fixtures, cleaned single-file sets, and multi-file repo_pytest sets."""
+"""Task registry: v3 fixtures, cleaned single-file sets, multi-file repo_pytest, SWE-smith & SWE-bench Verified."""
 from dataclasses import dataclass
 import json
 from pathlib import Path
@@ -9,12 +9,13 @@ from . import ROOT
 @dataclass(frozen=True)
 class Task:
     id: str
-    split: str                  # train | heldout | pilot
-    task_dir: Path              # visible workspace (TASK.md + solution.py OR full mini-repo)
-    grader_dir: Path            # hidden grader (cases.json+ref+partial OR tests_hidden+ref+partial)
+    split: str                  # train | heldout | pilot | swe_verified
+    task_dir: Path              # visible workspace (TASK.md + solution.py OR full repo)
+    grader_dir: Path            # hidden grader (cases.json | tests_hidden | swe_spec.json+test_patch.diff)
     source: str = "v3"
-    kind: str = "single_file"   # single_file | repo_pytest
+    kind: str = "single_file"   # single_file | repo_pytest | swe_verified
     domain: str = ""
+    venv_dir: str = ""          # optional isolated uv venv path for real OSS repos
 
     @property
     def prompt(self) -> str:
@@ -40,14 +41,17 @@ def _scan_data_manifests(glob_pattern: str, default_kind: str):
         doc = json.loads(manifest.read_text(encoding="utf-8"))
         for row in doc.get("tasks") or []:
             kind = row.get("kind") or default_kind
+            tdir = Path(row["task_dir"]) if row.get("task_dir") else (base / "tasks" / row["id"])
+            gdir = Path(row["grader_dir"]) if row.get("grader_dir") else (base / "grader" / row["id"])
             yield Task(
                 id=row["id"],
                 split=row["split"],
-                task_dir=base / "tasks" / row["id"],
-                grader_dir=base / "grader" / row["id"],
+                task_dir=tdir,
+                grader_dir=gdir,
                 source=base.name,
                 kind=kind,
                 domain=row.get("domain", base.name),
+                venv_dir=row.get("venv_dir", ""),
             )
 
 
@@ -58,6 +62,8 @@ def load(split=None, kind=None):
         *_scan_data_manifests("tasks-*/manifest.json", "single_file"),
         *_scan_data_manifests("repo_*/manifest.json", "repo_pytest"),
         *_scan_data_manifests("ood_*/manifest.json", "repo_pytest"),
+        *_scan_data_manifests("swe_smith*/manifest.json", "swe_verified"),
+        *_scan_data_manifests("swe_verified*/manifest.json", "swe_verified"),
     ):
         if task.id in tasks:
             raise ValueError(f"duplicate task id {task.id}")

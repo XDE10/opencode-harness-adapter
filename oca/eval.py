@@ -96,6 +96,21 @@ def pass_at_k_unbiased(n: int, c: int, k: int) -> float:
     return 1.0 - math.comb(n - c, k) / math.comb(n, k)
 
 
+def holm_bonferroni_adjust(p_values: dict[str, float]) -> dict[str, float]:
+    """Step-down Holm-Bonferroni family-wise error rate (FWER) adjustment across arms."""
+    if not p_values:
+        return {}
+    m = len(p_values)
+    ordered = sorted(p_values.items(), key=lambda kv: kv[1])
+    adjusted: dict[str, float] = {}
+    running_max = 0.0
+    for rank, (name, p) in enumerate(ordered):
+        adj = min(1.0, max(running_max, float(p) * (m - rank)))
+        running_max = adj
+        adjusted[name] = round(adj, 6)
+    return adjusted
+
+
 def summarize_arm(records: list[dict], seeds: list[int]) -> dict:
     by_task: dict[str, list[dict]] = {}
     for r in records:
@@ -258,11 +273,12 @@ async def eval_arm(vllm_url: str, proxy_port: int, arm_name: str, served_model: 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--config", type=Path, default=None, help="Optional protocol JSON (e.g. protocol/oca-v5.json)")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--harness", choices=("opencode", "pi"), default="opencode")
     ap.add_argument("--split", default="heldout")
-    ap.add_argument("--kind", choices=("", "single_file", "repo_pytest"), default="")
-    ap.add_argument("--source-filter", default="", help="Optional: 'v3', 'generated', 'repo', or 'ood'")
+    ap.add_argument("--kind", choices=("", "single_file", "repo_pytest", "swe_verified"), default="")
+    ap.add_argument("--source-filter", default="", help="Optional: 'v3', 'generated', 'repo', 'ood', or 'swe_verified'")
     ap.add_argument("--seeds", type=int, nargs="+", default=[101, 102, 103, 104])
     ap.add_argument("--thinking", action="store_true", help="Enable Qwen3 thinking mode (for Base Thinking-ON upper bound)")
     ap.add_argument("--max-output-per-call", type=int, default=0)
@@ -274,7 +290,7 @@ def main():
     ap.add_argument("--concurrency", type=int, default=32)
     args = ap.parse_args()
 
-    cfg = json.loads(json.dumps(CONFIG))
+    cfg = json.loads(args.config.read_text(encoding="utf-8")) if args.config else json.loads(json.dumps(CONFIG))
     if args.thinking:
         cfg["rollout"]["enable_thinking"] = True
         cfg["rollout"]["max_output_tokens_per_call"] = max(4096, args.max_output_per_call)
@@ -294,6 +310,8 @@ def main():
         tasks = [t for t in tasks if t.source.startswith("repo_")]
     elif args.source_filter == "ood":
         tasks = [t for t in tasks if t.source.startswith("ood_")]
+    elif args.source_filter == "swe_verified":
+        tasks = [t for t in tasks if t.source.startswith("swe_verified")]
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     base_root = args.base_dir or args.out_dir
@@ -309,9 +327,15 @@ def main():
             for t in tasks for s in args.seeds
         ]
 
+    expected_trials = len(tasks) * len(args.seeds)
+    base_missing = expected_trials - sum(1 for r in base_recs if not r.get("error"))
+    if base_missing > 0:
+        print(f"[eval WARNING] base arm has {base_missing}/{expected_trials} errored/missing trials!", flush=True)
+
     report = {
         "harness": args.harness, "split": args.split, "thinking": args.thinking,
-        "n_tasks": len(tasks), "seeds": args.seeds,
+        "n_tasks": len(tasks), "seeds": args.seeds, "expected_trials": expected_trials,
+        "base_missing_or_errored": base_missing,
         "base_summary": summarize_arm(base_recs, args.seeds), "comparisons": {},
     }
 
@@ -325,10 +349,20 @@ def main():
             args.vllm_url, args.proxy_port, name, alias, tasks, args.seeds,
             args.out_dir, args.concurrency, cfg, harness_name=args.harness,
         ))
+        arm_missing = expected_trials - sum(1 for r in lora_recs if not r.get("error"))
+        if arm_missing > 0:
+            print(f"[eval WARNING] arm '{name}' has {arm_missing}/{expected_trials} errored/missing trials!", flush=True)
         comp = compare_arms(base_recs, lora_recs, args.seeds)
+        comp["missing_or_errored_trials"] = arm_missing
         report["comparisons"][name] = comp
         print(f"\n=== COMPARISON ({args.harness}) vs {name} ===", flush=True)
         print(json.dumps({k: v for k, v in comp.items() if k not in ("base", "lora")}, indent=2), flush=True)
+
+    # Apply Holm-Bonferroni FWER adjustment across all evaluated arms
+    raw_ps = {k: v["task_level_permutation_p"] for k, v in report["comparisons"].items()}
+    adj_ps = holm_bonferroni_adjust(raw_ps)
+    for k, adj_p in adj_ps.items():
+        report["comparisons"][k]["holm_bonferroni_p_adj"] = adj_p
 
     out_file = args.out_dir / "eval_report.json"
     out_file.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

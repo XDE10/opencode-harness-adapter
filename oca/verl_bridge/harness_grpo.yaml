@@ -1,0 +1,21 @@
+# veRL Async Multi-Turn AgentLoop Configuration for OpenCode / Pi Coding Harnesses
+# Mount via:
+#   python3 -m verl.trainer.main_ppo \
+#     actor_rollout_ref.rollout.name=vllm \
+#     actor_rollout_ref.rollout.mode=async \
+#     actor_rollout_ref.rollout.multi_turn.enable=true \
+#     actor_rollout_ref.rollout.agent.agent_loop_config_path=oca/verl_bridge/harness_grpo.yaml
+
+- name: opencode_harness_loop
+  _target_: oca.verl_bridge.harness_agent_loop.HarnessAgentLoop
+  harness: opencode
+  safe_intercept: true
+  max_assistant_turns: 24
+  max_output_tokens_per_trial: 10240
+
+- name: pi_harness_loop
+  _target_: oca.verl_bridge.harness_agent_loop.HarnessAgentLoop
+  harness: pi
+  safe_intercept: true
+  max_assistant_turns: 24
+  max_output_tokens_per_trial: 10240

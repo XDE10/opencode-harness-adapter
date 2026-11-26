@@ -1,9 +1,12 @@
 """Run coding-agent trials (OpenCode / Pi) through CaptureProxy and grade them safely.
 
-Supports both `single_file` tasks (TASK.md + solution.py) and multi-file `repo_pytest` tasks
-(full repository + visible smoke tests + hidden pytest grader). On Colab (root), drops to an
-unprivileged `agent` UID with CPU/RAM/NPROC/FSIZE rlimits so hidden graders (`0700`) remain
-unreachable and runaway bash scripts cannot take down the host VM.
+Supports `single_file`, `repo_pytest`, and `swe_verified` tasks. On Linux/Colab:
+- Tightens per-trial temp workspace permissions to `0700` (preventing cross-trial peeking across
+  concurrent workers);
+- Automatically wraps harness execution in `bubblewrap (bwrap)` mount/PID/IPC sandbox when supported
+  by the host kernel (keeping `/content/runs`, `/content/repo/grader`, and sibling `/tmp/oca-*`
+  invisible while still allowing loopback proxy traffic), with transparent fallback to unprivileged
+  `agent` UID isolation when container kernels disable user namespaces.
 """
 import asyncio
 import json
@@ -13,8 +16,10 @@ try:
     import pwd
 except ImportError:  # Windows host (only unit tests / offline helpers)
     pwd = None
+import secrets
 import shutil
 import signal
+import subprocess
 import tempfile
 import time
 
@@ -34,6 +39,60 @@ PROMPT_REPO = (
     "requirements pass. Do NOT modify TASK.md or any files under tests/. You may run pytest or Python "
     "to verify your fix. When you are done, reply with a one-sentence summary."
 )
+
+_BWRAP_OK: bool | None = None
+
+
+def probe_bwrap() -> bool:
+    """Check once whether bubblewrap mount/PID sandboxing works on this Linux kernel."""
+    global _BWRAP_OK
+    if _BWRAP_OK is not None:
+        return _BWRAP_OK
+    if os.name == "nt":
+        _BWRAP_OK = False
+        return False
+    bwrap = shutil.which("bwrap")
+    if not bwrap:
+        _BWRAP_OK = False
+        return False
+    try:
+        p = subprocess.run(
+            [bwrap, "--ro-bind", "/", "/", "--proc", "/proc", "--dev", "/dev",
+             "--unshare-pid", "--die-with-parent", "/bin/true"],
+            capture_output=True, timeout=5,
+        )
+        _BWRAP_OK = (p.returncode == 0)
+    except Exception:
+        _BWRAP_OK = False
+    return _BWRAP_OK
+
+
+def build_bwrap_cmd(cmd: list[str], work: Path, home: Path, extra_ro_dirs: list[Path] | None = None) -> list[str]:
+    """Construct a bubblewrap command isolating filesystem visibility to system libs + this trial only."""
+    bwrap = shutil.which("bwrap") or "bwrap"
+    args = [bwrap, "--die-with-parent", "--unshare-pid", "--unshare-ipc"]
+    for sys_ro in ("/usr", "/bin", "/lib", "/lib64", "/sbin", "/etc/alternatives", "/etc/ssl", "/etc/ld.so.cache",
+                   "/etc/ld.so.conf", "/etc/ld.so.conf.d", "/etc/passwd", "/etc/group", "/etc/hosts", "/etc/resolv.conf"):
+        if os.path.exists(sys_ro):
+            args += ["--ro-bind", sys_ro, sys_ro]
+    # Expose only runtime tools & optional repo venvs read-only (NEVER /content/runs or /content/repo/grader!)
+    for tool_ro in ("/content/tools", "/content/swe_venvs", "/opt", "/usr/local"):
+        if os.path.exists(tool_ro):
+            args += ["--ro-bind", tool_ro, tool_ro]
+    for p in extra_ro_dirs or []:
+        if p and os.path.exists(p):
+            args += ["--ro-bind", str(p), str(p)]
+    args += [
+        "--proc", "/proc",
+        "--dev", "/dev",
+        "--tmpfs", "/tmp",
+        "--bind", str(work), str(work),
+        "--bind", str(home), str(home),
+        "--chdir", str(work),
+        "--",
+        *cmd,
+    ]
+    return args
 
 
 def _agent_ids():
@@ -58,7 +117,7 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
     """Copy visible task files into `work`; return (original_file_texts, protected_test_paths)."""
     original = {}
     protected = []
-    if task.kind == "repo_pytest":
+    if task.kind in ("repo_pytest", "swe_verified"):
         for root, dirs, files in os.walk(task.task_dir):
             dirs[:] = [d for d in dirs if d not in ("__pycache__", ".pytest_cache", ".git")]
             rel_dir = Path(root).relative_to(task.task_dir)
@@ -82,7 +141,7 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
 
 
 def _collect_final_code(task, work: Path) -> str | None:
-    if task.kind == "repo_pytest":
+    if task.kind in ("repo_pytest", "swe_verified"):
         chunks = []
         for p in sorted(work.rglob("*.py")):
             rel = p.relative_to(work).as_posix()
@@ -107,31 +166,46 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     home.mkdir()
     original, protected_tests = _populate_workspace(task, work)
 
-    prompt = PROMPT_REPO if task.kind == "repo_pytest" else PROMPT_SINGLE
-    base_url = f"{proxy.base}/t/{trial_id}/v1"
+    prompt = PROMPT_REPO if task.kind in ("repo_pytest", "swe_verified") else PROMPT_SINGLE
+    # Route through an unguessable per-trial nonce so sibling processes cannot hijack another trial's proxy URL
+    route_id = f"{trial_id}-{secrets.token_hex(4)}"
+    base_url = f"{proxy.base}/t/{route_id}/v1"
     cmd, env = harness.prepare(home, base_url, binary, prompt, cfg)
 
+    # Prepend per-task venv bin dir if present (for SWE-bench Verified / SWE-smith pure-Python repos)
+    venv_bin = None
+    if getattr(task, "venv_dir", None):
+        vb = Path(task.venv_dir) / "bin"
+        if vb.is_dir():
+            venv_bin = vb
+            env["PATH"] = f"{vb}:{env.get('PATH', '/usr/bin:/bin')}"
+            env["VIRTUAL_ENV"] = str(task.venv_dir)
+
     ids = _agent_ids()
-    if ids:
-        os.chmod(root, 0o755)
-        for dirpath, _, files in os.walk(root):
-            os.chown(dirpath, *ids)
-            for f in files:
-                os.chown(os.path.join(dirpath, f), *ids)
+    if os.name != "nt":
+        os.chmod(root, 0o700)
+        if ids:
+            for dirpath, _, files in os.walk(root):
+                os.chown(dirpath, *ids)
+                for f in files:
+                    os.chown(os.path.join(dirpath, f), *ids)
+
+    use_bwrap = bool(r.get("use_bwrap", True)) and probe_bwrap()
+    sandbox_mode = "bwrap+uid" if (use_bwrap and ids) else ("bwrap" if use_bwrap else ("uid_0700" if ids else "host"))
+    exec_cmd = build_bwrap_cmd(cmd, work, home, extra_ro_dirs=[venv_bin.parent] if venv_bin else None) if use_bwrap else cmd
 
     budget = {"max_model_calls": r["max_model_calls"], "max_output_tokens_per_trial": r["max_output_tokens_per_trial"]}
-    proxy.register(trial_id, model, seed, budget, aux_mode=harness.aux_mode)
+    safe_intercept = bool(r.get("safe_intercept", False))
+    proxy.register(
+        route_id, model, seed, budget, aux_mode=harness.aux_mode,
+        safe_intercept=safe_intercept, protected_paths=["TASK.md", *protected_tests],
+    )
 
     def demote():
         os.setsid()
         if os.name != "nt":
             try:
                 import resource
-                # NOTE: Do NOT cap RLIMIT_AS or per-UID RLIMIT_NPROC tightly here:
-                # Node.js/Bun (OpenCode/Pi) mmap >4 GiB virtual address space and spawn
-                # ~10 threads per worker, so 32 concurrent `agent` trials share one UID.
-                # Isolation is enforced by `agent` UID + 0700 hidden graders + timeout killpg
-                # + strict per-worker rlimits inside `oca/grade.py`.
                 resource.setrlimit(resource.RLIMIT_FSIZE, (32 << 20, 32 << 20))
             except (ValueError, OSError):
                 pass
@@ -142,7 +216,7 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     started = time.time()
     timed_out = False
     proc = await asyncio.create_subprocess_exec(
-        *cmd, cwd=work, env=env,
+        *exec_cmd, cwd=work, env=env,
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         preexec_fn=None if os.name == "nt" else demote,
     )
@@ -155,8 +229,23 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
         except ProcessLookupError:
             pass
         stdout, stderr = await proc.communicate()
+    except asyncio.CancelledError:
+        # Cleanly reap child process group on Early-Cutoff straggler cancellation
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            await proc.wait()
+        except Exception:
+            pass
+        proxy.trials.pop(route_id, None)
+        if not keep_workdir:
+            shutil.rmtree(root, ignore_errors=True)
+        raise
+
     wall = time.time() - started
-    trial = proxy.pop(trial_id)
+    trial = proxy.pop(route_id)
 
     verdict = await asyncio.to_thread(grade_task, task, work, cfg["grade"]["timeout_seconds"])
     final = _collect_final_code(task, work)
@@ -173,6 +262,7 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     record = {
         "trial_id": trial_id, "task_id": task.id, "split": task.split,
         "kind": task.kind, "domain": task.domain, "harness": harness.name,
+        "sandbox_mode": sandbox_mode,
         "model": model, "seed": seed,
         "reward": reward, "reward_parts": parts, "grade": {k: v for k, v in verdict.items() if k != "stderr"},
         "hack_flags": flags, "timed_out": timed_out, "exit_code": proc.returncode, "wall_s": round(wall, 2),
@@ -202,6 +292,8 @@ async def run_batch(proxy, jobs, out_dir, concurrency=None, cfg=CONFIG, on_done=
         async with sem:
             try:
                 rec = await run_trial(proxy, *job, out_dir=out_dir, cfg=cfg, harness_name=harness_name)
+            except asyncio.CancelledError:
+                raise
             except Exception as exc:  # keep the batch alive; failed trials are excluded from training
                 rec = {"trial_id": job[3], "task_id": job[0].id, "kind": job[0].kind,
                        "harness": harness_name, "model": job[1], "seed": job[2],

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opencode-harness-adapter"
-version = "0.4.0"
-description = "Single-GPU colocated Agentic RL (LoRA GRPO + Prefix-Merged TIS) for OpenCode & Pi coding harnesses"
+version = "0.5.0"
+description = "Single-GPU colocated Agentic RL (Dr.GRPO / GSPO / CISPO + Turn Credit + SafeAgents Proxy) for OpenCode & Pi coding harnesses"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
@@ -23,6 +23,7 @@ gpu = [
     "accelerate>=1.0",
     "safetensors>=0.4.5",
     "flash-linear-attention>=0.1",
+    "datasets>=2.20",
     "huggingface-hub>=0.26",
     "hf-transfer>=0.1.8",
 ]
