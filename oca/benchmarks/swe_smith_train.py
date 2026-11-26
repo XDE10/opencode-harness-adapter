@@ -216,7 +216,8 @@ def build_swe_smith_train(
                 shutil.rmtree(gdir, ignore_errors=True)
                 try:
                     export_commit(mirror, "HEAD", tdir)
-                except Exception:
+                except Exception as exc:
+                    print(f"  [rej {iid}] export_commit err: {exc}", flush=True)
                     consecutive_errs += 1
                     continue
 
@@ -224,11 +225,12 @@ def build_swe_smith_train(
                 clean_tests_dst = gdir / "clean_tests"
                 for tname in ("tests", "test", "testing"):
                     if (tdir / tname).is_dir():
-                        shutil.copytree(tdir / tname, clean_tests_dst / tname, dirs_exist_ok=True)
+                        shutil.copytree(tdir / tname, clean_tests_dst / tname, dirs_exist_ok=True, symlinks=True)
 
                 # Apply SWE-smith bug-introducing mutation patch to turn HEAD -> buggy workspace
                 ok_bug, err_bug = apply_patch_in_dir(tdir, bug_patch)
                 if not ok_bug:
+                    print(f"  [rej {iid}] apply_bug err: {err_bug[:160]}", flush=True)
                     shutil.rmtree(tdir, ignore_errors=True)
                     shutil.rmtree(gdir, ignore_errors=True)
                     consecutive_errs += 1
@@ -254,12 +256,14 @@ def build_swe_smith_train(
             # Verify gate: buggy workspace MUST fail cleanly, reversing bug_patch (GOLD) MUST pass 100%
             res_bug = grade_swe_dir(gdir, tdir, timeout=45, venv_dir=vdir, apply_gold=False)
             if res_bug["status"] != "fail":
+                print(f"  [rej {iid}] bug status={res_bug['status']} detail={res_bug.get('detail','')} tail={(res_bug.get('stdout_tail','')+res_bug.get('stderr',''))[-160:]}", flush=True)
                 shutil.rmtree(tdir, ignore_errors=True)
                 shutil.rmtree(gdir, ignore_errors=True)
                 consecutive_errs += 1
                 continue
             res_gold = grade_swe_dir(gdir, tdir, timeout=45, venv_dir=vdir, apply_gold=True)
             if res_gold["status"] != "pass":
+                print(f"  [rej {iid}] gold status={res_gold['status']} detail={res_gold.get('detail','')} tail={(res_gold.get('stdout_tail','')+res_gold.get('stderr',''))[-160:]}", flush=True)
                 shutil.rmtree(tdir, ignore_errors=True)
                 shutil.rmtree(gdir, ignore_errors=True)
                 consecutive_errs += 1

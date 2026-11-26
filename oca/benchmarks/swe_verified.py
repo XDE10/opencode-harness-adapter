@@ -51,31 +51,19 @@ PURE_PYTHON_SPECS = {
         "slug": "sympy",
         "runner": "pytest",
         "deps": ["pytest>=7,<9", "mpmath>=1.3"],
-        "target_count": 18,
+        "target_count": 22,
     },
     "django/django": {
         "slug": "django",
         "runner": "django_runtests",
         "deps": ["asgiref>=3.6", "sqlparse>=0.4", "pytz", "tblib", "pytest"],
-        "target_count": 26,
-    },
-    "pytest-dev/pytest": {
-        "slug": "pytest",
-        "runner": "pytest",
-        "deps": ["pytest", "pluggy>=1.0", "iniconfig", "packaging", "py", "attrs", "hypothesis", "xmlschema", "argcomplete"],
-        "target_count": 10,
+        "target_count": 36,
     },
     "psf/requests": {
         "slug": "requests",
         "runner": "pytest",
         "deps": ["pytest", "urllib3<2", "charset-normalizer", "idna", "certifi"],
         "target_count": 5,
-    },
-    "pallets/flask": {
-        "slug": "flask",
-        "runner": "pytest",
-        "deps": ["pytest", "werkzeug<3", "jinja2", "itsdangerous", "click", "blinker"],
-        "target_count": 1,
     },
 }
 
