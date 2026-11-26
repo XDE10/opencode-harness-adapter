@@ -81,6 +81,8 @@ def ensure_vllm_running(vllm_url: str, cfg: dict, log_path: Path):
         "--dtype", "bfloat16", "--generation-config", "vllm",
         "--max-model-len", str(r["max_context_tokens"]),
         "--gpu-memory-utilization", str(t["vllm_gpu_memory_utilization"]),
+        "--max-num-seqs", str(int(t.get("vllm_max_num_seqs", 64))),
+        "--max-num-batched-tokens", str(int(t.get("vllm_max_num_batched_tokens", 16384))),
         "--enable-sleep-mode",
         "--enable-auto-tool-choice", "--tool-call-parser", m.get("tool_call_parser", "qwen3_coder"),
         "--enable-lora", "--max-lora-rank", str(max_lora_rank), "--max-loras", "2",
@@ -763,7 +765,9 @@ def run_rft(args, cfg: dict):
             opt.zero_grad(set_to_none=True)
             b_loss = 0.0
             for seg in batch:
-                b_loss += _chunked_sft_segment_backward(model, seg, denom, chunk_size=512)
+                b_loss += _chunked_sft_segment_backward(
+                    model, seg, denom, chunk_size=int(tcfg.get("lm_head_chunk_size", 512))
+                )
             gn = float(torch.nn.utils.clip_grad_norm_(trainable, tcfg["max_grad_norm"]).item())
             if math.isfinite(gn) and gn > 0:
                 opt.step()
@@ -1071,7 +1075,9 @@ def run_train(args, cfg: dict):
                         ids = torch.tensor([seg["input_ids"]], dtype=torch.long, device="cuda")
                         pos = torch.tensor(seg["target_positions"], dtype=torch.long, device="cuda")
                         tgt = torch.tensor(seg["target_ids"], dtype=torch.long, device="cuda")
-                        lp = _compute_target_logprobs_nograd(model, ids, pos, tgt, temp, chunk_size=512)
+                        lp = _compute_target_logprobs_nograd(
+                            model, ids, pos, tgt, temp, chunk_size=int(tcfg.get("lm_head_chunk_size", 512))
+                        )
                         seg["hf_old_lp"] = lp.cpu().tolist()
                         del ids, pos, tgt, lp
 
@@ -1088,7 +1094,7 @@ def run_train(args, cfg: dict):
                     use_traj_norm = (norm_mode == "trajectory") or (loss_mode == "gspo" and norm_mode != "token")
                     denom = float((seg["traj_tokens"] * mb_trajs) if use_traj_norm else mb_tokens)
                     l_val, seg_errs, seg_ent, seg_tis, seg_ppo = _chunked_segment_loss_backward(
-                        model, seg, temp, denom, loss_mode, tcfg, chunk_size=512,
+                        model, seg, temp, denom, loss_mode, tcfg, chunk_size=int(tcfg.get("lm_head_chunk_size", 512)),
                     )
                     mb_loss_acc += l_val
                     errs.extend(seg_errs)

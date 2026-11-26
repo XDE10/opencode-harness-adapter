@@ -160,7 +160,18 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     binary = harness.resolve_bin(cfg, bin_override)
     await harness.warmup(binary, cfg)
 
-    root = Path(tempfile.mkdtemp(prefix=f"oca-{trial_id}-"))
+    wd_base = r.get("workdir_root")
+    tmp_parent = None
+    if wd_base and os.name != "nt" and os.path.isdir("/dev/shm"):
+        try:
+            st_fs = os.statvfs("/dev/shm")
+            if (st_fs.f_bavail * st_fs.f_frsize) > (16 << 30):
+                os.makedirs(wd_base, exist_ok=True)
+                os.chmod(wd_base, 0o755)
+                tmp_parent = wd_base
+        except OSError:
+            pass
+    root = Path(tempfile.mkdtemp(prefix=f"oca-{trial_id}-", dir=tmp_parent))
     work, home = root / "repo", root / "home"
     work.mkdir()
     home.mkdir()

@@ -34,7 +34,8 @@
     "max_output_tokens_per_trial": 10240,
     "max_model_calls": 24,
     "timeout_seconds": 300,
-    "concurrency": 32,
+    "concurrency": 48,
+    "workdir_root": "/dev/shm/oca_work",
     "safe_intercept": true,
     "use_bwrap": true
   },
@@ -74,6 +75,9 @@
     "efficiency_weight": 0.05,
     "efficiency_budget": 24,
     "efficiency_token_budget": 8192,
-    "vllm_gpu_memory_utilization": 0.58
+    "lm_head_chunk_size": 2048,
+    "vllm_gpu_memory_utilization": 0.70,
+    "vllm_max_num_seqs": 64,
+    "vllm_max_num_batched_tokens": 16384
   }
 }
