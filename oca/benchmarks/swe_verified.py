@@ -180,20 +180,24 @@ def export_commit(mirror: Path, commit: str, dst: Path):
         tf.extractall(dst, filter="data")
 
 
-def apply_patch_in_dir(work_dir: Path, patch_text: str) -> tuple[bool, str]:
-    """Apply a unified diff patch cleanly via `git apply` (works without `.git` dir)."""
+def apply_patch_in_dir(work_dir: Path, patch_text: str, reverse: bool = False) -> tuple[bool, str]:
+    """Apply a unified diff patch strictly inside `work_dir` (never climbing into a parent `.git` repo)."""
     if not patch_text or not patch_text.strip():
         return True, ""
+    work_dir = Path(work_dir).resolve()
+    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(work_dir.parent)}
+    base_cmd = ["git", "apply", "--whitespace=nowarn"]
+    if reverse:
+        base_cmd.append("-R")
     p = subprocess.run(
-        ["git", "apply", "--whitespace=nowarn", "-"],
-        input=patch_text.encode("utf-8"), cwd=work_dir, capture_output=True, timeout=30,
+        [*base_cmd, "-"],
+        input=patch_text.encode("utf-8"), cwd=work_dir, env=env, capture_output=True, timeout=30,
     )
     if p.returncode == 0:
         return True, ""
-    # Retry with --recount for minor line-count fuzz
     p2 = subprocess.run(
-        ["git", "apply", "--recount", "--whitespace=nowarn", "-"],
-        input=patch_text.encode("utf-8"), cwd=work_dir, capture_output=True, timeout=30,
+        [*base_cmd, "--recount", "-"],
+        input=patch_text.encode("utf-8"), cwd=work_dir, env=env, capture_output=True, timeout=30,
     )
     return (p2.returncode == 0), p2.stderr.decode(errors="replace")[-600:]
 
@@ -241,14 +245,7 @@ def grade_swe_dir(
         if clean_tests.is_dir():
             _safe_copy_tree(clean_tests, tmp_p)
         if apply_gold and gold_patch:
-            if reverse_gold:
-                p_rev = subprocess.run(
-                    ["git", "apply", "-R", "--whitespace=nowarn", "-"],
-                    input=gold_patch.encode("utf-8"), cwd=tmp_p, capture_output=True, timeout=30,
-                )
-                ok_g, err_g = (p_rev.returncode == 0), p_rev.stderr.decode(errors="replace")[-600:]
-            else:
-                ok_g, err_g = apply_patch_in_dir(tmp_p, gold_patch)
+            ok_g, err_g = apply_patch_in_dir(tmp_p, gold_patch, reverse=reverse_gold)
             if not ok_g:
                 return {"status": "test_error", "detail": f"gold patch failed: {err_g}",
                         "passed": 0, "total": 0, "wall_seconds": round(time.monotonic() - started, 3)}
