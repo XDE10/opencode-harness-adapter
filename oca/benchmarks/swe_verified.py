@@ -201,6 +201,18 @@ def apply_patch_in_dir(work_dir: Path, patch_text: str) -> tuple[bool, str]:
     return (p2.returncode == 0), p2.stderr.decode(errors="replace")[-600:]
 
 
+def extract_patch_py_files(patch_text: str) -> list[str]:
+    """Extract unique `.py` file paths touched by a unified diff (`+++ b/...`)."""
+    files: list[str] = []
+    seen = set()
+    for m in re.finditer(r"^\+\+\+\s+b/(.+?\.py)$", patch_text or "", re.MULTILINE):
+        p = m.group(1).strip()
+        if p and p not in seen:
+            seen.add(p)
+            files.append(p)
+    return files
+
+
 def grade_swe_dir(
     grader_dir: Path,
     work_dir: Path,
@@ -208,7 +220,7 @@ def grade_swe_dir(
     venv_dir: str | Path | None = None,
     apply_gold: bool = False,
 ) -> dict:
-    """Grade a SWE-bench / SWE-smith workspace against official `test_patch.diff` + F2P/P2P specs."""
+    """Grade a SWE-bench / SWE-smith workspace against official `test_patch.diff` (or clean tests) + F2P/P2P."""
     started = time.monotonic()
     grader_dir, work_dir = Path(grader_dir), Path(work_dir)
     spec_file = grader_dir / "swe_spec.json"
@@ -222,12 +234,24 @@ def grade_swe_dir(
     p2p = spec.get("pass_to_pass") or []
     runner = spec.get("runner", "pytest")
     use_venv = venv_dir or spec.get("venv_dir") or ""
+    reverse_gold = bool(spec.get("reverse_gold_patch", False))
 
     with tempfile.TemporaryDirectory(prefix="oca-swe-grade-") as tmp:
         tmp_p = Path(tmp)
         _safe_copy_tree(work_dir, tmp_p)
+        # Restore unmodified test files if stored (for SWE-smith where tests live inside repo)
+        clean_tests = grader_dir / "clean_tests"
+        if clean_tests.is_dir():
+            _safe_copy_tree(clean_tests, tmp_p)
         if apply_gold and gold_patch:
-            ok_g, err_g = apply_patch_in_dir(tmp_p, gold_patch)
+            if reverse_gold:
+                p_rev = subprocess.run(
+                    ["git", "apply", "-R", "--whitespace=nowarn", "-"],
+                    input=gold_patch.encode("utf-8"), cwd=tmp_p, capture_output=True, timeout=30,
+                )
+                ok_g, err_g = (p_rev.returncode == 0), p_rev.stderr.decode(errors="replace")[-600:]
+            else:
+                ok_g, err_g = apply_patch_in_dir(tmp_p, gold_patch)
             if not ok_g:
                 return {"status": "test_error", "detail": f"gold patch failed: {err_g}",
                         "passed": 0, "total": 0, "wall_seconds": round(time.monotonic() - started, 3)}
@@ -274,13 +298,24 @@ def grade_swe_dir(
                         "passed": 0, "total": 0, "wall_seconds": round(time.monotonic() - started, 3)}
             cmd = [py_exe, "-B", "tests/runtests.py", "--verbosity=1", "--parallel=1", *labels]
         else:
-            # Cap PASS_TO_PASS at 25 fast regression tests + ALL FAIL_TO_PASS so grading stays < 60s
             targets = list(dict.fromkeys([*f2p, *p2p[:25]]))
             if not targets:
                 return {"status": "test_error", "detail": "no pytest targets",
                         "passed": 0, "total": 0, "wall_seconds": round(time.monotonic() - started, 3)}
-            cmd = [py_exe, "-B", "-m", "pytest", "-q", "--tb=short",
-                   "-o", "cache_dir=/tmp/oca_pytest_cache_unused", "-p", "no:cacheprovider", *targets]
+            # Handle bare function names (e.g. sympy/sympy uses `test_issue_11617` without file path)
+            has_paths = any((".py" in t or "/" in t or "::" in t) for t in targets)
+            if not has_paths:
+                test_files = spec.get("test_files") or extract_patch_py_files(test_patch)
+                if not test_files:
+                    return {"status": "test_error", "detail": "bare test names without test_files",
+                            "passed": 0, "total": 0, "wall_seconds": round(time.monotonic() - started, 3)}
+                k_expr = " or ".join(t.split("[", 1)[0] for t in targets[:30])
+                cmd = [py_exe, "-B", "-m", "pytest", "-q", "--tb=short",
+                       "-o", "cache_dir=/tmp/oca_pytest_cache_unused", "-p", "no:cacheprovider",
+                       "-k", k_expr, *test_files]
+            else:
+                cmd = [py_exe, "-B", "-m", "pytest", "-q", "--tb=short",
+                       "-o", "cache_dir=/tmp/oca_pytest_cache_unused", "-p", "no:cacheprovider", *targets]
 
         try:
             proc = subprocess.run(

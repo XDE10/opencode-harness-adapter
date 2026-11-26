@@ -1,31 +1,38 @@
 """Zero-contamination multi-file RL training set builder from `SWE-bench/SWE-smith-py`.
 
-Strictly blacklists all 12 repositories present in `SWE-bench/SWE-bench_Verified` so training on
-`SWE-smith-py` has 0% repository or instance overlap with heldout SWE-bench Verified evaluation.
-Exports verified tasks (`base_commit` fails F2P, `gold_patch` passes 100% F2P+P2P) into `data/swe_smith_v1/`
-with cached pure-Python `uv venv`s so `oca.train` consumes them natively alongside L1/L2 tasks.
+Schema reality (verified live against Hugging Face `SWE-bench/SWE-smith-py`):
+- `repo` is a public SWE-smith mirror `swesmith/<owner>__<name>.<hash>` whose `HEAD` is the clean
+  GOLD repository state where `FAIL_TO_PASS` + `PASS_TO_PASS` pass.
+- `patch` is the BUG-INTRODUCING mutation patch: applying `patch` to `HEAD` creates the buggy visible
+  workspace (`tasks/<id>/`), and reversing `patch` (`git apply -R`) restores the gold fix.
+- Strictly blacklists all 12 `SWE-bench/SWE-bench_Verified` repositories (0% repo contamination!).
+- Installs each repo's lightweight pure-Python dependencies into a cached `uv venv` and verifies
+  every task (`buggy` fails F2P, `gold` passes 100% F2P+P2P) before admitting into `manifest.json`.
 """
 from __future__ import annotations
 
 import argparse
 from collections import Counter
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 
 from .. import ROOT
 from .swe_verified import (
     SWE_VERIFIED_ALL_REPOS,
-    ensure_git_mirror,
-    ensure_repo_venv,
+    apply_patch_in_dir,
     export_commit,
     format_swe_task_md,
     grade_swe_dir,
     parse_swe_test_list,
 )
 
-# Curated lightweight pure-Python OSS repos present in SWE-smith-py (0% overlap with SWE-bench Verified!)
+# Lightweight pure-Python repos (0% overlap with SWE-bench Verified!)
 PREFERRED_SMITH_REPOS = {
+    "oauthlib/oauthlib": ["pytest", "cryptography", "pyjwt", "blinker"],
     "pypa/packaging": ["pytest"],
     "pallets/click": ["pytest"],
     "pallets/jinja": ["pytest", "markupsafe"],
@@ -38,17 +45,29 @@ PREFERRED_SMITH_REPOS = {
     "hukkin/tomli": ["pytest"],
     "yaml/pyyaml": ["pytest"],
     "dateutil/dateutil": ["pytest", "six", "hypothesis"],
-    "pyjwt/pyjwt": ["pytest"],
+    "pyjwt/pyjwt": ["pytest", "cryptography"],
     "jd/tenacity": ["pytest"],
     "facelessuser/soupsieve": ["pytest"],
+    "jpadilla/pyjwt": ["pytest", "cryptography"],
+    "psf/black": ["pytest", "click", "mypy-extensions", "pathspec", "platformdirs", "packaging"],
+    "pallets/werkzeug": ["pytest", "markupsafe"],
+    "pallets/markupsafe": ["pytest"],
+    "encode/starlette": ["pytest", "anyio", "httpx"],
+    "urllib3/urllib3": ["pytest"],
+    "pypa/pip": ["pytest"],
+    "tornadoweb/tornado": ["pytest"],
+    "aio-libs/aiohttp": ["pytest"],
+    "tiangolo/fastapi": ["pytest", "starlette", "pydantic", "httpx"],
+    "pydantic/pydantic": ["pytest"],
+    "sqlfluff/sqlfluff": ["pytest"],
+    "Textualize/textual": ["pytest"],
 }
 
-# Sanity assertion at import time: guaranteed zero repo leakage with SWE-bench Verified
 assert not (set(PREFERRED_SMITH_REPOS) & SWE_VERIFIED_ALL_REPOS), "Repo leakage with SWE-bench Verified!"
 
 
 def _normalize_repo_name(raw_repo: str) -> str:
-    """SWE-smith repos may appear as `swesmith/owner__name.commit` or `owner/name`."""
+    """Convert `swesmith/owner__name.hash` -> `owner/name`."""
     s = raw_repo.strip()
     if s.startswith("swesmith/"):
         s = s[len("swesmith/"):]
@@ -58,56 +77,108 @@ def _normalize_repo_name(raw_repo: str) -> str:
     return s
 
 
+def _ensure_swesmith_mirror(clone_root: Path, raw_repo: str) -> Path:
+    """Shallow-clone `https://github.com/swesmith/<slug>.git` (HEAD = clean gold state)."""
+    slug = raw_repo.replace("/", "__")
+    dst = clone_root / slug
+    if (dst / ".git").is_dir():
+        return dst
+    clone_root.mkdir(parents=True, exist_ok=True)
+    url = f"https://github.com/{raw_repo}.git"
+    subprocess.run(
+        ["git", "-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=12",
+         "clone", "--depth", "1", "--no-tags", url, str(dst)],
+        check=True, timeout=180,
+    )
+    return dst
+
+
+def _ensure_smith_venv(venv_root: Path, slug: str, mirror: Path, extra_deps: list[str]) -> Path:
+    """Create cached `uv venv` installing pytest + repo editable/deps cleanly."""
+    vdir = venv_root / f"smith_{slug}"
+    py = vdir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    marker = vdir / ".oca_venv_ready"
+    if py.is_file() and marker.is_file():
+        return vdir
+    vdir.mkdir(parents=True, exist_ok=True)
+    uv = shutil.which("uv")
+    if uv:
+        subprocess.run([uv, "venv", "--clear", str(vdir)], check=True, timeout=120)
+        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "pytest", *extra_deps], check=False, timeout=300)
+        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "--no-build-isolation", str(mirror)],
+                       check=False, timeout=300)
+    else:
+        subprocess.run([sys.executable, "-m", "venv", str(vdir)], check=True, timeout=120)
+        subprocess.run([str(py), "-m", "pip", "install", "-q", "pytest", *extra_deps], check=False, timeout=300)
+        subprocess.run([str(py), "-m", "pip", "install", "-q", str(mirror)], check=False, timeout=300)
+    if os.name != "nt":
+        subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
+    marker.write_text("ok\n", encoding="utf-8")
+    return vdir
+
+
 def build_swe_smith_train(
     out_dir: Path,
     venv_root: Path,
     clone_root: Path,
     max_total: int = 160,
-    max_per_repo: int = 20,
+    max_per_repo: int = 16,
     dataset_name: str = "SWE-bench/SWE-smith-py",
 ) -> dict:
     from datasets import load_dataset
 
-    print(f"[swe_smith] streaming {dataset_name} (blacklisting {len(SWE_VERIFIED_ALL_REPOS)} SWE-bench Verified repos)...", flush=True)
+    print(f"[swe_smith] streaming {dataset_name} (0% overlap with {len(SWE_VERIFIED_ALL_REPOS)} SWE-bench Verified repos)...", flush=True)
     ds = load_dataset(dataset_name, split="train", streaming=True)
 
-    buckets: dict[str, list[dict]] = {r: [] for r in PREFERRED_SMITH_REPOS}
+    # Dynamically collect candidates grouped by raw `swesmith/...` mirror repo (excluding Verified repos!)
+    by_raw_repo: dict[str, list[dict]] = {}
     scanned = 0
     for row in ds:
         scanned += 1
-        norm_repo = _normalize_repo_name(str(row.get("repo") or ""))
-        if norm_repo in SWE_VERIFIED_ALL_REPOS:
-            continue
-        if norm_repo not in buckets or len(buckets[norm_repo]) >= max_per_repo * 2:
-            if all(len(v) >= max_per_repo * 2 for v in buckets.values()) or scanned >= 40_000:
-                break
+        raw_repo = str(row.get("repo") or "").strip()
+        norm_repo = _normalize_repo_name(raw_repo)
+        if not raw_repo or norm_repo in SWE_VERIFIED_ALL_REPOS:
             continue
         if not (row.get("problem_statement") and row.get("patch") and row.get("FAIL_TO_PASS")):
             continue
-        buckets[norm_repo].append({**dict(row), "_norm_repo": norm_repo})
+        bucket = by_raw_repo.setdefault(raw_repo, [])
+        if len(bucket) < max_per_repo * 2:
+            bucket.append({**dict(row), "_norm_repo": norm_repo})
+        if len(by_raw_repo) >= 35 and sum(len(v) for v in by_raw_repo.values()) >= max_total * 3:
+            break
+        if scanned >= 25_000:
+            break
+
+    # Prioritize curated lightweight pure-Python repos first, then other discovered pure-Python repos
+    ordered_repos = sorted(
+        by_raw_repo.keys(),
+        key=lambda rr: (0 if _normalize_repo_name(rr) in PREFERRED_SMITH_REPOS else 1, -len(by_raw_repo[rr]), rr),
+    )
+    print(f"[swe_smith] discovered {len(ordered_repos)} non-Verified repos from {scanned} rows", flush=True)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     accepted: list[dict] = []
 
-    for repo, deps in PREFERRED_SMITH_REPOS.items():
+    for raw_repo in ordered_repos:
         if len(accepted) >= max_total:
             break
-        cands = buckets.get(repo) or []
-        if not cands:
-            continue
-        slug = repo.split("/")[-1].lower().replace("-", "_")
+        norm_repo = _normalize_repo_name(raw_repo)
+        cands = by_raw_repo[raw_repo]
+        slug = norm_repo.replace("/", "_").replace("-", "_").lower()
         want = min(max_per_repo, max_total - len(accepted))
-        print(f"[swe_smith] verifying {repo} (want {want} from {len(cands)} candidates)...", flush=True)
+        print(f"[swe_smith] probing {raw_repo} ({norm_repo}, want {want}/{len(cands)})...", flush=True)
         try:
-            vdir = ensure_repo_venv(venv_root, f"smith_{slug}", deps)
-            mirror = ensure_git_mirror(clone_root, repo)
+            mirror = _ensure_swesmith_mirror(clone_root, raw_repo)
+            extra_deps = PREFERRED_SMITH_REPOS.get(norm_repo, [])
+            vdir = _ensure_smith_venv(venv_root, slug, mirror, extra_deps)
         except Exception as e:
-            print(f"  [skip repo {repo}] setup err: {e}", flush=True)
+            print(f"  [skip {raw_repo}] setup err: {e}", flush=True)
             continue
 
         got = 0
+        consecutive_errs = 0
         for row in cands:
-            if got >= want:
+            if got >= want or consecutive_errs >= 4:
                 break
             raw_id = str(row.get("instance_id") or f"smith-{slug}-{got}")
             iid = f"smith-{raw_id}" if not raw_id.startswith("smith-") else raw_id
@@ -116,61 +187,80 @@ def build_swe_smith_train(
             gdir = out_dir / "grader" / iid
             f2p = parse_swe_test_list(row.get("FAIL_TO_PASS"))
             p2p = parse_swe_test_list(row.get("PASS_TO_PASS"))
-            if not f2p:
+            bug_patch = str(row.get("patch") or "")
+            if not f2p or not bug_patch.strip():
                 continue
 
             if not (tdir / "TASK.md").is_file() or not (gdir / "swe_spec.json").is_file():
                 shutil.rmtree(tdir, ignore_errors=True)
                 shutil.rmtree(gdir, ignore_errors=True)
                 try:
-                    export_commit(mirror, row["base_commit"], tdir)
+                    export_commit(mirror, "HEAD", tdir)
                 except Exception:
+                    consecutive_errs += 1
                     continue
+
+                # Snapshot clean test directories before applying bug patch so grader restores immutable tests
+                clean_tests_dst = gdir / "clean_tests"
+                for tname in ("tests", "test", "testing"):
+                    if (tdir / tname).is_dir():
+                        shutil.copytree(tdir / tname, clean_tests_dst / tname, dirs_exist_ok=True)
+
+                # Apply SWE-smith bug-introducing mutation patch to turn HEAD -> buggy workspace
+                ok_bug, err_bug = apply_patch_in_dir(tdir, bug_patch)
+                if not ok_bug:
+                    shutil.rmtree(tdir, ignore_errors=True)
+                    shutil.rmtree(gdir, ignore_errors=True)
+                    consecutive_errs += 1
+                    continue
+
                 (tdir / "TASK.md").write_text(
-                    format_swe_task_md(repo, iid, str(row["problem_statement"]), "pytest"), encoding="utf-8"
+                    format_swe_task_md(norm_repo, iid, str(row["problem_statement"]), "pytest"), encoding="utf-8"
                 )
                 gdir.mkdir(parents=True, exist_ok=True)
-                (gdir / "test_patch.diff").write_text(str(row.get("test_patch") or ""), encoding="utf-8")
-                (gdir / "gold_patch.diff").write_text(str(row.get("patch") or ""), encoding="utf-8")
+                (gdir / "gold_patch.diff").write_text(bug_patch, encoding="utf-8")
                 swe_spec = {
                     "instance_id": iid,
-                    "repo": repo,
-                    "base_commit": row["base_commit"],
+                    "repo": norm_repo,
+                    "raw_repo": raw_repo,
                     "runner": "pytest",
                     "venv_dir": str(vdir),
+                    "reverse_gold_patch": True,  # git apply -R reverts bug_patch -> GOLD!
                     "fail_to_pass": f2p,
                     "pass_to_pass": p2p,
                 }
                 (gdir / "swe_spec.json").write_text(json.dumps(swe_spec, indent=2) + "\n", encoding="utf-8")
 
-            res_base = grade_swe_dir(gdir, tdir, timeout=60, venv_dir=vdir, apply_gold=False)
-            if res_base["status"] != "fail":
+            # Verify gate: buggy workspace MUST fail cleanly, reversing bug_patch (GOLD) MUST pass 100%
+            res_bug = grade_swe_dir(gdir, tdir, timeout=45, venv_dir=vdir, apply_gold=False)
+            if res_bug["status"] != "fail":
                 shutil.rmtree(tdir, ignore_errors=True)
                 shutil.rmtree(gdir, ignore_errors=True)
+                consecutive_errs += 1
                 continue
-            res_gold = grade_swe_dir(gdir, tdir, timeout=60, venv_dir=vdir, apply_gold=True)
+            res_gold = grade_swe_dir(gdir, tdir, timeout=45, venv_dir=vdir, apply_gold=True)
             if res_gold["status"] != "pass":
                 shutil.rmtree(tdir, ignore_errors=True)
                 shutil.rmtree(gdir, ignore_errors=True)
+                consecutive_errs += 1
                 continue
 
+            consecutive_errs = 0
             got += 1
             accepted.append({
                 "id": iid,
                 "split": "train",
                 "kind": "swe_verified",
                 "domain": f"smith_{slug}",
-                "repo": repo,
-                "base_commit": row["base_commit"],
+                "repo": norm_repo,
                 "venv_dir": str(vdir),
                 "passed": {
-                    "base": f"{res_base['passed']}/{res_base['total']}",
+                    "base": f"{res_bug['passed']}/{res_bug['total']}",
                     "gold": f"{res_gold['passed']}/{res_gold['total']}",
                 },
             })
-            print(f"  [OK {got}/{want}] {iid} ({res_base['passed']}/{res_base['total']} -> {res_gold['passed']}/{res_gold['total']})", flush=True)
+            print(f"  [OK {got}/{want}] {iid} ({res_bug['passed']}/{res_bug['total']} -> {res_gold['passed']}/{res_gold['total']})", flush=True)
 
-    # Final assertion: ZERO overlap with SWE-bench Verified repositories
     used_repos = {a["repo"] for a in accepted}
     assert not (used_repos & SWE_VERIFIED_ALL_REPOS), f"Contamination detected: {used_repos & SWE_VERIFIED_ALL_REPOS}"
 
@@ -194,7 +284,7 @@ def main():
     ap.add_argument("--venv-root", type=Path, default=Path("/content/swe_venvs"))
     ap.add_argument("--clone-root", type=Path, default=Path("/content/swe_mirrors"))
     ap.add_argument("--max-total", type=int, default=160)
-    ap.add_argument("--max-per-repo", type=int, default=20)
+    ap.add_argument("--max-per-repo", type=int, default=16)
     args = ap.parse_args()
     build_swe_smith_train(args.out_dir, args.venv_root, args.clone_root, args.max_total, args.max_per_repo)
 

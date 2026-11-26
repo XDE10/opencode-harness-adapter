@@ -177,7 +177,10 @@ try:
         "n_ad = sum(1 for k in m.state_dict() if '.lora_A.' in k)\n"
         "print('CANARY_TARGETS:', json.dumps(targets), 'CANARY_MODULES:', n_ad)\n"
     )
-    rc_gen, out_gen = sh(f"python3 -c {json.dumps(probe_py)}", timeout=300)
+    probe_file = os.path.join(canary_dir, "_make_canary.py")
+    with open(probe_file, "w", encoding="utf-8") as pf:
+        pf.write(probe_py)
+    rc_gen, out_gen = sh(f"python3 {probe_file}", timeout=300)
     http_req("http://127.0.0.1:8000/wake_up", "POST")
     if rc_gen == 0:
         st_l, r_l = http_req("http://127.0.0.1:8000/v1/load_lora_adapter", "POST", {
