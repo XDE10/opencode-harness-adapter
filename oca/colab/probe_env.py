@@ -165,13 +165,17 @@ try:
         "from peft import LoraConfig, get_peft_model\n"
         "from transformers import AutoModelForCausalLM\n"
         "base = AutoModelForCausalLM.from_pretrained('/content/models/qwen35-9b', local_files_only=True, dtype=torch.bfloat16, device_map='cpu')\n"
-        "lin_names = sorted({n.split('.')[-1] for n, m in base.named_modules() if isinstance(m, torch.nn.Linear) and 'layers.0.' in n})\n"
-        "print('LAYER0_LINEARS:', json.dumps(lin_names))\n"
-        "targets = ['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj','in_proj_qkv','in_proj_z','in_proj_b','in_proj_a','out_proj']\n"
+        "l0_lins = sorted({n.split('.')[-1] for n, m in base.named_modules() if isinstance(m, torch.nn.Linear) and '.layers.0.' in n})\n"
+        "l3_lins = sorted({n.split('.')[-1] for n, m in base.named_modules() if isinstance(m, torch.nn.Linear) and '.layers.3.' in n})\n"
+        "deltanet_lins = [x for x in l0_lins if x not in ('gate_proj','up_proj','down_proj')]\n"
+        "print('LAYER0_LINEARS:', json.dumps(l0_lins))\n"
+        "print('LAYER3_LINEARS:', json.dumps(l3_lins))\n"
+        "print('DELTANET_LINEARS:', json.dumps(deltanet_lins))\n"
+        "targets = sorted(set(['q_proj','k_proj','v_proj','o_proj','gate_proj','up_proj','down_proj', *deltanet_lins]))\n"
         "m = get_peft_model(base, LoraConfig(r=8, lora_alpha=16, target_modules=targets, bias='none', task_type='CAUSAL_LM'))\n"
         f"m.save_pretrained('{canary_dir}', safe_serialization=True)\n"
         "n_ad = sum(1 for k in m.state_dict() if '.lora_A.' in k)\n"
-        "print('CANARY_MODULES:', n_ad)\n"
+        "print('CANARY_TARGETS:', json.dumps(targets), 'CANARY_MODULES:', n_ad)\n"
     )
     rc_gen, out_gen = sh(f"python3 -c {json.dumps(probe_py)}", timeout=300)
     http_req("http://127.0.0.1:8000/wake_up", "POST")
