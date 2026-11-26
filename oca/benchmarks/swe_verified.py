@@ -51,18 +51,18 @@ PURE_PYTHON_SPECS = {
         "slug": "sympy",
         "runner": "pytest",
         "deps": ["pytest>=7,<9", "mpmath>=1.3"],
-        "target_count": 20,
+        "target_count": 18,
     },
     "django/django": {
         "slug": "django",
         "runner": "django_runtests",
         "deps": ["asgiref>=3.6", "sqlparse>=0.4", "pytz", "tblib", "pytest"],
-        "target_count": 24,
+        "target_count": 26,
     },
     "pytest-dev/pytest": {
         "slug": "pytest",
         "runner": "pytest",
-        "deps": ["pytest", "pluggy>=1.0", "iniconfig", "packaging", "py", "attrs", "hypothesis", "xmlschema"],
+        "deps": ["pytest", "pluggy>=1.0", "iniconfig", "packaging", "py", "attrs", "hypothesis", "xmlschema", "argcomplete"],
         "target_count": 10,
     },
     "psf/requests": {
@@ -138,9 +138,9 @@ def parse_django_runtests_output(output: str, returncode: int) -> tuple[int, int
     return passed, failed, errors
 
 
-def ensure_repo_venv(venv_root: Path, slug: str, deps: list[str]) -> Path:
-    """Create or reuse a cached `uv venv` with pure-Python test dependencies for `slug`."""
-    vdir = venv_root / slug
+def ensure_repo_venv(venv_root: Path, slug: str, deps: list[str], py_version: str = "3.11") -> Path:
+    """Create or reuse a cached Python 3.11 `uv venv` with pure-Python test dependencies for `slug`."""
+    vdir = venv_root / f"{slug}_py{py_version.replace('.', '')}"
     py = vdir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     marker = vdir / ".oca_venv_ready"
     if py.is_file() and marker.is_file():
@@ -148,7 +148,7 @@ def ensure_repo_venv(venv_root: Path, slug: str, deps: list[str]) -> Path:
     vdir.mkdir(parents=True, exist_ok=True)
     uv = shutil.which("uv")
     if uv:
-        subprocess.run([uv, "venv", "--clear", str(vdir)], check=True, timeout=120)
+        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)], check=True, timeout=120)
         subprocess.run([uv, "pip", "install", "--python", str(py), "-q", *deps], check=True, timeout=600)
     else:
         subprocess.run([sys.executable, "-m", "venv", str(vdir)], check=True, timeout=120)
@@ -400,7 +400,8 @@ def build_swe_verified_subset(
         if len(accepted) >= max_total:
             break
         want = min(spec["target_count"], max_total - len(accepted))
-        candidates = sorted(by_repo[repo], key=lambda x: x["instance_id"])
+        # Prefer newer issues first (best Python 3.11 compatibility & modern APIs)
+        candidates = sorted(by_repo[repo], key=lambda x: x["instance_id"], reverse=True)
         if not candidates:
             continue
         print(f"[swe_verified] setting up {repo} (want {want} from {len(candidates)} candidates)...", flush=True)
@@ -445,6 +446,14 @@ def build_swe_verified_subset(
                     if spec["runner"] == "django_runtests" else [],
                 }
                 (gdir / "swe_spec.json").write_text(json.dumps(swe_spec, indent=2) + "\n", encoding="utf-8")
+
+            # Refresh venv_dir in swe_spec.json when upgrading Python version on cached dirs
+            spec_p = gdir / "swe_spec.json"
+            if spec_p.is_file():
+                sdoc = json.loads(spec_p.read_text(encoding="utf-8"))
+                if sdoc.get("venv_dir") != str(vdir):
+                    sdoc["venv_dir"] = str(vdir)
+                    spec_p.write_text(json.dumps(sdoc, indent=2) + "\n", encoding="utf-8")
 
             # Hard verification gate: base MUST fail, gold MUST pass 100%
             res_base = grade_swe_dir(gdir, tdir, timeout=90, venv_dir=vdir, apply_gold=False)

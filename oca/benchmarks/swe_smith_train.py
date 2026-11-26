@@ -93,24 +93,36 @@ def _ensure_swesmith_mirror(clone_root: Path, raw_repo: str) -> Path:
     return dst
 
 
-def _ensure_smith_venv(venv_root: Path, slug: str, mirror: Path, extra_deps: list[str]) -> Path:
-    """Create cached `uv venv` installing pytest + repo editable/deps cleanly."""
-    vdir = venv_root / f"smith_{slug}"
+def _ensure_smith_venv(venv_root: Path, slug: str, mirror: Path, extra_deps: list[str], py_version: str = "3.11") -> Path:
+    """Create cached Python 3.11 `uv venv` with ONLY third-party deps (uninstalls repo itself so workspace wins)."""
+    vdir = venv_root / f"smith_{slug}_py{py_version.replace('.', '')}"
     py = vdir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     marker = vdir / ".oca_venv_ready"
     if py.is_file() and marker.is_file():
         return vdir
     vdir.mkdir(parents=True, exist_ok=True)
     uv = shutil.which("uv")
+    pkg_guess = slug.split("_")[-1].replace("_", "-")
     if uv:
-        subprocess.run([uv, "venv", "--clear", str(vdir)], check=True, timeout=120)
+        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)], check=True, timeout=120)
         subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "pytest", *extra_deps], check=False, timeout=300)
-        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "--no-build-isolation", str(mirror)],
-                       check=False, timeout=300)
+        # Pull transitive deps via repo metadata, then uninstall repo package itself so PYTHONPATH workspace ALWAYS wins
+        rc_i = subprocess.run(
+            [uv, "pip", "install", "--python", str(py), "-q", "--no-build-isolation", str(mirror)],
+            capture_output=True, timeout=240,
+        ).returncode
+        if rc_i == 0:
+            subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", pkg_guess], check=False, timeout=60)
+            # Also detect exact distribution name from pyproject.toml if different
+            pp = mirror / "pyproject.toml"
+            if pp.is_file():
+                import re
+                m = re.search(r'(?m)^\s*name\s*=\s*["\']([^"\']+)["\']', pp.read_text(encoding="utf-8", errors="replace"))
+                if m and m.group(1).lower() != pkg_guess.lower():
+                    subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", m.group(1)], check=False, timeout=60)
     else:
         subprocess.run([sys.executable, "-m", "venv", str(vdir)], check=True, timeout=120)
         subprocess.run([str(py), "-m", "pip", "install", "-q", "pytest", *extra_deps], check=False, timeout=300)
-        subprocess.run([str(py), "-m", "pip", "install", "-q", str(mirror)], check=False, timeout=300)
     if os.name != "nt":
         subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
     marker.write_text("ok\n", encoding="utf-8")
