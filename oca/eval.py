@@ -275,7 +275,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--config", type=Path, default=None, help="Optional protocol JSON (e.g. protocol/oca-v5.json)")
     ap.add_argument("--out-dir", type=Path, required=True)
-    ap.add_argument("--harness", choices=("opencode", "pi"), default="opencode")
+    ap.add_argument("--harness", choices=("opencode", "pi", "mini_swe"), default="opencode")
     ap.add_argument("--split", default="heldout")
     ap.add_argument("--kind", choices=("", "single_file", "repo_pytest", "swe_verified"), default="")
     ap.add_argument("--source-filter", default="", help="Optional: 'v3', 'generated', 'repo', 'ood', or 'swe_verified'")

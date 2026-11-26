@@ -1,10 +1,12 @@
-"""Pluggable coding agent harnesses (OpenCode 2.2.7 & Pi coding agent)."""
+"""Pluggable coding agent harnesses (OpenCode 2.2.7, Pi coding agent, and OOD Mini-SWE-Agent)."""
+from .mini_swe import MiniSweAgentHarness
 from .opencode import OpenCodeHarness
 from .pi import PiHarness
 
 REGISTRY = {
     "opencode": OpenCodeHarness,
     "pi": PiHarness,
+    "mini_swe": MiniSweAgentHarness,
 }
 
 

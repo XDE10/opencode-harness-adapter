@@ -126,6 +126,18 @@ def lock_grader_permissions():
             os.chmod(gdir, 0o700)
 
 
+def assign_joint_harnesses(
+    tasks: list, step_idx: int, harnesses: tuple[str, ...] = ("opencode", "pi")
+) -> dict[str, str]:
+    """Assign each task group deterministically to a single harness for variance-free Joint RL.
+
+    All G rollouts of a given task run inside the SAME harness (preventing cross-harness baseline
+    bias inside Dr.GRPO group advantages), while the step's optimizer update pools ~50/50
+    OpenCode and Pi groups simultaneously.
+    """
+    return {t.id: harnesses[(step_idx + i) % len(harnesses)] for i, t in enumerate(tasks)}
+
+
 def compute_group_advantages(
     valid_recs: list[dict],
     adv_mode: str = "dr_grpo",
@@ -967,21 +979,23 @@ def run_train(args, cfg: dict):
                 break
             for t in chosen:
                 used_tasks.add(t.id)
+            joint_map = assign_joint_harnesses(chosen, step_idx + rnd) if args.harness == "joint" else None
 
-            async def _runner(task, g_idx, _rnd=rnd):
-                tid = f"s{step_idx:03d}-r{_rnd}-{task.id}-g{g_idx}"
+            async def _runner(task, g_idx, _rnd=rnd, _jmap=joint_map):
+                h_name = _jmap[task.id] if _jmap is not None else args.harness
+                tid = f"s{step_idx:03d}-r{_rnd}-{h_name[:2]}-{task.id}-g{g_idx}" if _jmap is not None else f"s{step_idx:03d}-r{_rnd}-{task.id}-g{g_idx}"
                 seed = args.seed * 100_000 + step_idx * 1_000 + _rnd * 100 + g_idx
                 async with sem:
                     try:
                         return await run_trial(
                             proxy, task, served_model, seed, tid,
-                            out_dir=step_dir, cfg=cfg, harness_name=args.harness,
+                            out_dir=step_dir, cfg=cfg, harness_name=h_name,
                         )
                     except asyncio.CancelledError:
                         raise
                     except Exception as exc:
                         return {"trial_id": tid, "task_id": task.id, "kind": task.kind,
-                                "harness": args.harness, "model": served_model, "seed": seed,
+                                "harness": h_name, "model": served_model, "seed": seed,
                                 "error": repr(exc), "reward": None, "turns": []}
 
             rnd_adm, rnd_recs, rnd_zv, rnd_canc = await collect_groups_early_cutoff(
@@ -1143,9 +1157,16 @@ def run_train(args, cfg: dict):
             prev_b = b
         hist[f">={ERR_BINS[-1]}"] = sum(1 for x in errs_sorted if x >= ERR_BINS[-1])
 
+        harness_group_counts: dict[str, int] = {}
+        for _, adv_triples in admitted_groups:
+            if adv_triples:
+                hn = adv_triples[0][0].get("harness", args.harness)
+                harness_group_counts[hn] = harness_group_counts.get(hn, 0) + 1
+
         row = {
             "step": step,
             "harness": args.harness,
+            "harness_group_counts": harness_group_counts,
             "loss_mode": loss_mode,
             "adv_mode": adv_mode,
             "credit_mode": credit_mode,
@@ -1211,7 +1232,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--config", type=Path, default=None, help="Optional protocol JSON (e.g. protocol/oca-v5.json)")
     ap.add_argument("--mode", choices=("screen", "train", "rft"), required=True)
-    ap.add_argument("--harness", choices=("opencode", "pi"), default="opencode")
+    ap.add_argument("--harness", choices=("opencode", "pi", "joint"), default="opencode")
     ap.add_argument("--kind", choices=("", "single_file", "repo_pytest", "swe_verified"), default="")
     ap.add_argument("--source-filter", default="", help="Optional task source prefix filter for screen")
     ap.add_argument("--out-dir", type=Path, required=True)

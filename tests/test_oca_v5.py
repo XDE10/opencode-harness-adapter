@@ -372,6 +372,64 @@ class TestOcaV5(unittest.TestCase):
         self.assertEqual(ppo_c, 2)
         self.assertAlmostEqual(float(cur_big.grad[0].item()), -(1.28 / 2.0), places=5)
 
+    def test_joint_harness_assignment_mini_swe_and_trajectory_audit(self):
+        from types import SimpleNamespace
+        from oca import CONFIG
+        from oca.audit_trajectories import audit_records, detect_reasoning_leakage
+        from oca.harnesses import get_harness
+        from oca.train import assign_joint_harnesses
+
+        # 1. Joint multi-harness assignment keeps each task homogeneous & balances 50/50 across harnesses
+        tasks = [SimpleNamespace(id=f"t{i}") for i in range(6)]
+        m1 = assign_joint_harnesses(tasks, step_idx=1)
+        m2 = assign_joint_harnesses(tasks, step_idx=2)
+        self.assertEqual(sum(v == "opencode" for v in m1.values()), 3)
+        self.assertEqual(sum(v == "pi" for v in m1.values()), 3)
+        # Task flips harness on alternating steps so every task gets both harnesses over training
+        self.assertNotEqual(m1["t0"], m2["t0"])
+
+        # 2. 3rd unseen OOD harness (mini-swe-agent) generates valid local no-Docker YAML + CLI cmd
+        with tempfile.TemporaryDirectory() as td:
+            h = get_harness("mini_swe")
+            cmd, env = h.prepare(Path(td), "http://127.0.0.1:8105/t/abc/v1", "/usr/local/bin/mini", "Fix bug", CONFIG)
+            self.assertIn("-y", cmd)
+            self.assertIn("--exit-immediately", cmd)
+            cfg_path = Path(env["MSWEA_MINI_CONFIG_PATH"])
+            self.assertTrue(cfg_path.is_file())
+            txt = cfg_path.read_text(encoding="utf-8")
+            self.assertIn('environment_class: "local"', txt)
+            self.assertIn("http://127.0.0.1:8105/t/abc/v1", txt)
+
+        # 3. Trajectory attribution & non-thinking reasoning-leakage audit
+        self.assertTrue(detect_reasoning_leakage("<think>check edge case</think>ok")["think_tag"])
+        self.assertTrue(detect_reasoning_leakage("Let me think carefully about this bug. " + "x" * 240, 90)["cot_preamble"])
+        self.assertFalse(detect_reasoning_leakage("Editing foo.py now.", 6)["leaked"])
+        recs = [
+            {
+                "trial_id": "t1", "grade": {"status": "pass"}, "completion_tokens": 120, "n_policy_turns": 2,
+                "turns": [
+                    {"message": {"content": "<think>hmm</think>", "tool_calls": [{"function": {"name": "read"}}]},
+                     "completion_token_ids": [1, 2, 3], "request_messages": [{"role": "user", "content": "fix"}]},
+                    {"message": {"content": "done", "tool_calls": [{"function": {"name": "edit"}}]},
+                     "completion_token_ids": [4, 5], "request_messages": [{"role": "tool", "content": "FAILED AssertionError"}]},
+                ],
+            },
+            {
+                "trial_id": "t2", "grade": {"status": "fail"}, "completion_tokens": 200, "n_policy_turns": 1,
+                "turns": [
+                    {"message": {"content": "trying", "tool_calls": [{"function": {"name": "bash"}}]},
+                     "completion_token_ids": [1], "request_messages": [{"role": "tool", "content": "exit code 1"}],
+                     "safe_intercepted": True},
+                ],
+            },
+        ]
+        rep = audit_records(recs)
+        self.assertEqual(rep["n_trials"], 2)
+        self.assertAlmostEqual(rep["pass_rate"], 0.5)
+        self.assertAlmostEqual(rep["reasoning_leak_trial_rate"], 0.5)
+        self.assertAlmostEqual(rep["error_recovery_rate"], 0.5)
+        self.assertEqual(rep["safe_intercept_total"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
