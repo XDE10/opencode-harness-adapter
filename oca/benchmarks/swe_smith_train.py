@@ -97,34 +97,42 @@ def _ensure_smith_venv(venv_root: Path, slug: str, mirror: Path, extra_deps: lis
     """Create cached Python 3.11 `uv venv` with ONLY third-party deps (uninstalls repo itself so workspace wins)."""
     vdir = venv_root / f"smith_{slug}_py{py_version.replace('.', '')}"
     py = vdir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    marker = vdir / ".oca_venv_ready"
+    marker = vdir / ".oca_venv_ready_v2"
     if py.is_file() and marker.is_file():
         return vdir
     vdir.mkdir(parents=True, exist_ok=True)
     uv = shutil.which("uv")
     pkg_guess = slug.split("_")[-1].replace("_", "-")
     if uv:
-        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)], check=True, timeout=120)
-        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "pytest", *extra_deps], check=False, timeout=300)
+        uv_py_dir = venv_root / "_uv_python"
+        uv_py_dir.mkdir(parents=True, exist_ok=True)
+        uv_env = {**os.environ, "UV_PYTHON_INSTALL_DIR": str(uv_py_dir)}
+        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)],
+                       check=True, timeout=120, env=uv_env)
+        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", "pytest", *extra_deps],
+                       check=False, timeout=300, env=uv_env)
         # Pull transitive deps via repo metadata, then uninstall repo package itself so PYTHONPATH workspace ALWAYS wins
         rc_i = subprocess.run(
             [uv, "pip", "install", "--python", str(py), "-q", "--no-build-isolation", str(mirror)],
-            capture_output=True, timeout=240,
+            capture_output=True, timeout=240, env=uv_env,
         ).returncode
         if rc_i == 0:
-            subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", pkg_guess], check=False, timeout=60)
-            # Also detect exact distribution name from pyproject.toml if different
+            subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", pkg_guess],
+                           check=False, timeout=60, env=uv_env)
             pp = mirror / "pyproject.toml"
             if pp.is_file():
                 import re
                 m = re.search(r'(?m)^\s*name\s*=\s*["\']([^"\']+)["\']', pp.read_text(encoding="utf-8", errors="replace"))
                 if m and m.group(1).lower() != pkg_guess.lower():
-                    subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", m.group(1)], check=False, timeout=60)
+                    subprocess.run([uv, "pip", "uninstall", "--python", str(py), "-q", m.group(1)],
+                                   check=False, timeout=60, env=uv_env)
+        if os.name != "nt":
+            subprocess.run(["chmod", "-R", "a+rX", str(uv_py_dir), str(vdir)], check=False)
     else:
         subprocess.run([sys.executable, "-m", "venv", str(vdir)], check=True, timeout=120)
         subprocess.run([str(py), "-m", "pip", "install", "-q", "pytest", *extra_deps], check=False, timeout=300)
-    if os.name != "nt":
-        subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
+        if os.name != "nt":
+            subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
     marker.write_text("ok\n", encoding="utf-8")
     return vdir
 

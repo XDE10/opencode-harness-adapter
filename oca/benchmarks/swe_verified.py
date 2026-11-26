@@ -142,19 +142,28 @@ def ensure_repo_venv(venv_root: Path, slug: str, deps: list[str], py_version: st
     """Create or reuse a cached Python 3.11 `uv venv` with pure-Python test dependencies for `slug`."""
     vdir = venv_root / f"{slug}_py{py_version.replace('.', '')}"
     py = vdir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    marker = vdir / ".oca_venv_ready"
+    marker = vdir / ".oca_venv_ready_v2"
     if py.is_file() and marker.is_file():
         return vdir
     vdir.mkdir(parents=True, exist_ok=True)
     uv = shutil.which("uv")
     if uv:
-        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)], check=True, timeout=120)
-        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", *deps], check=True, timeout=600)
+        # Install standalone CPython under world-readable venv_root/_uv_python (NOT /root/ 0700!)
+        # so unprivileged `nobody` (grader) and `agent` (harness) UIDs can execute the venv symlink!
+        uv_py_dir = venv_root / "_uv_python"
+        uv_py_dir.mkdir(parents=True, exist_ok=True)
+        uv_env = {**os.environ, "UV_PYTHON_INSTALL_DIR": str(uv_py_dir)}
+        subprocess.run([uv, "venv", "--clear", "--python", py_version, str(vdir)],
+                       check=True, timeout=120, env=uv_env)
+        subprocess.run([uv, "pip", "install", "--python", str(py), "-q", *deps],
+                       check=True, timeout=600, env=uv_env)
+        if os.name != "nt":
+            subprocess.run(["chmod", "-R", "a+rX", str(uv_py_dir), str(vdir)], check=False)
     else:
         subprocess.run([sys.executable, "-m", "venv", str(vdir)], check=True, timeout=120)
         subprocess.run([str(py), "-m", "pip", "install", "-q", *deps], check=True, timeout=600)
-    if os.name != "nt":
-        subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
+        if os.name != "nt":
+            subprocess.run(["chmod", "-R", "a+rX", str(vdir)], check=False)
     marker.write_text("ok\n", encoding="utf-8")
     return vdir
 
