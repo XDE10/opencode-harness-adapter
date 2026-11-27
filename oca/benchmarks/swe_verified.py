@@ -214,6 +214,42 @@ def extract_patch_py_files(patch_text: str) -> list[str]:
     return files
 
 
+def extract_patch_touched_files(patch_text: str) -> tuple[list[str], list[str]]:
+    """Return (existing_files_to_restore, newly_created_files) from a unified diff."""
+    existing: list[str] = []
+    created: list[str] = []
+    seen_e, seen_c = set(), set()
+    lines = (patch_text or "").splitlines()
+    for i, ln in enumerate(lines):
+        if ln.startswith("--- ") and i + 1 < len(lines) and lines[i + 1].startswith("+++ "):
+            old_p = ln[4:].strip()
+            new_p = lines[i + 1][4:].strip()
+            if old_p == "/dev/null" and new_p.startswith("b/"):
+                rel = new_p[2:].strip()
+                if rel and rel not in seen_c:
+                    seen_c.add(rel)
+                    created.append(rel)
+            elif old_p.startswith("a/"):
+                rel = old_p[2:].strip()
+                if rel and rel not in seen_e:
+                    seen_e.add(rel)
+                    existing.append(rel)
+    return existing, created
+
+
+def save_clean_test_files(task_dir: Path, grader_dir: Path, test_patch: str) -> list[str]:
+    """Snapshot unmodified base_commit copies of files modified by `test_patch` into `grader_dir/clean_tests`."""
+    existing, created = extract_patch_touched_files(test_patch)
+    clean_root = grader_dir / "clean_tests"
+    for rel in existing:
+        src = task_dir / rel
+        if src.is_file() and not src.is_symlink():
+            dst = clean_root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+    return created
+
+
 def grade_swe_dir(
     grader_dir: Path,
     work_dir: Path,
@@ -240,10 +276,16 @@ def grade_swe_dir(
     with tempfile.TemporaryDirectory(prefix="oca-swe-grade-") as tmp:
         tmp_p = Path(tmp)
         _safe_copy_tree(work_dir, tmp_p)
-        # Restore unmodified test files if stored (for SWE-smith where tests live inside repo)
+        # Restore unmodified test files (matching official SWE-bench `git checkout base_commit -- <test_files>`)
         clean_tests = grader_dir / "clean_tests"
         if clean_tests.is_dir():
             _safe_copy_tree(clean_tests, tmp_p)
+        if test_patch:
+            _, created_test_files = extract_patch_touched_files(test_patch)
+            for rel in created_test_files:
+                cand_new = tmp_p / rel
+                if cand_new.is_file():
+                    cand_new.unlink(missing_ok=True)
         if apply_gold and gold_patch:
             ok_g, err_g = apply_patch_in_dir(tmp_p, gold_patch, reverse=reverse_gold)
             if not ok_g:
@@ -377,14 +419,23 @@ def build_swe_verified_subset(
     clone_root: Path,
     max_total: int = 60,
     freeze_protocol: Path | None = None,
+    protocol_file: Path | None = None,
 ) -> dict:
     from datasets import load_dataset
+
+    allowed_ids: set[str] | None = None
+    if protocol_file and Path(protocol_file).is_file():
+        pdoc = json.loads(Path(protocol_file).read_text(encoding="utf-8"))
+        ids = pdoc.get("instance_ids") or []
+        if ids:
+            allowed_ids = set(ids)
+            max_total = len(allowed_ids)
 
     ds = load_dataset("SWE-bench/SWE-bench_Verified", split="test")
     by_repo: dict[str, list[dict]] = {r: [] for r in PURE_PYTHON_SPECS}
     for row in ds:
         r = row["repo"]
-        if r in by_repo:
+        if r in by_repo and (allowed_ids is None or row["instance_id"] in allowed_ids):
             by_repo[r].append(dict(row))
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -393,7 +444,7 @@ def build_swe_verified_subset(
     for repo, spec in PURE_PYTHON_SPECS.items():
         if len(accepted) >= max_total:
             break
-        want = min(spec["target_count"], max_total - len(accepted))
+        want = len(by_repo[repo]) if allowed_ids is not None else min(spec["target_count"], max_total - len(accepted))
         # Prefer newer issues first (best Python 3.11 compatibility & modern APIs)
         candidates = sorted(by_repo[repo], key=lambda x: x["instance_id"], reverse=True)
         if not candidates:
@@ -426,8 +477,10 @@ def build_swe_verified_subset(
                     format_swe_task_md(repo, iid, row["problem_statement"], spec["runner"]), encoding="utf-8"
                 )
                 gdir.mkdir(parents=True, exist_ok=True)
-                (gdir / "test_patch.diff").write_text(row.get("test_patch") or "", encoding="utf-8")
+                tpatch = row.get("test_patch") or ""
+                (gdir / "test_patch.diff").write_text(tpatch, encoding="utf-8")
                 (gdir / "gold_patch.diff").write_text(row.get("patch") or "", encoding="utf-8")
+                save_clean_test_files(tdir, gdir, tpatch)
                 swe_spec = {
                     "instance_id": iid,
                     "repo": repo,
@@ -436,10 +489,12 @@ def build_swe_verified_subset(
                     "venv_dir": str(vdir),
                     "fail_to_pass": f2p,
                     "pass_to_pass": p2p,
-                    "django_labels": extract_django_test_labels(f2p + p2p, row.get("test_patch") or "")
+                    "django_labels": extract_django_test_labels(f2p + p2p, tpatch)
                     if spec["runner"] == "django_runtests" else [],
                 }
                 (gdir / "swe_spec.json").write_text(json.dumps(swe_spec, indent=2) + "\n", encoding="utf-8")
+            elif not (gdir / "clean_tests").is_dir() and (gdir / "test_patch.diff").is_file():
+                save_clean_test_files(tdir, gdir, (gdir / "test_patch.diff").read_text(encoding="utf-8"))
 
             # Refresh venv_dir in swe_spec.json when upgrading Python version on cached dirs
             spec_p = gdir / "swe_spec.json"
@@ -500,9 +555,13 @@ def main():
     ap.add_argument("--venv-root", type=Path, default=Path("/content/swe_venvs"))
     ap.add_argument("--clone-root", type=Path, default=Path("/content/swe_mirrors"))
     ap.add_argument("--max-total", type=int, default=60)
-    ap.add_argument("--freeze-protocol", type=Path, default=ROOT / "protocol" / "swe_verified_60.json")
+    ap.add_argument("--freeze-protocol", type=Path, default=None)
+    ap.add_argument("--protocol", type=Path, default=None, help="Rebuild exact frozen instance_ids from protocol JSON")
     args = ap.parse_args()
-    build_swe_verified_subset(args.out_dir, args.venv_root, args.clone_root, args.max_total, args.freeze_protocol)
+    build_swe_verified_subset(
+        args.out_dir, args.venv_root, args.clone_root, args.max_total,
+        freeze_protocol=args.freeze_protocol, protocol_file=args.protocol,
+    )
 
 
 if __name__ == "__main__":

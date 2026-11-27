@@ -117,7 +117,23 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
     """Copy visible task files into `work`; return (original_file_texts, protected_test_paths)."""
     original = {}
     protected = []
-    if task.kind in ("repo_pytest", "swe_verified"):
+    if task.kind == "swe_verified":
+        # Full OSS repos (e.g. django ~6k files): copy fast without loading 30 MB of unmodified `.py` into RAM;
+        # hidden grader restores `clean_tests` before applying official `test_patch.diff`.
+        for root, dirs, files in os.walk(task.task_dir):
+            dirs[:] = [d for d in dirs if d not in ("__pycache__", ".pytest_cache", ".git")]
+            rel_dir = Path(root).relative_to(task.task_dir)
+            (work / rel_dir).mkdir(parents=True, exist_ok=True)
+            for fn in files:
+                sp = Path(root) / fn
+                if sp.is_symlink():
+                    continue
+                dp = work / rel_dir / fn
+                shutil.copy2(sp, dp)
+                if rel_dir == Path(".") and fn == "TASK.md":
+                    original["TASK.md"] = dp.read_text(encoding="utf-8", errors="replace")
+        return original, []
+    if task.kind == "repo_pytest":
         for root, dirs, files in os.walk(task.task_dir):
             dirs[:] = [d for d in dirs if d not in ("__pycache__", ".pytest_cache", ".git")]
             rel_dir = Path(root).relative_to(task.task_dir)
@@ -140,8 +156,33 @@ def _populate_workspace(task, work: Path) -> tuple[dict[str, str], list[str]]:
     return original, sorted(protected)
 
 
-def _collect_final_code(task, work: Path) -> str | None:
-    if task.kind in ("repo_pytest", "swe_verified"):
+def _collect_final_code(task, work: Path, original: dict[str, str] | None = None) -> str | None:
+    if task.kind == "swe_verified":
+        # Collect only modified or newly created `.py` files against read-only `task.task_dir`
+        chunks = []
+        for root, dirs, files in os.walk(work):
+            dirs[:] = [d for d in dirs if d not in ("__pycache__", ".pytest_cache", ".git")]
+            rel_dir = Path(root).relative_to(work)
+            for fn in sorted(files):
+                if not fn.endswith(".py"):
+                    continue
+                wp = Path(root) / fn
+                if wp.is_symlink():
+                    continue
+                rel_p = rel_dir / fn
+                sp = task.task_dir / rel_p
+                try:
+                    w_bytes = wp.read_bytes()
+                    s_bytes = sp.read_bytes() if sp.is_file() else None
+                except OSError:
+                    continue
+                if w_bytes != s_bytes:
+                    rel_s = rel_p.as_posix()
+                    if original is not None and s_bytes is not None:
+                        original[rel_s] = s_bytes.decode("utf-8", errors="replace")
+                    chunks.append(w_bytes.decode("utf-8", errors="replace"))
+        return "\n".join(chunks) if chunks else ""
+    if task.kind == "repo_pytest":
         chunks = []
         for p in sorted(work.rglob("*.py")):
             rel = p.relative_to(work).as_posix()
@@ -151,6 +192,21 @@ def _collect_final_code(task, work: Path) -> str | None:
         return "\n".join(chunks) if chunks else None
     sol = work / "solution.py"
     return sol.read_text(encoding="utf-8", errors="replace") if sol.is_file() else None
+
+
+def _setup_trial_fs(task, root: Path, ids) -> tuple[Path, Path, dict[str, str], list[str]]:
+    work, home = root / "repo", root / "home"
+    work.mkdir()
+    home.mkdir()
+    original, protected_tests = _populate_workspace(task, work)
+    if os.name != "nt":
+        os.chmod(root, 0o700)
+        if ids:
+            for dirpath, _, files in os.walk(root):
+                os.chown(dirpath, *ids)
+                for f in files:
+                    os.chown(os.path.join(dirpath, f), *ids)
+    return work, home, original, protected_tests
 
 
 async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
@@ -172,10 +228,8 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
         except OSError:
             pass
     root = Path(tempfile.mkdtemp(prefix=f"oca-{trial_id}-", dir=tmp_parent))
-    work, home = root / "repo", root / "home"
-    work.mkdir()
-    home.mkdir()
-    original, protected_tests = _populate_workspace(task, work)
+    ids = _agent_ids()
+    work, home, original, protected_tests = await asyncio.to_thread(_setup_trial_fs, task, root, ids)
 
     prompt = PROMPT_REPO if task.kind in ("repo_pytest", "swe_verified") else PROMPT_SINGLE
     # Route through an unguessable per-trial nonce so sibling processes cannot hijack another trial's proxy URL
@@ -192,14 +246,12 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
             env["PATH"] = f"{vb}:{env.get('PATH', '/usr/bin:/bin')}"
             env["VIRTUAL_ENV"] = str(task.venv_dir)
 
-    ids = _agent_ids()
-    if os.name != "nt":
-        os.chmod(root, 0o700)
-        if ids:
-            for dirpath, _, files in os.walk(root):
-                os.chown(dirpath, *ids)
-                for f in files:
-                    os.chown(os.path.join(dirpath, f), *ids)
+    if os.name != "nt" and ids:
+        # Chown harness config files created inside `home` by `harness.prepare`
+        for dirpath, _, files in os.walk(home):
+            os.chown(dirpath, *ids)
+            for f in files:
+                os.chown(os.path.join(dirpath, f), *ids)
 
     use_bwrap = bool(r.get("use_bwrap", True)) and probe_bwrap()
     sandbox_mode = "bwrap+uid" if (use_bwrap and ids) else ("bwrap" if use_bwrap else ("uid_0700" if ids else "host"))
@@ -207,9 +259,12 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
 
     budget = {"max_model_calls": r["max_model_calls"], "max_output_tokens_per_trial": r["max_output_tokens_per_trial"]}
     safe_intercept = bool(r.get("safe_intercept", False))
+    allow_requests_lib = (task.kind == "swe_verified" and "requests" in task.id.lower())
+    protect_repo_tests = (task.kind != "swe_verified")
     proxy.register(
         route_id, model, seed, budget, aux_mode=harness.aux_mode,
         safe_intercept=safe_intercept, protected_paths=["TASK.md", *protected_tests],
+        protect_repo_tests=protect_repo_tests, allow_requests_lib=allow_requests_lib,
     )
 
     def demote():
@@ -259,9 +314,12 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     trial = proxy.pop(route_id)
 
     verdict = await asyncio.to_thread(grade_task, task, work, cfg["grade"]["timeout_seconds"])
-    final = _collect_final_code(task, work)
+    final = await asyncio.to_thread(_collect_final_code, task, work, original)
     policy_turns = [t for t in trial.turns if not t.get("aux")]
-    flags = hack_flags(work, original, final, turns=policy_turns, protected_files=protected_tests)
+    flags = hack_flags(
+        work, original, final, turns=policy_turns,
+        protected_files=protected_tests, allow_requests_lib=allow_requests_lib,
+    )
     reward, parts = compute_reward(verdict, policy_turns, flags, cfg)
 
     events = []

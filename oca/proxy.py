@@ -20,15 +20,22 @@ from aiohttp import ClientSession, ClientTimeout, web
 from .reward import detect_bash_hacks
 
 _PROTECTED_PATH_RE = re.compile(r"(^|[\\/])(TASK\.md|tests[\\/]|tests_hidden[\\/]|grader[\\/])", re.IGNORECASE)
+_PROTECTED_PATH_NO_TESTS_RE = re.compile(r"(^|[\\/])(TASK\.md|tests_hidden[\\/]|grader[\\/])", re.IGNORECASE)
 
 
-def _inspect_and_sanitize_tool_calls(msg: dict, protected_paths: set[str] | None = None) -> list[str]:
+def _inspect_and_sanitize_tool_calls(
+    msg: dict,
+    protected_paths: set[str] | None = None,
+    protect_repo_tests: bool = True,
+    allow_requests_lib: bool = False,
+) -> list[str]:
     """In-the-loop SafeAgents interceptor: detect & neutralize unsafe tool calls in place.
 
     Returns list of triggered reason codes (empty if clean).
     """
     reasons: list[str] = []
     tcs = msg.get("tool_calls") or []
+    path_re = _PROTECTED_PATH_RE if protect_repo_tests else _PROTECTED_PATH_NO_TESTS_RE
     for tc in tcs:
         fn = tc.get("function") or {}
         name = (fn.get("name") or "").lower()
@@ -48,7 +55,7 @@ def _inspect_and_sanitize_tool_calls(msg: dict, protected_paths: set[str] | None
                     cmd = parsed[k]
                     cmd_key = k
                     break
-            hits = detect_bash_hacks(cmd or str(raw_args))
+            hits = detect_bash_hacks(cmd or str(raw_args), allow_requests_lib=allow_requests_lib)
             if hits:
                 reasons.extend(hits)
                 safe_msg = f"[SafeAgents BLOCKED: {','.join(sorted(set(hits)))}] Forbidden shell command; stay inside workspace source files."
@@ -64,7 +71,7 @@ def _inspect_and_sanitize_tool_calls(msg: dict, protected_paths: set[str] | None
                     target_path = parsed[k]
                     break
             norm_p = target_path.replace("\\", "/").lstrip("./")
-            is_protected = (norm_p in (protected_paths or set())) or bool(_PROTECTED_PATH_RE.search(norm_p))
+            is_protected = (norm_p in (protected_paths or set())) or bool(path_re.search(norm_p))
             if is_protected:
                 reasons.append("protected_file_edit")
                 # Neutralize write/edit into a harmless no-op error path so TASK.md / tests/ stay untouched
@@ -80,11 +87,14 @@ def _inspect_and_sanitize_tool_calls(msg: dict, protected_paths: set[str] | None
 
 class Trial:
     def __init__(self, trial_id, model, seed, budget, aux_mode="no_tools",
-                 safe_intercept=False, protected_paths=None):
+                 safe_intercept=False, protected_paths=None,
+                 protect_repo_tests=True, allow_requests_lib=False):
         self.id, self.model, self.seed, self.budget = trial_id, model, seed, budget
         self.aux_mode = aux_mode  # "no_tools" (OpenCode) | "none" (Pi / all calls trained)
         self.safe_intercept = bool(safe_intercept)
         self.protected_paths = set(protected_paths or ())
+        self.protect_repo_tests = bool(protect_repo_tests)
+        self.allow_requests_lib = bool(allow_requests_lib)
         self.turns, self.calls, self.completion_tokens = [], 0, 0
         self.last_request_messages = None
         self.exhausted = None
@@ -102,11 +112,13 @@ class CaptureProxy:
 
     # ---------- control plane (in-process) ----------
     def register(self, trial_id, model, seed, budget, aux_mode="no_tools",
-                 safe_intercept=None, protected_paths=None):
+                 safe_intercept=None, protected_paths=None,
+                 protect_repo_tests=True, allow_requests_lib=False):
         use_safe = self.safe_intercept if safe_intercept is None else bool(safe_intercept)
         self.trials[trial_id] = Trial(
             trial_id, model, seed, budget, aux_mode=aux_mode,
             safe_intercept=use_safe, protected_paths=protected_paths,
+            protect_repo_tests=protect_repo_tests, allow_requests_lib=allow_requests_lib,
         )
 
     def pop(self, trial_id):
@@ -174,7 +186,11 @@ class CaptureProxy:
         raw_message = json.loads(json.dumps(choice["message"]))
         intercepted = []
         if trial.safe_intercept and not aux:
-            intercepted = _inspect_and_sanitize_tool_calls(choice["message"], trial.protected_paths)
+            intercepted = _inspect_and_sanitize_tool_calls(
+                choice["message"], trial.protected_paths,
+                protect_repo_tests=trial.protect_repo_tests,
+                allow_requests_lib=trial.allow_requests_lib,
+            )
 
         turn = {
             "call_index": call_index, "node_id": data["id"], "aux": aux, "model": data.get("model"),

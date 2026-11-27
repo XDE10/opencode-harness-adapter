@@ -430,6 +430,42 @@ class TestOcaV5(unittest.TestCase):
         self.assertAlmostEqual(rep["error_recovery_rate"], 0.5)
         self.assertEqual(rep["safe_intercept_total"], 1)
 
+    def test_swe_verified_clean_tests_and_requests_exemption(self):
+        from oca.benchmarks.swe_verified import extract_patch_touched_files, save_clean_test_files
+        from oca.proxy import _inspect_and_sanitize_tool_calls
+        from oca.reward import detect_bash_hacks
+
+        diff = (
+            "--- a/tests/test_core.py\n"
+            "+++ b/tests/test_core.py\n"
+            "@@ -1 +1 @@\n-old\n+new\n"
+            "--- /dev/null\n"
+            "+++ b/tests/test_new_case.py\n"
+            "@@ -0,0 +1 @@\n+def test_x(): pass\n"
+        )
+        existing, created = extract_patch_touched_files(diff)
+        self.assertEqual(existing, ["tests/test_core.py"])
+        self.assertEqual(created, ["tests/test_new_case.py"])
+
+        with tempfile.TemporaryDirectory() as td:
+            tdir = Path(td) / "task"
+            gdir = Path(td) / "grader"
+            (tdir / "tests").mkdir(parents=True)
+            (tdir / "tests" / "test_core.py").write_text("orig\n", encoding="utf-8")
+            save_clean_test_files(tdir, gdir, diff)
+            self.assertEqual((gdir / "clean_tests" / "tests" / "test_core.py").read_text(encoding="utf-8"), "orig\n")
+
+        # psf/requests reproduction must not trigger false bash_network_attempt, while curl/proxy still do
+        self.assertIn("bash_network_attempt", detect_bash_hacks("python -c \"import requests; requests.get('http://.x')\""))
+        self.assertEqual(detect_bash_hacks("python -c \"import requests; requests.get('http://.x')\"", allow_requests_lib=True), [])
+        self.assertIn("bash_network_attempt", detect_bash_hacks("curl http://127.0.0.1:8000/v1/models", allow_requests_lib=True))
+
+        # SWE-verified allows agent to write repro test under tests/, while still blocking TASK.md & grader/
+        msg_test = {"tool_calls": [{"function": {"name": "edit", "arguments": json.dumps({"path": "tests/test_repro.py"})}}]}
+        self.assertEqual(_inspect_and_sanitize_tool_calls(msg_test, protect_repo_tests=False), [])
+        msg_task = {"tool_calls": [{"function": {"name": "edit", "arguments": json.dumps({"path": "TASK.md"})}}]}
+        self.assertEqual(_inspect_and_sanitize_tool_calls(msg_task, protect_repo_tests=False), ["protected_file_edit"])
+
 
 if __name__ == "__main__":
     unittest.main()
