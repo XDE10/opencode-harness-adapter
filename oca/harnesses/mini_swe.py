@@ -62,8 +62,12 @@ class MiniSweAgentHarness:
             "OPENAI_API_KEY": "unused",
             "OPENAI_API_BASE": base_url,
             "MSWEA_MINI_CONFIG_PATH": str(cfg_file),
+            # mini-swe-agent v2 runs an interactive first-run setup wizard (needs a TTY, otherwise "Aborted")
+            "MSWEA_CONFIGURED": "true",
             "MSWEA_COST_TRACKING": "ignore_errors",
             "LITELLM_LOG": "ERROR",
         }
-        cmd = [binary, "-t", prompt, "-y", "--exit-immediately", "-c", str(cfg_file)]
+        # `-c` REPLACES the default config, so layer our overrides on top of the builtin `mini.yaml`
+        # (system/instance templates, observation/format-error templates) via recursive merge.
+        cmd = [binary, "-t", prompt, "-y", "--exit-immediately", "-c", "mini.yaml", "-c", str(cfg_file)]
         return cmd, env

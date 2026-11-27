@@ -394,6 +394,8 @@ class TestOcaV5(unittest.TestCase):
             cmd, env = h.prepare(Path(td), "http://127.0.0.1:8105/t/abc/v1", "/usr/local/bin/mini", "Fix bug", CONFIG)
             self.assertIn("-y", cmd)
             self.assertIn("--exit-immediately", cmd)
+            self.assertIn("mini.yaml", cmd)  # layered over builtin default config (v2 templates)
+            self.assertEqual(env["MSWEA_CONFIGURED"], "true")  # skip TTY-only first-run wizard
             cfg_path = Path(env["MSWEA_MINI_CONFIG_PATH"])
             self.assertTrue(cfg_path.is_file())
             txt = cfg_path.read_text(encoding="utf-8")
