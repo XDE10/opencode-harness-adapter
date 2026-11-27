@@ -69,6 +69,10 @@ def audit_trial(rec: dict) -> dict:
             if _FAIL_OUTPUT_RE.search(last_ctx):
                 had_tool_error = True
 
+    for m in (rec.get("last_request_messages") or []):
+        if m.get("role") == "tool" and _FAIL_OUTPUT_RE.search(str(m.get("content") or "")):
+            had_tool_error = True
+            break
     if not tool_counts and rec.get("tool_calls"):
         for name in rec["tool_calls"]:
             tool_counts[str(name).lower()] += 1

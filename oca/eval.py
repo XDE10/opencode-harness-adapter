@@ -243,14 +243,18 @@ async def eval_arm(vllm_url: str, proxy_port: int, arm_name: str, served_model: 
             tid = f"ev-{arm_name}-{t.id}-s{s}"
             f = arm_dir / f"{tid}.json"
             if f.is_file():
-                cached[tid] = json.loads(f.read_text(encoding="utf-8"))
-            else:
-                jobs.append((t, served_model, s, tid))
+                rec_c = json.loads(f.read_text(encoding="utf-8"))
+                if not rec_c.get("error"):
+                    cached[tid] = rec_c
+                    continue
+            jobs.append((t, served_model, s, tid))
 
     print(f"[eval:{harness_name}:{arm_name}] {len(tasks)} tasks x {len(seeds)} seeds = {len(tasks)*len(seeds)} "
           f"({len(cached)} cached, {len(jobs)} to run)", flush=True)
     if jobs:
-        proxy = await CaptureProxy(vllm_url, cfg["rollout"]).start(port=proxy_port)
+        proxy = await CaptureProxy(
+            vllm_url, cfg["rollout"], safe_intercept=bool(cfg["rollout"].get("safe_intercept", False))
+        ).start(port=proxy_port)
         done = 0
 
         def on_done(rec):
