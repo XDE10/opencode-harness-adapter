@@ -231,6 +231,29 @@ def compare_arms(base_recs: list[dict], lora_recs: list[dict], seeds: list[int])
     }
 
 
+def export_swebench_predictions(records: list[dict], arm_name: str, out_dir: Path, seeds: list[int]) -> list[Path]:
+    """Export official SWE-bench `predictions.jsonl` files (one per seed) for independent Docker verification."""
+    written: list[Path] = []
+    pred_dir = out_dir / "swebench_predictions"
+    pred_dir.mkdir(parents=True, exist_ok=True)
+    for s in seeds:
+        rows = []
+        for r in records:
+            if r.get("seed") != s or r.get("error"):
+                continue
+            patch = "" if r.get("hack_flags") else (r.get("model_patch") or "")
+            rows.append({
+                "instance_id": r["task_id"],
+                "model_name_or_path": f"{arm_name}_s{s}",
+                "model_patch": patch,
+            })
+        rows.sort(key=lambda x: x["instance_id"])
+        p = pred_dir / f"predictions_{arm_name}_s{s}.jsonl"
+        p.write_text("\n".join(json.dumps(x, ensure_ascii=False) for x in rows) + ("\n" if rows else ""), encoding="utf-8")
+        written.append(p)
+    return written
+
+
 async def eval_arm(vllm_url: str, proxy_port: int, arm_name: str, served_model: str,
                    tasks: list, seeds: list[int], out_dir: Path, concurrency: int,
                    cfg: dict, harness_name: str = "opencode") -> list[dict]:
@@ -272,7 +295,10 @@ async def eval_arm(vllm_url: str, proxy_port: int, arm_name: str, served_model: 
         for r in fresh:
             cached[r["trial_id"]] = r
 
-    return [cached[f"ev-{arm_name}-{t.id}-s{s}"] for t in tasks for s in seeds]
+    recs_out = [cached[f"ev-{arm_name}-{t.id}-s{s}"] for t in tasks for s in seeds]
+    if any(r.get("kind") == "swe_verified" for r in recs_out):
+        export_swebench_predictions(recs_out, arm_name, out_dir, seeds)
+    return recs_out
 
 
 def main():

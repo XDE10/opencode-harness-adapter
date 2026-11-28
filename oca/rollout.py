@@ -9,6 +9,7 @@ Supports `single_file`, `repo_pytest`, and `swe_verified` tasks. On Linux/Colab:
   `agent` UID isolation when container kernels disable user namespaces.
 """
 import asyncio
+import difflib
 import json
 import os
 from pathlib import Path
@@ -194,6 +195,61 @@ def _collect_final_code(task, work: Path, original: dict[str, str] | None = None
     return sol.read_text(encoding="utf-8", errors="replace") if sol.is_file() else None
 
 
+def _collect_unified_diff(task, work: Path, max_chars: int = 262144) -> str:
+    """Compute a standard git-style unified diff between `task.task_dir` and modified `work` (excluding TASK.md)."""
+    if task.kind not in ("swe_verified", "repo_pytest"):
+        return ""
+    skip_dirs = {"__pycache__", ".pytest_cache", ".git", ".venv"}
+
+    def _walk_files(root: Path) -> set[str]:
+        rels: set[str] = set()
+        for r, ds, fs in os.walk(root):
+            ds[:] = [d for d in ds if d not in skip_dirs]
+            rel_d = Path(r).relative_to(root)
+            for fn in fs:
+                p = Path(r) / fn
+                if p.is_symlink():
+                    continue
+                rel_s = (rel_d / fn).as_posix()
+                if rel_s == "TASK.md" or rel_s.endswith(".pyc"):
+                    continue
+                rels.add(rel_s)
+        return rels
+
+    base_files = _walk_files(task.task_dir)
+    work_files = _walk_files(work)
+    chunks: list[str] = []
+    for rel in sorted(base_files | work_files):
+        bp = task.task_dir / rel
+        wp = work / rel
+        b_raw = bp.read_bytes() if (rel in base_files and bp.is_file()) else None
+        w_raw = wp.read_bytes() if (rel in work_files and wp.is_file()) else None
+        if b_raw == w_raw:
+            continue
+        # Skip binary files
+        if (b_raw is not None and b"\x00" in b_raw) or (w_raw is not None and b"\x00" in w_raw):
+            continue
+        b_lines = b_raw.decode("utf-8", errors="replace").splitlines(keepends=True) if b_raw is not None else []
+        w_lines = w_raw.decode("utf-8", errors="replace").splitlines(keepends=True) if w_raw is not None else []
+        # Ensure trailing newline for clean git apply if non-empty
+        if b_lines and not b_lines[-1].endswith("\n"):
+            b_lines[-1] += "\n"
+        if w_lines and not w_lines[-1].endswith("\n"):
+            w_lines[-1] += "\n"
+        fromfile = f"a/{rel}" if b_raw is not None else "/dev/null"
+        tofile = f"b/{rel}" if w_raw is not None else "/dev/null"
+        udiff = list(difflib.unified_diff(b_lines, w_lines, fromfile=fromfile, tofile=tofile, n=3))
+        if udiff:
+            chunks.append(f"diff --git a/{rel} b/{rel}\n")
+            if b_raw is None:
+                chunks.append("new file mode 100644\n")
+            elif w_raw is None:
+                chunks.append("deleted file mode 100644\n")
+            chunks.extend(udiff)
+    out = "".join(chunks)
+    return out[:max_chars] if len(out) > max_chars else out
+
+
 def _setup_trial_fs(task, root: Path, ids) -> tuple[Path, Path, dict[str, str], list[str]]:
     work, home = root / "repo", root / "home"
     work.mkdir()
@@ -315,6 +371,7 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
 
     verdict = await asyncio.to_thread(grade_task, task, work, cfg["grade"]["timeout_seconds"])
     final = await asyncio.to_thread(_collect_final_code, task, work, original)
+    model_patch = await asyncio.to_thread(_collect_unified_diff, task, work)
     policy_turns = [t for t in trial.turns if not t.get("aux")]
     flags = hack_flags(
         work, original, final, turns=policy_turns,
@@ -340,6 +397,7 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
         "capture_ok": all(t.get("capture_ok") for t in policy_turns) and bool(policy_turns),
         "tool_calls": [c["function"]["name"] for t in policy_turns for c in (t.get("message") or {}).get("tool_calls") or []],
         "final_solution": final[:16000] if isinstance(final, str) else None,
+        "model_patch": model_patch,
         "stderr_tail": stderr.decode(errors="replace")[-3000:],
         "n_events": len(events),
         "turns": trial.turns,

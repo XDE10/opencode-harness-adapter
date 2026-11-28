@@ -468,6 +468,57 @@ class TestOcaV5(unittest.TestCase):
         msg_task = {"tool_calls": [{"function": {"name": "edit", "arguments": json.dumps({"path": "TASK.md"})}}]}
         self.assertEqual(_inspect_and_sanitize_tool_calls(msg_task, protect_repo_tests=False), ["protected_file_edit"])
 
+    def test_collect_unified_diff_and_swebench_predictions(self):
+        from types import SimpleNamespace
+        from oca.benchmarks.swe_verified import apply_patch_in_dir
+        from oca.eval import export_swebench_predictions
+        from oca.rollout import _collect_unified_diff
+
+        with tempfile.TemporaryDirectory() as td:
+            base_dir = Path(td) / "base"
+            work_dir = Path(td) / "work"
+            verify_dir = Path(td) / "verify"
+            (base_dir / "pkg").mkdir(parents=True)
+            (work_dir / "pkg").mkdir(parents=True)
+            (verify_dir / "pkg").mkdir(parents=True)
+
+            (base_dir / "TASK.md").write_text("problem\n", encoding="utf-8")
+            (base_dir / "pkg" / "mod.py").write_text("def f(x):\n    return x\n", encoding="utf-8")
+            (base_dir / "pkg" / "old.py").write_text("OLD = 1\n", encoding="utf-8")
+            (verify_dir / "pkg" / "mod.py").write_text("def f(x):\n    return x\n", encoding="utf-8")
+            (verify_dir / "pkg" / "old.py").write_text("OLD = 1\n", encoding="utf-8")
+
+            (work_dir / "TASK.md").write_text("tampered\n", encoding="utf-8")
+            (work_dir / "pkg" / "mod.py").write_text("def f(x):\n    return x + 1\n", encoding="utf-8")
+            (work_dir / "pkg" / "helper.py").write_text("VAL = 42\n", encoding="utf-8")
+
+            task = SimpleNamespace(kind="swe_verified", task_dir=base_dir)
+            patch = _collect_unified_diff(task, work_dir)
+            self.assertNotIn("TASK.md", patch)
+            self.assertIn("diff --git a/pkg/mod.py b/pkg/mod.py", patch)
+            self.assertIn("new file mode 100644", patch)
+            self.assertIn("deleted file mode 100644", patch)
+
+            ok, err = apply_patch_in_dir(verify_dir, patch)
+            self.assertTrue(ok, f"git apply failed: {err}")
+            self.assertEqual((verify_dir / "pkg" / "mod.py").read_text(encoding="utf-8"), "def f(x):\n    return x + 1\n")
+            self.assertEqual((verify_dir / "pkg" / "helper.py").read_text(encoding="utf-8"), "VAL = 42\n")
+            self.assertFalse((verify_dir / "pkg" / "old.py").exists())
+
+            out_dir = Path(td) / "eval_out"
+            recs = [
+                {"task_id": "django__django-1", "seed": 101, "kind": "swe_verified", "model_patch": patch, "hack_flags": []},
+                {"task_id": "django__django-2", "seed": 101, "kind": "swe_verified", "model_patch": patch, "hack_flags": ["safe_proxy_intercepted"]},
+            ]
+            written = export_swebench_predictions(recs, "soup", out_dir, [101])
+            self.assertEqual(len(written), 1)
+            rows = [json.loads(ln) for ln in written[0].read_text(encoding="utf-8").splitlines() if ln.strip()]
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0]["instance_id"], "django__django-1")
+            self.assertEqual(rows[0]["model_patch"], patch)
+            self.assertEqual(rows[1]["instance_id"], "django__django-2")
+            self.assertEqual(rows[1]["model_patch"], "")
+
 
 if __name__ == "__main__":
     unittest.main()
