@@ -359,8 +359,9 @@ def analyze_activation_alignment(
 
 
 def main():
+    from oca.paths import default_models_dir
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--base-model", type=Path, default=Path("/content/models/qwen35-9b"))
+    ap.add_argument("--base-model", type=Path, default=default_models_dir() / "qwen35-9b")
     ap.add_argument("--base-model-id", default=DEFAULT_BASE_MODEL_ID)
     ap.add_argument("--adapter", action="append", required=True, help="name=path[:weight], e.g. opencode=/path:0.5")
     ap.add_argument("--out-dir", type=Path, required=True)

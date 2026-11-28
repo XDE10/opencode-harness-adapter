@@ -208,6 +208,7 @@ def merge_and_export(base_model_path: Path, lora_ckpt: Path, merged_out: Path):
 
 
 def main():
+    from oca.paths import default_models_dir
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--history", type=Path)
     ap.add_argument("--compare-history", type=Path)
@@ -215,8 +216,8 @@ def main():
     ap.add_argument("--transfer-matrix", type=Path)
     ap.add_argument("--out-dir", type=Path, default=Path("docs/figures"))
     ap.add_argument("--merge-lora", type=Path, default=None)
-    ap.add_argument("--base-model", type=Path, default=Path("/content/models/qwen35-9b"))
-    ap.add_argument("--merged-out", type=Path, default=Path("/content/models/qwen35-9b-opencode-merged"))
+    ap.add_argument("--base-model", type=Path, default=default_models_dir() / "qwen35-9b")
+    ap.add_argument("--merged-out", type=Path, default=default_models_dir() / "qwen35-9b-merged")
     args = ap.parse_args()
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

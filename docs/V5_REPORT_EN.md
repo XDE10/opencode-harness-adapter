@@ -2,7 +2,7 @@
 
 **Single-GPU Colocated Agentic RL, Multi-Harness Zero-Shot Transfer, Mechanistic GSPO Prefix-Shattering, and 248-Module Weight-vs-Activation Merging Science on Qwen3.5-9B**
 
-- **Codebase**: [XDE10/opencode-harness-adapter](https://github.com/XDE10/opencode-harness-adapter) (`feat/v5-algo-infra-upgrade`)
+- **Codebase**: [XDE10/opencode-harness-adapter](https://github.com/XDE10/opencode-harness-adapter) (`main`)
 - **HuggingFace Weights & Artifacts**: [`XDE10/Qwen3.5-9B-Harness-Adapters-v5`](https://huggingface.co/XDE10/Qwen3.5-9B-Harness-Adapters-v5) (8 curated LoRA adapters, 4 Retina explainers, full JSON evaluation & audit suites)
 - **Chinese Visual Explainer**: [docs/V5_EXPLAINER_ZH.md](V5_EXPLAINER_ZH.md)
 

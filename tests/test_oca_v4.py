@@ -206,6 +206,7 @@ class TestOcaV4(unittest.TestCase):
         cfg = json.loads(json.dumps(CONFIG))
         cfg["train"]["efficiency_weight"] = 0.1
         cfg["train"]["efficiency_budget"] = 10
+        cfg["train"]["efficiency_token_budget"] = 0
         rew_fast, parts_fast = compute_reward({"status": "pass", "passed": 8, "total": 8},
                                               [{"call_index": 0}, {"call_index": 1}], [], cfg)
         rew_slow, _ = compute_reward({"status": "pass", "passed": 8, "total": 8},

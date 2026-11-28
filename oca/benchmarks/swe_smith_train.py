@@ -305,10 +305,11 @@ def build_swe_smith_train(
 
 
 def main():
+    from oca.paths import default_swe_mirrors_dir, default_swe_venvs_dir
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out-dir", type=Path, default=ROOT / "data" / "swe_smith_v1")
-    ap.add_argument("--venv-root", type=Path, default=Path("/content/swe_venvs"))
-    ap.add_argument("--clone-root", type=Path, default=Path("/content/swe_mirrors"))
+    ap.add_argument("--venv-root", type=Path, default=default_swe_venvs_dir())
+    ap.add_argument("--clone-root", type=Path, default=default_swe_mirrors_dir())
     ap.add_argument("--max-total", type=int, default=160)
     ap.add_argument("--max-per-repo", type=int, default=16)
     args = ap.parse_args()

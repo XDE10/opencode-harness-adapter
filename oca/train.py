@@ -34,6 +34,7 @@ import urllib.error
 import urllib.request
 
 from . import CONFIG, ROOT
+from .paths import is_local_model_dir, resolve_model_path
 from .proxy import CaptureProxy
 from .reward import compute_hierarchical_turn_advantages
 from .rollout import run_batch, run_trial
@@ -74,8 +75,9 @@ def ensure_vllm_running(vllm_url: str, cfg: dict, log_path: Path):
         "VLLM_ALLOW_RUNTIME_LORA_UPDATING": "True",
         "VLLM_NO_USAGE_STATS": "1",
     })
+    model_ref = resolve_model_path(cfg)
     cmd = [
-        "vllm", "serve", m["local_path"],
+        "vllm", "serve", model_ref,
         "--served-model-name", m["served_name"],
         "--host", "127.0.0.1", "--port", str(int(vllm_url.rsplit(":", 1)[-1])),
         "--dtype", "bfloat16", "--generation-config", "vllm",
@@ -742,8 +744,9 @@ def run_rft(args, cfg: dict):
 
     torch.manual_seed(int(tcfg.get("lora_init_seed", args.seed)))
     torch.cuda.manual_seed_all(int(tcfg.get("lora_init_seed", args.seed)))
+    model_ref = resolve_model_path(cfg)
     base = AutoModelForCausalLM.from_pretrained(
-        cfg["model"]["local_path"], local_files_only=True, dtype=torch.bfloat16,
+        model_ref, local_files_only=is_local_model_dir(model_ref), dtype=torch.bfloat16,
         attn_implementation="sdpa", device_map={"": 0},
     )
     base.requires_grad_(False)
@@ -890,8 +893,9 @@ def run_train(args, cfg: dict):
     active_alias = None
     init_load_ckpt = None
 
+    model_ref = resolve_model_path(cfg)
     base = AutoModelForCausalLM.from_pretrained(
-        cfg["model"]["local_path"], local_files_only=True, dtype=torch.bfloat16,
+        model_ref, local_files_only=is_local_model_dir(model_ref), dtype=torch.bfloat16,
         attn_implementation="sdpa", device_map={"": 0},
     )
     base.requires_grad_(False)

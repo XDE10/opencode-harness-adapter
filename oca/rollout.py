@@ -4,7 +4,7 @@ Supports `single_file`, `repo_pytest`, and `swe_verified` tasks. On Linux/Colab:
 - Tightens per-trial temp workspace permissions to `0700` (preventing cross-trial peeking across
   concurrent workers);
 - Automatically wraps harness execution in `bubblewrap (bwrap)` mount/PID/IPC sandbox when supported
-  by the host kernel (keeping `/content/runs`, `/content/repo/grader`, and sibling `/tmp/oca-*`
+  by the host kernel (keeping `runs/`, `grader/`, and sibling trial workspaces
   invisible while still allowing loopback proxy traffic), with transparent fallback to unprivileged
   `agent` UID isolation when container kernels disable user namespaces.
 """
@@ -28,6 +28,7 @@ from . import CONFIG
 from .grade import grade_task
 from .harnesses import get_harness
 from .harnesses.opencode import opencode_config  # re-export for backwards compatibility
+from .paths import default_swe_venvs_dir, default_tools_dir, resolve_workdir_root
 from .reward import compute_reward, hack_flags
 
 PROMPT_SINGLE = (
@@ -76,8 +77,9 @@ def build_bwrap_cmd(cmd: list[str], work: Path, home: Path, extra_ro_dirs: list[
                    "/etc/ld.so.conf", "/etc/ld.so.conf.d", "/etc/passwd", "/etc/group", "/etc/hosts", "/etc/resolv.conf"):
         if os.path.exists(sys_ro):
             args += ["--ro-bind", sys_ro, sys_ro]
-    # Expose only runtime tools & optional repo venvs read-only (NEVER /content/runs or /content/repo/grader!)
-    for tool_ro in ("/content/tools", "/content/swe_venvs", "/opt", "/usr/local"):
+    # Expose only runtime tools & optional repo venvs read-only (NEVER runs/ or grader/!)
+    tool_candidates = [str(default_tools_dir()), str(default_swe_venvs_dir()), "/opt", "/usr/local"]
+    for tool_ro in dict.fromkeys(tool_candidates):
         if os.path.exists(tool_ro):
             args += ["--ro-bind", tool_ro, tool_ro]
     for p in extra_ro_dirs or []:
@@ -272,17 +274,7 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
     binary = harness.resolve_bin(cfg, bin_override)
     await harness.warmup(binary, cfg)
 
-    wd_base = r.get("workdir_root")
-    tmp_parent = None
-    if wd_base and os.name != "nt" and os.path.isdir("/dev/shm"):
-        try:
-            st_fs = os.statvfs("/dev/shm")
-            if (st_fs.f_bavail * st_fs.f_frsize) > (16 << 30):
-                os.makedirs(wd_base, exist_ok=True)
-                os.chmod(wd_base, 0o755)
-                tmp_parent = wd_base
-        except OSError:
-            pass
+    tmp_parent = resolve_workdir_root(cfg)
     root = Path(tempfile.mkdtemp(prefix=f"oca-{trial_id}-", dir=tmp_parent))
     ids = _agent_ids()
     work, home, original, protected_tests = await asyncio.to_thread(_setup_trial_fs, task, root, ids)
@@ -311,7 +303,15 @@ async def run_trial(proxy, task, model, seed, trial_id, out_dir, cfg=CONFIG,
 
     use_bwrap = bool(r.get("use_bwrap", True)) and probe_bwrap()
     sandbox_mode = "bwrap+uid" if (use_bwrap and ids) else ("bwrap" if use_bwrap else ("uid_0700" if ids else "host"))
-    exec_cmd = build_bwrap_cmd(cmd, work, home, extra_ro_dirs=[venv_bin.parent] if venv_bin else None) if use_bwrap else cmd
+    extra_ro: list[Path] = []
+    if venv_bin:
+        extra_ro.append(venv_bin.parent)
+    bin_path = Path(binary)
+    if bin_path.is_file():
+        bin_prefix = bin_path.resolve().parent.parent
+        if str(bin_prefix) not in ("/", "/usr", "/usr/local", "/opt", str(Path.home())):
+            extra_ro.append(bin_prefix)
+    exec_cmd = build_bwrap_cmd(cmd, work, home, extra_ro_dirs=extra_ro or None) if use_bwrap else cmd
 
     budget = {"max_model_calls": r["max_model_calls"], "max_output_tokens_per_trial": r["max_output_tokens_per_trial"]}
     safe_intercept = bool(r.get("safe_intercept", False))

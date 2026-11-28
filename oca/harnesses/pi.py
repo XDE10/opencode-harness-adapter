@@ -11,6 +11,9 @@ from pathlib import Path
 import shutil
 
 
+from oca.paths import resolve_tool_bin
+
+
 def pi_models_config(base_url: str, cfg: dict) -> dict:
     r = cfg["rollout"]
     return {
@@ -37,7 +40,7 @@ class PiHarness:
     aux_mode = "none"  # Every Pi model call is part of the agent policy trajectory
 
     def resolve_bin(self, cfg: dict, override: str | None = None) -> str:
-        return override or os.environ.get("PI_BIN") or cfg.get("pi", {}).get("bin", "pi")
+        return resolve_tool_bin("pi", "pi", cfg, "PI_BIN", override)
 
     async def warmup(self, binary: str, cfg: dict):
         return  # Pi requires no runtime npm provider install

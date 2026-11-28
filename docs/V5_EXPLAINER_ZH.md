@@ -1,7 +1,7 @@
 # OpenCode & Pi Harness Adapter (V5) —— 完整中文技术报告与零基础全流程解析
 
 > **版本**：V5 Final（全部训练、5 大盲测基准、同工具 Soup 对照、248 模块激活正交探针、11,220 场轨迹审计 100% 零报错完结）  
-> **代码仓库**：[XDE10/opencode-harness-adapter](https://github.com/XDE10/opencode-harness-adapter)（分支 `feat/v5-algo-infra-upgrade`）  
+> **代码仓库**：[XDE10/opencode-harness-adapter](https://github.com/XDE10/opencode-harness-adapter)（默认分支 `main`）  
 > **权重发布**：[HuggingFace · `XDE10/Qwen3.5-9B-Harness-Adapters-v5`](https://huggingface.co/XDE10/Qwen3.5-9B-Harness-Adapters-v5)（8 套精选 LoRA 权重 + 4 张图解 + 全量原始 JSON）  
 > **英文技术报告**：[docs/V5_REPORT_EN.md](V5_REPORT_EN.md)
 
@@ -250,24 +250,23 @@ GRPO 类组内对比算法如果在某题上 4 次全对或 4 次全错，组内
 
 ### 10.1 本地校验与复现主命令
 ```bash
-# 1. 本地 27 项全量单测与防作弊套件验证（Windows / Linux / macOS）
-python -m unittest discover -s tests -v
-python -m oca.adversarial
+# 1. 本地全量单测与防作弊套件验证（Windows / Linux / macOS）
+bash scripts/verify.sh
 
-# 2. 单卡 50 步全量 248 模块 LoRA RL（Dr.GRPO + TIS-Clip）
-python -u -m oca.train --config protocol/oca-v5.json --mode train --harness pi \
-  --task-ids-file protocol/screen_v5_multifile.json --out-dir /content/runs/v5_pi \
-  --loss-mode tis_clip --adv-mode dr_grpo --use-deltanet-lora --dynamic-sampling --curriculum
+# 2. 单卡 GPU 环境一键部署（自动安装 CLI 与权重到 $OCA_HOME，零硬编码）
+bash scripts/setup_gpu.sh
 
-# 3. CPU 1秒精确合并（支持 qr_svd / concat_2r / ties）
-python -u -m oca.merge --method concat_2r \
-  --adapter opencode=/content/ckpts/v5_oc_main:0.5 \
-  --adapter pi=/content/ckpts/v5_pi_drgrpo_tis:0.5 \
-  --out-dir /content/ckpts/merged/super_v5_concat_2r
+# 3. 单卡 50 步全量 248 模块 LoRA RL（Dr.GRPO + TIS-Clip）
+bash scripts/run_train.sh
 
-# 4. 多随机种子配对评测与轨迹审计（支持 pi / opencode / mini_swe）
-python -u -m oca.eval --config protocol/oca-v5.json --harness mini_swe --split heldout \
-  --seeds 101 102 --out-dir /content/eval_mini --lora super=/content/ckpts/merged/super_v5_qr_svd
+# 4. CPU 1秒精确合并（支持 qr_svd / concat_2r / ties）
+python -u -m oca.merge --method qr_svd \
+  --adapter pi_s1=./runs/v5_pi_tis_clip_s2026/checkpoints/step_050:0.5 \
+  --adapter pi_s2=./runs/v5_pi_tis_clip_s2027/checkpoints/step_050:0.5 \
+  --out-dir ./runs/soup_v5_pi_qr_svd
+
+# 5. 多随机种子配对评测与轨迹审计（支持 pi / opencode / mini_swe）
+HARNESS=mini_swe SPLIT=heldout SEEDS="101 102" bash scripts/run_eval.sh
 ```
 
 ### 10.2 面试 30 秒电梯演讲版（克制实证口径）

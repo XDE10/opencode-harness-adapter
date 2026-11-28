@@ -15,8 +15,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install package
-        run: pip install -e . numpy
-      - name: Run full v4 + v5 unit test suite
-        run: python -m unittest discover -s tests -v
-      - name: Run 10-attack adversarial anti-hack suite
-        run: python -m oca.adversarial
+        run: pip install -e .
+      - name: Run unit tests & 10-attack adversarial anti-hack suite
+        run: bash scripts/verify.sh

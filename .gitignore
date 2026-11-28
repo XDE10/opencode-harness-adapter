@@ -9,6 +9,9 @@ snapshot/
 weights/
 checkpoints/
 runs/
+data/swe_verified_v1/
+data/swe_smith_v1/
+*.egg-info/
 __pycache__/
 .pytest_cache/
 .env

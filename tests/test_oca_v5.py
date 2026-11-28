@@ -522,6 +522,44 @@ class TestOcaV5(unittest.TestCase):
             self.assertEqual(rows[1]["instance_id"], "django__django-2")
             self.assertEqual(rows[1]["model_patch"], "")
 
+    def test_portable_path_and_tool_resolution(self):
+        import os
+        from unittest.mock import patch
+        from oca.paths import (
+            default_swe_mirrors_dir,
+            default_swe_venvs_dir,
+            is_local_model_dir,
+            resolve_model_path,
+            resolve_tool_bin,
+        )
+
+        with tempfile.TemporaryDirectory(prefix="oca-paths-") as td:
+            home = Path(td)
+            custom_pi = home / "tools" / "pi" / "bin" / "pi"
+            custom_pi.parent.mkdir(parents=True, exist_ok=True)
+            custom_pi.write_text("#!/bin/sh\n", encoding="utf-8")
+            local_model = home / "models" / "qwen35-9b"
+            local_model.mkdir(parents=True, exist_ok=True)
+
+            env = {k: v for k, v in os.environ.items() if not k.startswith(("OCA_", "PI_BIN", "OPENCODE_BIN"))}
+            env["OCA_HOME"] = str(home)
+            with patch.dict(os.environ, env, clear=True):
+                self.assertEqual(default_swe_venvs_dir(), home / "swe_venvs")
+                self.assertEqual(default_swe_mirrors_dir(), home / "swe_mirrors")
+                resolved_model = resolve_model_path({"model": {"id": "Qwen/Qwen3.5-9B", "local_path": ""}})
+                self.assertEqual(resolved_model, str(local_model))
+                self.assertTrue(is_local_model_dir(resolved_model))
+
+                # If local cache does not exist, fall back cleanly to HF Hub ID
+                local_model.rmdir()
+                hub_model = resolve_model_path({"model": {"id": "Qwen/Qwen3.5-9B", "local_path": ""}})
+                self.assertEqual(hub_model, "Qwen/Qwen3.5-9B")
+                self.assertFalse(is_local_model_dir(hub_model))
+
+                # Tool resolution picks up OCA_HOME/tools/<tool>/bin/<exe> without hardcoded /content paths
+                with patch("oca.paths.shutil.which", return_value=None):
+                    self.assertEqual(resolve_tool_bin("pi", "pi", {"pi": {"bin": ""}}, "PI_BIN"), str(custom_pi))
+
 
 if __name__ == "__main__":
     unittest.main()

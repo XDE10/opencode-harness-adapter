@@ -8,8 +8,10 @@ from pathlib import Path
 import shutil
 import tempfile
 
+from oca.paths import default_cache_dir, resolve_tool_bin
+
 _CACHE_LOCK = asyncio.Lock()
-_CACHE_TEMPLATE = Path("/tmp/oca-opencode-cache-tpl")
+_CACHE_TEMPLATE = default_cache_dir("oca-opencode-cache-tpl")
 
 
 def opencode_config(base_url: str, cfg: dict) -> dict:
@@ -34,7 +36,7 @@ class OpenCodeHarness:
     aux_mode = "no_tools"  # OpenCode issues auxiliary title/summary requests without `tools`
 
     def resolve_bin(self, cfg: dict, override: str | None = None) -> str:
-        return override or os.environ.get("OPENCODE_BIN") or cfg["opencode"]["bin"]
+        return resolve_tool_bin("opencode", "opencode", cfg, "OPENCODE_BIN", override)
 
     async def warmup(self, binary: str, cfg: dict):
         """Populate @ai-sdk/openai-compatible into a template cache once so concurrent trials never hit npm."""

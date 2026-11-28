@@ -12,6 +12,9 @@ from pathlib import Path
 import shutil
 
 
+from oca.paths import resolve_tool_bin
+
+
 def mini_swe_config_yaml(base_url: str, cfg: dict) -> str:
     r = cfg["rollout"]
     max_calls = int(r.get("max_model_calls", 24))
@@ -42,7 +45,7 @@ class MiniSweAgentHarness:
     aux_mode = "none"
 
     def resolve_bin(self, cfg: dict, override: str | None = None) -> str:
-        return override or os.environ.get("MINI_SWE_BIN") or cfg.get("mini_swe", {}).get("bin") or shutil.which("mini") or "mini"
+        return resolve_tool_bin("mini", "mini_swe", cfg, "MINI_SWE_BIN", override)
 
     async def warmup(self, binary: str, cfg: dict):
         return  # Pure-Python CLI, no runtime package install needed

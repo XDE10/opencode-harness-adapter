@@ -2,13 +2,13 @@
   "id": "oca-v5",
   "model": {
     "id": "Qwen/Qwen3.5-9B",
-    "local_path": "/content/models/qwen35-9b",
+    "local_path": "",
     "served_name": "qwen35-9b",
     "tool_call_parser": "qwen3_coder"
   },
   "opencode": {
     "version": "2.2.7",
-    "bin": "/content/tools/opencode/bin/opencode",
+    "bin": "",
     "permission": {
       "*": "deny",
       "read": "allow",
@@ -22,7 +22,7 @@
   },
   "pi": {
     "package": "@earendil-works/pi-coding-agent",
-    "bin": "/content/tools/pi/bin/pi",
+    "bin": "",
     "tools": "read,write,edit,bash"
   },
   "rollout": {
@@ -35,7 +35,7 @@
     "max_model_calls": 24,
     "timeout_seconds": 300,
     "concurrency": 48,
-    "workdir_root": "/dev/shm/oca_work",
+    "workdir_root": "",
     "safe_intercept": true,
     "use_bwrap": true
   },
