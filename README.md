@@ -1,8 +1,41 @@
 # OpenCode & Pi Harness Adapter
 
-Single-GPU colocated Agentic Reinforcement Learning (**LoRA GRPO**) that adapts a lightweight open-weight model (`Qwen/Qwen3.5-9B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7** & **Pi 0.73.1**) — and merges harness-specific adapters via exact **Rank-2r QR-SVD** into a single **Super-Adapter** achieving **`+10.38 pp` (`p = 0.0020`, `pass@4 = 70.77%`)** on Pi and **`+7.50 pp` cross-harness mean** across 65 strictly held-out tasks (L1 single-file + L2 multi-file `repo_pytest` + L3 real OSS OOD bugfix commits).
+Single-GPU colocated Agentic Reinforcement Learning (**248-module LoRA `r=32`**) that adapts a lightweight open-weight model (`Qwen/Qwen3.5-9B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7**, **Pi 0.73.1**, and zero-shot OOD transfer to **mini-swe-agent v2**) — validated across **11,220 paired rollout trials (0 errored trials)** spanning **5 benchmark suites**, including official **`SWE-bench_Verified`** (**`+20.00 pp`**, `23.33% → 43.33%`, `p = 0.0002` on Pi; **`+11.67 pp`**, `34.17% → 45.83%`, `p = 0.0057` on OpenCode).
 
-Inspired by Hugging Face's *Harness Adapters* (Nov 2026), this repository replaces multi-GPU asynchronous clusters (e.g., 2×B200 + Docker/Harbor) with a self-contained **single 96 GB GPU** (RTX PRO 6000 Blackwell on Colab G4) loop featuring **0.46s vLLM Sleep offload**, **0.44s runtime LoRA hot-swap**, **13.51× Prefix-Merged Multi-Turn Packing**, **Exact Chunked LM-Head Backward** (for 248K vocab), and **Dual-Ratio `TIS × DAPO Clip-Higher`** engine-mismatch calibration.
+- 📖 **Visual Beginner Explainer (中文图解版)**: [docs/V5_EXPLAINER_ZH.md](docs/V5_EXPLAINER_ZH.md) (4 editorial infographics + Q&A)
+- 📄 **Full V5 Technical Report (English)**: [docs/V5_REPORT_EN.md](docs/V5_REPORT_EN.md)
+- 🤗 **HuggingFace Weights & Reports**: [`XDE10/Qwen3.5-9B-Harness-Adapters-v5`](https://huggingface.co/XDE10/Qwen3.5-9B-Harness-Adapters-v5)
+
+Inspired by Hugging Face's *Harness Adapters* (Nov 2026), this repository replaces multi-GPU asynchronous clusters (e.g., 2×B200 + Docker/Harbor) with a self-contained **single 96 GB GPU** (RTX PRO 6000 Blackwell on Colab G4) loop featuring **0.48s vLLM Sleep offload**, **0.11s runtime LoRA hot-swap**, **12×–13.5× Prefix-Merged Multi-Turn Packing**, **Exact Chunked LM-Head Backward** (for 248K vocab), and **Dual-Ratio `Dr.GRPO × TIS-Clip`** engine-mismatch calibration.
+
+---
+
+## V5 Visual Overview & Headline Results (11,220 Paired Trials, 0 Errors)
+
+| Visual Explainer | Key Takeaway |
+| --- | --- |
+| ![Training Pipeline](docs/figures/explainer_1_training_pipeline.png) | **Single-GPU Colocated RL Loop**: 54-task multi-file pool (`SWE-smith-py` + L2 + L1), 248-module LoRA (DeltaNet + GQA + MLP), `0.48s` Sleep, `0.11s` LoRA hot-swap, `~39 GB` peak training VRAM. |
+| ![Benchmark Results](docs/figures/explainer_2_benchmark_results.png) | **5-Suite Leaderboard & Error Recovery**: **`+20.0 pp`** on `SWE-Verified (Pi)` (`super_v5_concat_2r`: `43.33%`, `p=0.0002`), **`+11.7 pp`** on `SWE-Verified (OC)` (`v5_oc_main`: `45.83%`, `p=0.0057`), **`+10.8–12.3 pp`** zero-shot on unseen `mini-swe-agent`, and **`44.27%`** best balanced 5-suite mean (`soup_v5_pi_qr_svd`). Error-recovery rate jumps from `25.8% → 47.6%` (`SWE-Pi`) and `45.2% → 60.4%` (`SWE-OC`). |
+| ![GSPO Discovery](docs/figures/explainer_3_gspo_discovery.png) | **4-Way Algorithm Ablation & GSPO Prefix-Shattering Discovery**: `Dr.GRPO+TIS` (`47.31%`, `p=0.0049`) > `CISPO` (`46.15%`, shortest tokens) > `Turn-Credit` (`45.77%`, fewest turns) > `GSPO` (`43.85%`, n.s.). Sequence-level `GSPO` induces redundant `</function></function>` tags canonicalized on the next turn, triggering `215` prefix-rewrite splits (`29 → 238` segments) and **5–6× slower backward passes** (`180s → 1,177s`). |
+| ![Merging Science](docs/figures/explainer_4_merging_science.png) | **248-Module Weight ($\Delta W$) vs Activation ($\Delta h$) Merging Science**: Near-zero weight cosine (`+0.0001`) is a **LoRA-A init-seed artifact**, not cross-harness orthogonality! Same-seed cross-harness (`OC` vs `Pi s1`) yields `ΔW = +0.0180` and strong functional activation alignment `Δh = +0.0308` (**Gated DeltaNet `+0.0456` > GQA `+0.0279` > MLP `+0.0134`**). Explains why lossless `Concat-2r` beats `QR-SVD` by `+6.9 pp` on orthogonal diff-seed merges while `QR-SVD` denoises single-seed collapse (`32.5% → 40.0%` on `SWE-OC`). |
+
+### V5 5-Benchmark Master Table (`Pass@1`, Task-Level Permutation `p`, 0 Errored Trials)
+
+| Adapter / Method (`Qwen3.5-9B`, 248-mod LoRA `r=32`) | **5-Suite Mean** | Pi Heldout *(65×4)* | OC Heldout *(65×4)* | OOD `mini-swe` *(65×2)* | SWE-Verified Pi *(60×2)* | SWE-Verified OC *(60×2)* |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `Base Qwen3.5-9B` (Non-Thinking) | `33.12%` | `36.92%` | `38.85%` | `32.31%` | `23.33%` | `34.17%` |
+| `v5_pi_seed2` (Pi RL, seed 2) | **`45.22%`** | **`56.15%`** *(p=0.0001)* | **`51.15%`** *(p=0.0018)* | **`44.62%`** *(p=0.0018)* | `41.67%` *(p=0.0003)* | `32.50%` *(p=0.865)* |
+| **`soup_v5_pi_qr_svd`** (Same-Harness Soup) | **`44.27%`** | `47.69%` *(p=0.0022)* | `48.85%` *(p=0.0135)* | `42.31%` *(p=0.0387)* | `42.50%` *(p=0.0007)* | `40.00%` *(p=0.347)* |
+| `v5_pi_drgrpo_tis` (Pi RL, seed 1) | `43.55%` | `47.31%` *(p=0.0049)* | `47.31%` *(p=0.0121)* | `42.31%` *(p=0.0049)* | `40.83%` *(p=0.0003)* | `40.00%` *(p=0.209)* |
+| `soup_v5_pi_concat_2r` (Same-Harness 2r) | `43.05%` | `54.62%` *(p=0.0001)* | `45.77%` *(p=0.0945)* | `41.54%` *(p=0.0117)* | `40.00%` *(p=0.0009)* | `33.33%` *(p=1.000)* |
+| `v5_joint_oc_pi` (50/50 Joint RL) | `42.67%` | `46.92%` *(p=0.0087)* | `43.85%` *(p=0.1645)* | `39.23%` *(p=0.0479)* | `38.33%` *(p=0.0057)* | `45.00%` *(p=0.0298)* |
+| `super_v5_qr_svd` (Cross-Harness QR-SVD) | `42.45%` | `47.31%` *(p=0.0050)* | `47.69%` *(p=0.0054)* | `43.08%` *(p=0.0055)* | `35.83%` *(p=0.0353)* | `38.33%` *(p=0.494)* |
+| `super_v5_concat_2r` (Cross-Harness 2r) | `42.33%` | `45.00%` *(p=0.0499)* | `47.31%` *(p=0.0062)* | `37.69%` *(p=0.0654)* | **`43.33%`** *(p=0.0002)* | `38.33%` *(p=0.471)* |
+| `v5_oc_main` (OpenCode RL) | `42.06%` | `45.00%` *(p=0.0232)* | `46.15%` *(p=0.0621)* | `40.00%` *(p=0.0529)* | `33.33%` *(p=0.0781)* | **`45.83%`** *(p=0.0057)* |
+| `super_v5_ties` (Cross-Harness TIES 0.5) | `40.76%` | `41.54%` *(p=0.0584)* | `45.38%` *(p=0.0196)* | `37.69%` *(p=0.2349)* | `37.50%` *(p=0.0042)* | `41.67%` *(p=0.144)* |
+| `v5_rft_plus_rl` (RFT + 35-step RL) | — | `48.46%` *(p=0.0015)* | `46.92%` *(p=0.0151)* | `38.46%` *(p=0.076)* | `34.17%` *(p=0.0212)* | — |
+| `v5_rft_only` (Pure RFT, no RL) | — | `38.08%` *(p=0.777)* | `39.62%` *(p=0.903)* | `33.85%` *(p=0.835)* | `26.67%` *(p=0.557)* | — |
+| `v5_pi_cispo` / `v5_pi_turn_credit` / `v5_pi_gspo` | — | `46.15%` / `45.77%` / `43.85%` | — | — | — | — |
 
 ---
 
