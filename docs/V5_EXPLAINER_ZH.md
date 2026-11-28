@@ -233,7 +233,9 @@ GRPO 类组内对比算法如果在某题上 4 次全对或 4 次全错，组内
 
 ### 9.1 诚实局限性（Threats to Validity）
 1. **单次 RL 种子方差显著大于多数算法间差距**：同配方仅换随机种子，`v5_pi_seed2` 在 `pi_heldout` 达 `56.15%` 却在 `swe_verified_oc` 跌至 `32.50%`（低于 Base `34.17%`）。因此单种子下 2–5 个百分点的差距不足以支撑算法优劣排序。
-2. **无 Docker `SWE-bench_Verified` 60 题子集的环境与测试边界**：96.7% 集中于 `django`（36）和 `sympy`（22）（另有 `requests` 2 题），统一运行于 Python 3.11 venv，且 `pytest` 仓截断 `p2p[:25]`（`-k` 截断前 30 项）。此外，V5 评测流程未导出标准 `git diff`（`predictions.jsonl`）和本地单场轨迹 JSON，因此当前尚未经官方 Docker 复核；若做 V6，只需在 `rollout.py` 中增加 `git diff` 导出即可将核心 3–4 个模型的补丁拿到本地官方 Docker 独立复验。
+2. **无 Docker `SWE-bench_Verified` 60 题子集的边界与独立官方 Docker 抽检审计**：60 题中 96.7% 集中于 `django`（36）和 `sympy`（22）（另有 `requests` 2 题），统一运行于 Python 3.11 venv，且 `pytest` 仓截断 `p2p[:25]`（`-k` 截断前 30 项）。为直接检验该边界的真实误差，我们在 `oca/rollout.py` 与 `oca/eval.py` 补齐了 `git diff`（`predictions.jsonl`）标准导出，重测 3 个核心臂（360 场 0 报错：`base` `26.67%` → `v5_pi_seed2` `41.67%` → `soup_v5_pi_qr_svd` `49.17%`，`+22.5 pp`, `p=0.0001`），并抽取跨全部 3 仓的 **6 题（34 个有效配对 trial，另排除 2 例已修复的 `Django.egg-info` 256 KB 截断导出）** 送入本地官方 `SWE-bench_Verified` Docker 容器独立评判：
+   - **核心大仓（`django` + `sympy`，占 60 题的 96.7%）达成 28/28（100.0%）完全一致**（Colab 判过的 `16/16` 全部官方容器 `RESOLVED`，含 4 道 Base 失败题上 `soup` **8/8** vs `base` **0/7**）；
+   - **边缘小仓（`psf/requests`，占 3.3% / 2 题）真实检出 1 题（3 个 trial：`soup` ×2、`seed2` ×1）由 `p2p[:25]` 截断导致的假阳性**（`psf__requests-5414`：模型删掉 `if not unicode_is_ascii(host):` 保护，过了 `FAIL_TO_PASS` 与前 25 条 `PASS_TO_PASS`，但在官方容器挂在排在后面的 8 条 `TestPreparingURLs` 用例，整体 6 题一致率 **31/34 = 91.2%**）。这说明核心 RL 涨点真实可信，同时也以实证定位了零-Docker `p2p[:25]` 的回归漏检机制。
 3. **实验矩阵不完整与非思考模式设定**：`v5_pi_gspo`/`cispo`/`turn_credit` 仅测了 `pi_heldout`，`rft` 组缺 `swe_verified_oc`；评测采用 `temperature=0.8` 且 SWE 仅 2 种子，单题权重 `0.83%`。全程设置 `enable_thinking=False`（依据 V4 对照：在固定 `10,240` token 预算下的 OpenCode 65 题 Heldout 上，开启 thinking 使 token 增 `+85.9%` 而因预算截断导致 `pass@1` 持平 `40.77%`、`pass@4` 降 `6.16 pp`）；放宽预算并开启 thinking 后的 RL 边际收益留待 V6 验证。
 4. **等权 0.5/0.5 跨工具合并的阴性结果与激活探针局限**：跨工具 `super_*` 5 项均分均低于单工具 Pi 与同工具 `soup`；激活余弦探针仅采样 16 条 prompt 且均值 `+0.0308` 偏小、缺少零分布基线，后续需扩大样本并做分层合并消融。
 
@@ -248,7 +250,7 @@ GRPO 类组内对比算法如果在某题上 4 次全对或 4 次全错，组内
 
 ### 10.1 本地校验与复现主命令
 ```bash
-# 1. 本地 26 项全量单测与防作弊套件验证（Windows / Linux / macOS）
+# 1. 本地 27 项全量单测与防作弊套件验证（Windows / Linux / macOS）
 python -m unittest discover -s tests -v
 python -m oca.adversarial
 

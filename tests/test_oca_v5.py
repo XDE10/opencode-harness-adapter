@@ -489,12 +489,15 @@ class TestOcaV5(unittest.TestCase):
             (verify_dir / "pkg" / "old.py").write_text("OLD = 1\n", encoding="utf-8")
 
             (work_dir / "TASK.md").write_text("tampered\n", encoding="utf-8")
+            (work_dir / "Django.egg-info").mkdir()
+            (work_dir / "Django.egg-info" / "SOURCES.txt").write_text("huge\n" * 1000, encoding="utf-8")
             (work_dir / "pkg" / "mod.py").write_text("def f(x):\n    return x + 1\n", encoding="utf-8")
             (work_dir / "pkg" / "helper.py").write_text("VAL = 42\n", encoding="utf-8")
 
             task = SimpleNamespace(kind="swe_verified", task_dir=base_dir)
             patch = _collect_unified_diff(task, work_dir)
             self.assertNotIn("TASK.md", patch)
+            self.assertNotIn("egg-info", patch)
             self.assertIn("diff --git a/pkg/mod.py b/pkg/mod.py", patch)
             self.assertIn("new file mode 100644", patch)
             self.assertIn("deleted file mode 100644", patch)

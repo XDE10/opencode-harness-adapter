@@ -72,12 +72,12 @@ flowchart LR
 | **Prefix-Merged Multi-Turn Packing** (`oca/train.py`) | **`12.21×–12.97×`** turn compression on Pi (`~400` turns → `~31` segments), automatic split on context rewrite/compaction, assistant-only `target_positions` masking. |
 | **248K-Vocab Exact Chunked LM-Head + Grad Checkpointing** | `lm_head_chunk_size=2048` with minibatch-global token denominator (`max_lp_diff = 0.000e+00`) + non-reentrant backbone gradient checkpointing, capping training peak VRAM at **`40.5–42.1 GiB`**. |
 | **Full 5-Benchmark Paired Evaluation** | **11,220 paired trials (0 errored trials, 0.0% `<think>` leakage, 0 reward-hacking successes)** across 3 unmodified harnesses (`Pi`, `OpenCode`, unseen `mini-swe-agent v2`). |
-| **Local CPU Unit & Anti-Hack Suite** | **26 tests** (`tests/test_oca_v4.py`, `tests/test_oca_v5.py`) + **10/10** adversarial exploits blocked (`oca/adversarial.py`). |
+| **Local CPU Unit & Anti-Hack Suite** | **27 tests** (`tests/test_oca_v4.py`, `tests/test_oca_v5.py`, incl. `git apply`-verified `predictions.jsonl` export) + **10/10** adversarial exploits blocked (`oca/adversarial.py`). |
 
 **Key Empirical Takeaways (Grounded):**
 1. **Balanced Gains via Same-Harness Soup, Negative Result for 0.5/0.5 Cross-Harness Super-Adapters**: Single-seed `v5_pi_seed2` achieves the highest 5-suite mean (`45.22%`) yet collapses below Base on `SWE-Verified (OC)` (`32.50%` vs `34.17%`). Merging the two Pi seeds via `QR-SVD` (`soup_v5_pi_qr_svd`, **`44.27%`**) recovers `SWE-OC` to `40.00%` and beats Base on all 5 suites. By contrast, all three equal-weight 0.5/0.5 cross-harness merges (`super_*`: `40.76%–42.45%`) underperform single-harness Pi (`43.55%`), Same-Harness Soup (`44.27%`), and Joint RL (`42.67%`).
 2. **Weight Orthogonality Refuted**: Near-zero LoRA weight cosine (`+0.0001`) is a **LoRA-A initialization-seed artifact** (same-harness different-seed `Pi s1 vs Pi s2` is also `+0.0001`, while same-seed cross-harness `OC vs Pi s1` is `+0.0180`). Activation-space cosine over 16 heldout prompts shows only a modest positive shift (`mean +0.0308`, median `+0.0155`, DeltaNet `+0.0456` > MLP `+0.0134`).
-3. **Explicit Boundaries**: Our zero-Docker 60-task `SWE-bench_Verified` subset is 96.7% skewed toward `django` (36) and `sympy` (22) (plus 2 `requests`), runs in shared Python 3.11 venvs, and truncates `pytest` regressions to `p2p[:25]` (`-k` capped at 30 targets); see Section 7 of [docs/V5_REPORT_EN.md](docs/V5_REPORT_EN.md) for full limitations.
+3. **Explicit Boundaries & Independent Official Docker Spot-Check**: Our zero-Docker 60-task `SWE-bench_Verified` subset is 96.7% skewed toward `django` (36) and `sympy` (22) (plus 2 `requests`), runs in shared Python 3.11 venvs, and truncates `pytest` regressions to `p2p[:25]` (`-k` capped at 30 targets). To audit this boundary directly, we added `git diff` (`predictions.jsonl`) export to `oca/rollout.py` and `oca/eval.py`, re-ran 3 core arms (`base` `26.67%` → `v5_pi_seed2` `41.67%` → `soup_v5_pi_qr_svd` `49.17%`, `+22.5 pp`, `p=0.0001`, 360 trials), and spot-checked **6 cross-repo tasks (34 clean paired trials)** inside official `SWE-bench_Verified` Docker containers: **`django` + `sympy` (96.7% of the subset) achieved 28/28 (100.0%) exact agreement** (all 16/16 Colab-PASS confirmed `RESOLVED`, including `soup` 8/8 vs `base` 0/7 on the 4 Base-failing tasks), while **`psf__requests-5414` (3.3% minor repo) exposed 1 genuine `p2p[:25]` regression false-positive task (3 trials)** where deleting an ASCII guard broke 8 late `TestPreparingURLs` tests (`31/34 = 91.2%` overall agreement); see Section 7 of [docs/V5_REPORT_EN.md](docs/V5_REPORT_EN.md).
 
 ---
 
@@ -115,7 +115,7 @@ git clone https://github.com/XDE10/opencode-harness-adapter.git
 cd opencode-harness-adapter
 pip install -e .
 
-# Verify all 26 unit tests (domain/repo isolation, prefix-merge packing, SafeProxy, Dr.GRPO/TIS/GSPO/CISPO, SWE helpers)
+# Verify all 27 unit tests (domain/repo isolation, prefix-merge packing, SafeProxy, Dr.GRPO/TIS/GSPO/CISPO, SWE & diff export)
 python -m unittest discover -s tests -v
 python -m oca.adversarial
 ```
@@ -178,7 +178,7 @@ opencode-harness-adapter/
 ├── protocol/                   # Frozen V5 config (oca-v5.json), 54-task pool, 60-task SWE subset & V4 records
 ├── data/                       # Cleaned L1 single-file, L2 repo_pytest & L3 OSS OOD suites
 ├── docs/                       # V5_EXPLAINER_ZH.md, V5_REPORT_EN.md & editorial visual explainers
-└── tests/                      # 26 local CPU unit tests (test_oca_v4.py + test_oca_v5.py)
+└── tests/                      # 27 local CPU unit tests (test_oca_v4.py + test_oca_v5.py)
 ```
 
 ## License

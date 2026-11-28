@@ -199,12 +199,12 @@ def _collect_unified_diff(task, work: Path, max_chars: int = 262144) -> str:
     """Compute a standard git-style unified diff between `task.task_dir` and modified `work` (excluding TASK.md)."""
     if task.kind not in ("swe_verified", "repo_pytest"):
         return ""
-    skip_dirs = {"__pycache__", ".pytest_cache", ".git", ".venv"}
+    skip_dirs = {"__pycache__", ".pytest_cache", ".git", ".venv", "build", "dist"}
 
     def _walk_files(root: Path) -> set[str]:
         rels: set[str] = set()
         for r, ds, fs in os.walk(root):
-            ds[:] = [d for d in ds if d not in skip_dirs]
+            ds[:] = [d for d in ds if d not in skip_dirs and not d.endswith((".egg-info", ".dist-info"))]
             rel_d = Path(r).relative_to(root)
             for fn in fs:
                 p = Path(r) / fn
