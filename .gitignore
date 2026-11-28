@@ -38,3 +38,8 @@ secrets*.json
 *.tgz
 *.zip
 *.bundle
+# Private local study & interview prep docs (do not push to public repo)
+docs/V5_INTERVIEW_CODE_GUIDE_ZH.md
+docs/V5_TUTORIAL_ZH.md
+docs/figures/tutorial/
+

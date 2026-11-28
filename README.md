@@ -1,8 +1,8 @@
 # OpenCode & Pi Harness Adapter
 
-Single-GPU colocated Agentic Reinforcement Learning (**248-module LoRA `r=32`**) that adapts a lightweight open-weight model (`Qwen/Qwen3.5-9B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7**, **Pi 0.73.1**, and zero-shot OOD transfer to **mini-swe-agent v2**) — validated across **11,220 paired rollout trials (0 errored trials)** spanning **5 benchmark suites**, including official **`SWE-bench_Verified`** (**`+20.00 pp`**, `23.33% → 43.33%`, `p = 0.0002` on Pi; **`+11.67 pp`**, `34.17% → 45.83%`, `p = 0.0057` on OpenCode).
+Single-GPU colocated Agentic Reinforcement Learning (**248-module LoRA `r=32`**) that adapts a lightweight open-weight model (`Qwen/Qwen3.5-9B`, non-thinking mode) to operate unmodified terminal coding harnesses (**OpenCode 2.2.7**, **Pi 0.73.1**, and zero-shot OOD transfer to **mini-swe-agent v2**) — validated across **11,220 paired rollout trials (0 errored trials)** spanning **5 benchmark suites**. Without cherry-picking per-suite winners, the most balanced adapter (`soup_v5_pi_qr_svd`) lifts the **5-suite mean from `33.12% → 44.27%` (`+11.15 pp`)**, outperforming Base on every suite (single-suite peaks reach `43.33%` on our zero-Docker 60-task `SWE-bench_Verified` pure-Python subset on Pi and `45.83%` on OpenCode).
 
-- 📖 **Visual Beginner Explainer (中文图解版)**: [docs/V5_EXPLAINER_ZH.md](docs/V5_EXPLAINER_ZH.md) (4 editorial infographics + Q&A)
+- 📖 **Visual Technical Report (中文完整报告)**: [docs/V5_EXPLAINER_ZH.md](docs/V5_EXPLAINER_ZH.md)
 - 📄 **Full V5 Technical Report (English)**: [docs/V5_REPORT_EN.md](docs/V5_REPORT_EN.md)
 - 🤗 **HuggingFace Weights & Reports**: [`XDE10/Qwen3.5-9B-Harness-Adapters-v5`](https://huggingface.co/XDE10/Qwen3.5-9B-Harness-Adapters-v5)
 
@@ -15,9 +15,9 @@ Inspired by Hugging Face's *Harness Adapters* (Nov 2026), this repository replac
 | Visual Explainer | Key Takeaway |
 | --- | --- |
 | ![Training Pipeline](docs/figures/explainer_1_training_pipeline.png) | **Single-GPU Colocated RL Loop**: 54-task multi-file pool (`SWE-smith-py` + L2 + L1), 248-module LoRA (DeltaNet + GQA + MLP), `0.48s` Sleep, `0.11s` LoRA hot-swap, `~39 GB` peak training VRAM. |
-| ![Benchmark Results](docs/figures/explainer_2_benchmark_results.png) | **5-Suite Leaderboard & Error Recovery**: **`+20.0 pp`** on `SWE-Verified (Pi)` (`super_v5_concat_2r`: `43.33%`, `p=0.0002`), **`+11.7 pp`** on `SWE-Verified (OC)` (`v5_oc_main`: `45.83%`, `p=0.0057`), **`+10.8–12.3 pp`** zero-shot on unseen `mini-swe-agent`, and **`44.27%`** best balanced 5-suite mean (`soup_v5_pi_qr_svd`). Error-recovery rate jumps from `25.8% → 47.6%` (`SWE-Pi`) and `45.2% → 60.4%` (`SWE-OC`). |
-| ![GSPO Discovery](docs/figures/explainer_3_gspo_discovery.png) | **4-Way Algorithm Ablation & GSPO Prefix-Shattering Discovery**: `Dr.GRPO+TIS` (`47.31%`, `p=0.0049`) > `CISPO` (`46.15%`, shortest tokens) > `Turn-Credit` (`45.77%`, fewest turns) > `GSPO` (`43.85%`, n.s.). Sequence-level `GSPO` induces redundant `</function></function>` tags canonicalized on the next turn, triggering `215` prefix-rewrite splits (`29 → 238` segments) and **5–6× slower backward passes** (`180s → 1,177s`). |
-| ![Merging Science](docs/figures/explainer_4_merging_science.png) | **248-Module Weight ($\Delta W$) vs Activation ($\Delta h$) Merging Science**: Near-zero weight cosine (`+0.0001`) is a **LoRA-A init-seed artifact**, not cross-harness orthogonality! Same-seed cross-harness (`OC` vs `Pi s1`) yields `ΔW = +0.0180` and strong functional activation alignment `Δh = +0.0308` (**Gated DeltaNet `+0.0456` > GQA `+0.0279` > MLP `+0.0134`**). Explains why lossless `Concat-2r` beats `QR-SVD` by `+6.9 pp` on orthogonal diff-seed merges while `QR-SVD` denoises single-seed collapse (`32.5% → 40.0%` on `SWE-OC`). |
+| ![Benchmark Results](docs/figures/explainer_2_benchmark_results.png) | **5-Suite Leaderboard & Negative Super-Adapter Finding**: Balanced 5-suite mean climbs **`33.12% → 44.27%`** (`soup_v5_pi_qr_svd`, beating Base on all 5 suites and rescuing `v5_pi_seed2`'s `SWE-OC` drop from `32.5% → 40.0%`); **`+10.0–12.3 pp`** zero-shot on unseen `mini-swe-agent`. Equal-weight cross-harness `super_*` (`40.76%–42.45%`) do not beat single-harness Pi (`43.55%`) or Same-Harness Soup (`44.27%`). Note: our zero-Docker 60-task `SWE-bench_Verified` subset covers `django` (36), `sympy` (22), and `requests` (2) with capped `p2p[:25]`. |
+| ![GSPO Discovery](docs/figures/explainer_3_gspo_discovery.png) | **4-Way Algorithm Ablation & GSPO Prefix-Shattering Observation**: On `pi_heldout` (single seed), `Dr.GRPO+TIS` (`47.31%`) > `CISPO` (`46.15%`, shortest tokens) > `Turn-Credit` (`45.77%`, fewest turns) > `GSPO` (`43.85%`, n.s.). Sequence-level `GSPO` slows backward passes **5–6× (`180s → 1,177s`, `29 → 238` segments)**, hypothesized to stem from redundant `</function></function>` tags canonicalized on the next turn (pending clean-tag retrain verification). |
+| ![Merging Science](docs/figures/explainer_4_merging_science.png) | **248-Module Weight ($\Delta W$) vs Activation ($\Delta h$) Analysis**: Near-zero weight cosine (`+0.0001`) is demonstrably a **LoRA-A init-seed artifact**, not cross-harness orthogonality (same-harness diff-seed is also `+0.0001`, vs `+0.0180` same-seed cross-harness). Activation cosine over 16 prompts shows a modest positive shift (`mean +0.0308`, median `+0.0155`, DeltaNet `+0.0456` > MLP `+0.0134`; small absolute magnitude, not claiming strong alignment). |
 
 ### V5 5-Benchmark Master Table (`Pass@1`, Task-Level Permutation `p`, 0 Errored Trials)
 
@@ -39,17 +39,17 @@ Inspired by Hugging Face's *Harness Adapters* (Nov 2026), this repository replac
 
 ---
 
-## Architecture
+## Architecture (V5)
 
 ```mermaid
 flowchart LR
-  subgraph VM["Single 96 GB GPU Node (No Docker Required)"]
-    V["vLLM BF16 Server<br/>Sleep Mode (0.46s) + Runtime LoRA Hot-Swap (0.44s)<br/>return_token_ids + processed_logprobs"]
-    P["oca.proxy (CaptureProxy)<br/>Exact engine token IDs & behavior logprobs<br/>Per-trial budget lock + SSE replay"]
-    H["Unmodified Coding Harnesses<br/>OpenCode 2.2.7 | Pi CLI 0.73.1<br/>Unprivileged `agent` UID + LF Normalization"]
-    G["Hidden Verifier (`oca.grade`)<br/>L1 `single_file` + L2 `repo_pytest` + L3 OSS OOD<br/>`nobody` subprocess + `0700` hidden tests"]
-    A["SafeAgents Anti-Hack (`oca.reward`)<br/>Static code + Bash trace + Test-tamper zeroing"]
-    T["Colocated Trainer (`oca.train`)<br/>Prefix-Merged Packing (13.51x) + Chunked LM-Head<br/>Dual-Ratio TIS x DAPO Clip-Higher + Entropy"]
+  subgraph VM["Single 96 GB / 80 GB GPU Node (Zero Docker Required)"]
+    V["vLLM BF16 Server<br/>Sleep Mode (0.48s) + Runtime LoRA Hot-Swap (0.11s)<br/>return_token_ids + processed_logprobs"]
+    P["oca.proxy (CaptureProxy)<br/>Exact engine token IDs & behavior logprobs<br/>Per-trial budget lock + SSE replay + SafeProxy intercept"]
+    H["Unmodified Coding Harnesses<br/>OpenCode 2.2.7 | Pi CLI 0.73.1 | mini-swe-agent v2<br/>Unprivileged agent UID + bwrap sandbox + LF guard"]
+    G["Hidden Verifier (oca.grade / oca.benchmarks)<br/>54-task Train Pool | 65-task Heldout | 60-task SWE-Verified (Pure-Python)<br/>nobody subprocess + 0700 hidden tests + clean_tests restore"]
+    A["Reward & Anti-Hack (oca.reward)<br/>Correctness + Tool Eff + Zero-Tolerance Severe-Flag Zeroing"]
+    T["Colocated Trainer (oca.train)<br/>248-Module LoRA (DeltaNet+GQA+MLP) + Gradient Checkpointing<br/>12x-13.5x Prefix-Merged Packing + 2048-Tok Chunked LM-Head<br/>Dr.GRPO x Dual-Ratio TIS-Clip + Early-Cutoff Oversampling"]
   end
 
   H -- "OpenAI-compat SSE" --> P
@@ -57,118 +57,98 @@ flowchart LR
   H -- "Workspace artifacts" --> G
   G --> A
   P -- "Exact token IDs + vLLM logps" --> T
-  A -- "Reward (Correctness + Tool Eff)" --> T
+  A -- "Reward (Correctness + Eff)" --> T
   T -- "/sleep -> backward -> /wake_up -> /v1/load_lora_adapter" --> V
 ```
 
 ---
 
-## Main Experimental Results (`Qwen/Qwen3.5-9B`, 65 Heldout × 4 Seeds = 2,860 Trials)
+## V5 Systems Telemetry & Key Takeaways
 
-All evaluations run on **65 strictly unseen tasks × 4 seeds (260 trials per cell)** spanning three difficulty tiers with **zero domain overlap** against the 98-task training set:
-- **L1 Single-File (`36 tasks`)**: Domain-disjoint Python state-machine & algorithmic debugging suite.
-- **L2 Multi-File `repo_pytest` (`12 tasks`)**: 3–4 module repositories across 5 unseen engineering domains with cross-module bugs and hidden `pytest` suites.
-- **L3 Real OSS OOD (`17 tasks`)**: Real historical bugfix commits mined from `pypa/packaging`, `pallets/click`, and `more-itertools`, verified against up to 7,923 upstream `pytest` regression tests.
-
-### 1. 2×2 Cross-Harness Transfer & Super-Adapter Matrix (`pass@1` / `pass@4`)
-
-![Cross-Harness Transfer Matrix](docs/figures/transfer_matrix.svg)
-
-| Model (`Qwen/Qwen3.5-9B`, LoRA `r=32`) | OpenCode 2.2.7 (`Δ`, `p`) | Pi 0.73.1 (`Δ`, `p`) | **Cross-Harness Mean** | OpenCode L2 Repo (12) | Pi L2 Repo (12) |
-| --- | --- | --- | --- | --- | --- |
-| `Base Qwen3.5-9B` (Non-Thinking) | 40.77% (`p@4` 63.1%) | 37.31% (`p@4` 58.5%) | **39.04%** | 18.75% | 22.92% |
-| `OpenCode-LoRA` (50 steps, `TIS×Clip`) | 43.46% (`+2.69 pp`, `0.450`) | 41.92% (`+4.62 pp`, `0.196`) | **42.69%** (`+3.65 pp`) | 29.17% (`+10.4`) | 35.42% (`+12.5`) |
-| `Pi-LoRA` (50 steps, `TIS×Clip`) | **48.46%** (**`+7.69 pp`**, **`p=0.0375`**) | 42.31% (`+5.00 pp`, `0.168`) | **45.39%** (`+6.35 pp`) | **31.25%** (`+12.5`) | 20.83% (`-2.1`) |
-| **🏆 `Super-Adapter` (Exact QR-SVD 0.5/0.5)** | **45.38%** (`+4.62 pp`, `p@4` 64.1%) | **47.69%** (**`+10.38 pp`**, **`p=0.0020`**, `p@4` **70.8%**) | **🏆 46.54% (`+7.50 pp`)** | 27.08% (`+8.3`) | **45.83% (`+22.9`, 2.0×!)** |
-
-**Key Findings:**
-1. **`1 + 1 > 2` Emergent Super-Adapter Synergy (`p = 0.0020`)**: On Pi, our exact Rank-2r QR-SVD Super-Adapter (`47.69%`, 95% CI `[+4.23, +16.54 pp]`, 46 wins vs 19 losses, `pass@4 = 70.77%`) outperforms **both** single-harness parents across every tier — doubling Base L2 multi-file repo accuracy (`22.92% → 45.83%`) while lifting L1 single-file (`54.86% → 65.97%`).
-2. **Mechanistic Explanation — Orthogonal LoRA Subspaces**: Exact Frobenius inner-product analysis (`oca/merge.py --method qr_svd`, `0.94s` on CPU across 128 LoRA modules) reveals near-exact orthogonality between OpenCode-trained and Pi-trained weight updates (`mean_dw_cosine = 0.0000`, range `[-0.0010, +0.0013]`, `||ΔW_pi|| = 0.1184`, `||ΔW_oc|| = 0.1138`), allowing rank-32 SVD superposition (78.2% energy retained) with zero destructive interference.
-3. **Minimalist Harness → Cleaner Credit Assignment**: Training in the minimalist 4-tool **Pi CLI** (`12.64×` prefix compression, minimal context rewrites) transfers zero-shot to the heavier **OpenCode 2.2.7** harness at **`48.46%` (`+7.69 pp`, `p = 0.0375`)**, cutting common-solved tool calls by **`-26.6%`** and tokens by **`-18.3%`**.
-
----
-
-### 2. Controlled Ablations & Thinking-Mode Comparison (OpenCode Harness, 65 Heldout × 4 Seeds)
-
-| Arm (OpenCode 2.2.7, 260 trials each) | Overall `pass@1` (`Δ`) | `pass@4` | L1 (36) | L2 Repo (12) | L3 OOD (17) | Mean Tokens | Common-Solved Eff (Tok / Tool) | Perm `p` |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Base-Off` (`enable_thinking=False`) | 40.77% (—) | 63.08% | 63.89% | 18.75% | 7.35% | 5,003 | — | — |
-| `Base Thinking-ON` (`enable_thinking=True`) | 40.77% (`+0.00 pp`) | 56.92% | 61.81% | 18.75% | 11.76% | **9,298 (+85.9%)** | **-92.3% tok bloat** / +20.3% tool | 1.0000 |
-| **Ablation A: Naive `PPO-Clip`** (40 steps, no TIS) | **40.00%** (`-0.77 pp`) | 60.00% | 56.94% | 25.00% | **14.71%** | 4,760 | +17.1% tok / +28.3% tool | 0.9087 |
-| **Ablation B: `Binary Only`** (40 steps, `eff_w=0.0`) | 46.92% (`+6.15 pp`) | 63.08% | 70.14% | **31.25%** | 8.82% | 5,266 | **-6.5% tok bloat** / +11.7% tool | 0.0590 |
-| **`OpenCode-LoRA`** (50 steps, `TIS×Clip`, `eff_w=0.1`) | 43.46% (`+2.69 pp`) | 58.46% | 63.19% | 29.17% | 11.76% | 5,742 | -15.1% tok / +14.8% tool | 0.4497 |
-| **`Super-Adapter`** (QR-SVD 0.5/0.5) | 45.38% (`+4.62 pp`) | 64.06% | 68.06% | 27.08% | 10.29% | 5,316 | **+5.9% tok / +18.5% tool** | 0.1447 |
-| **`Pi-LoRA`** (50 steps, `TIS×Clip`, `eff_w=0.1`) | **48.46% (`+7.69 pp`)** | **66.15%** | **72.22%** | **31.25%** | 10.29% | 5,170 | **+18.3% tok / +26.6% tool** | **0.0375** |
-
-*Positive efficiency percentages (`+18.3% tok`) indicate token/tool reductions on paired commonly solved trials; negative percentages indicate bloat.*
-
-- **Why Harness RL Beats Thinking Mode**: Enabling `Qwen3.5-9B` Thinking nearly doubles token consumption (`5,003 → 9,298`) for **+0.00 pp** net accuracy gain and **-6.16 pp lower `pass@4`** due to multi-turn budget exhaustion, whereas non-thinking Harness RL boosts accuracy by up to **`+7.69 pp`** (OpenCode) / **`+10.38 pp`** (Pi) at ~half the tokens.
-- **Why Dual-Ratio `TIS × DAPO Clip-Higher` Matters (Ablation A)**: BF16 vLLM↔PyTorch logprob tails regularly hit `0.8–4.8 nats` during 50-step runs; Naive `PPO-Clip` degrades L1 accuracy by `-6.95 pp` (overall `-0.77 pp`, `p=0.909`), whereas `TIS × Clip` stays stable across all 180 RL steps.
-- **Why Tool-Efficiency Reward Matters (Ablation B)**: Removing the turn-efficiency bonus (`eff_w=0.0`) still lifts accuracy (`+6.15 pp`) but causes common-solved trajectories to **bloat `+6.5%` in tokens**, vs **`-18.3%` token cut & `-26.6%` tool-call cut** with `eff_w=0.1` (**24.8 pp efficiency swing**).
-
----
-
-## Training Telemetry & Diagnostics
-
-![Training Curve](docs/figures/training_curve.svg)
-![BF16 Engine-Trainer Logprob Divergence](docs/figures/logprob_divergence.svg)
-![Failure Taxonomy Shift](docs/figures/failure_taxonomy.svg)
-
-| Engineering / Systems Milestone | Measured Telemetry (Colab G4 RTX PRO 6000 Blackwell 96 GB) |
+| Engineering / Experimental Milestone | Measured V5 Telemetry (`Qwen/Qwen3.5-9B`, 248-Module LoRA `r=32`) |
 | --- | --- |
-| **3-Model Live Base Bake-Off** (12 tasks × 2 seeds, LF-fixed) | `Qwen3-8B`: 8.3% (L2 `0.0%`) → `Qwen3-14B`: 4.2% (L2 `0.0%`) → **`Qwen3.5-9B`: 41.7%** (L2 **`41.7%`**, `p@2=50.0%`) |
-| **98-Task × 4-Seed Screening Funnel** (`protocol/screen_qwen35_9b.json`) | Base `pass@1` **46.94%**; **45/98 (45.9%) informative (`1..3/4`)** tasks (33 L1 + 12 L2 repos) — **7.5×** denser GRPO signal than `Qwen3-8B` |
-| **Single-Card Colocation Overhead** | vLLM `sleep(level=1)` **0.46s** (`74.7 → 20.0 GiB`), `/wake_up` + LoRA hot-swap **0.90s** (`lora_swap_only=0.44s`), zero vLLM restarts across 50 steps |
-| **Prefix-Merged Multi-Turn Packing** (`Qwen3.5-9B` + FLA) | **13.51× wall-clock speedup** (`304.1s → 22.5s`, 8.38×–12.64× segment compression, gradient cosine `0.989`), auto-splitting on context compaction |
-| **Exact Chunked LM-Head Backward** (248K vocab) | `max_lp_diff = 0.000e+00`; 24,576-seq / 10,240-target stress pass in **21.75s** at **38.08 GB** peak VRAM (vs >100 GB OOM unchunked); live step peak **34–41 GB** |
-| **Exact Rank-2r QR-SVD Super-Adapter Merge** | Merges 128 rank-32 LoRA modules in **0.94s on CPU** (0 GPU VRAM, no 9B base model needed), **78.2%** SVD energy retained |
-| **Anti-Reward-Hacking Suite** (`oca/adversarial.py`, `oca/reward.py`) | **10/10** adversarial exploits blocked in CI + live Step-1 audit eliminated false positives on Python `nc` and `pytest ../../tests/test_smoke.py` |
-| **Local Unit Test Suite** (`tests/test_oca_v4.py`) | **11/11 passing** (domain isolation, `repo_pytest` triple-control, prefix-merge compaction split, dual harness, proxy capture, 10/10 anti-hack, permutation tests, SVG plots) |
+| **54-Task Multi-File RL Pool** (`protocol/screen_v5_multifile.json`) | 72.2% multi-file (`27` SWE-smith-py across 9 repos + `12` L2 `repo_pytest` + `15` L1); Step-0 Base `pass@1 = 43.52%`; **0 task-ID / 0 repo overlap** with both 65-task heldout and 60-task `SWE-bench_Verified` (and all 12 official SWE-Verified repos). |
+| **Single-Card Colocation Overhead** | vLLM `/sleep?level=1` **`0.48s`** (`91.0 → 21.6 GiB`), `/wake_up` + LoRA hot-swap **`0.10–0.12s`**, **0 vLLM restarts** across 400+ RL steps. |
+| **Prefix-Merged Multi-Turn Packing** (`oca/train.py`) | **`12.21×–12.97×`** turn compression on Pi (`~400` turns → `~31` segments), automatic split on context rewrite/compaction, assistant-only `target_positions` masking. |
+| **248K-Vocab Exact Chunked LM-Head + Grad Checkpointing** | `lm_head_chunk_size=2048` with minibatch-global token denominator (`max_lp_diff = 0.000e+00`) + non-reentrant backbone gradient checkpointing, capping training peak VRAM at **`40.5–42.1 GiB`**. |
+| **Full 5-Benchmark Paired Evaluation** | **11,220 paired trials (0 errored trials, 0.0% `<think>` leakage, 0 reward-hacking successes)** across 3 unmodified harnesses (`Pi`, `OpenCode`, unseen `mini-swe-agent v2`). |
+| **Local CPU Unit & Anti-Hack Suite** | **26 tests** (`tests/test_oca_v4.py`, `tests/test_oca_v5.py`) + **10/10** adversarial exploits blocked (`oca/adversarial.py`). |
+
+**Key Empirical Takeaways (Grounded):**
+1. **Balanced Gains via Same-Harness Soup, Negative Result for 0.5/0.5 Cross-Harness Super-Adapters**: Single-seed `v5_pi_seed2` achieves the highest 5-suite mean (`45.22%`) yet collapses below Base on `SWE-Verified (OC)` (`32.50%` vs `34.17%`). Merging the two Pi seeds via `QR-SVD` (`soup_v5_pi_qr_svd`, **`44.27%`**) recovers `SWE-OC` to `40.00%` and beats Base on all 5 suites. By contrast, all three equal-weight 0.5/0.5 cross-harness merges (`super_*`: `40.76%–42.45%`) underperform single-harness Pi (`43.55%`), Same-Harness Soup (`44.27%`), and Joint RL (`42.67%`).
+2. **Weight Orthogonality Refuted**: Near-zero LoRA weight cosine (`+0.0001`) is a **LoRA-A initialization-seed artifact** (same-harness different-seed `Pi s1 vs Pi s2` is also `+0.0001`, while same-seed cross-harness `OC vs Pi s1` is `+0.0180`). Activation-space cosine over 16 heldout prompts shows only a modest positive shift (`mean +0.0308`, median `+0.0155`, DeltaNet `+0.0456` > MLP `+0.0134`).
+3. **Explicit Boundaries**: Our zero-Docker 60-task `SWE-bench_Verified` subset is 96.7% skewed toward `django` (36) and `sympy` (22) (plus 2 `requests`), runs in shared Python 3.11 venvs, and truncates `pytest` regressions to `p2p[:25]` (`-k` capped at 30 targets); see Section 7 of [docs/V5_REPORT_EN.md](docs/V5_REPORT_EN.md) for full limitations.
 
 ---
 
-## Quick Start
+## Historical V4 Controlled Ablations
 
-### 1. Clone & 30-Second Local CPU Verification (Win11 / macOS / Linux)
+<details>
+<summary>Expand V4 Controlled Ablations (128-module LoRA, OpenCode 2.2.7, 65 Heldout × 4 Seeds, fixed 10,240-token trial budget)</summary>
+
+These earlier V4 single-seed controls on `Qwen/Qwen3.5-9B` (128-module GQA+MLP LoRA, `protocol/oca-v4.json`, fixed `max_output_tokens_per_trial=10240`, `max_model_calls=24`) motivated three V5 design choices:
+
+| Historical V4 Arm (OpenCode 2.2.7, 260 trials each) | Overall `pass@1` (`Δ`) | `pass@4` | Mean Tokens | Common-Solved Eff (Tok / Tool) | Perm `p` |
+| --- | --- | --- | --- | --- | --- |
+| `Base-Off` (`enable_thinking=False`) | `40.77%` (—) | `63.08%` | `5,003` | — | — |
+| `Base Thinking-ON` (`enable_thinking=True`) | `40.77%` (`+0.00 pp`) | `56.92%` | **`9,298` (+85.9%)** | `-92.3%` tok bloat / `+20.3%` tool | `1.0000` |
+| **Ablation A: Naive `PPO-Clip`** (40 steps, no TIS) | `40.00%` (`-0.77 pp`) | `60.00%` | `4,760` | `+17.1%` tok / `+28.3%` tool | `0.9087` |
+| **Ablation B: `Binary Only`** (40 steps, `eff_w=0.0`) | `46.92%` (`+6.15 pp`) | `63.08%` | `5,266` | `-6.5%` tok bloat / `+11.7%` tool | `0.0590` |
+
+*Notes*:
+- **Thinking-ON under a fixed 10K token budget**: Under the fixed `10,240`-token / `24`-call multi-turn budget, enabling `Qwen3.5-9B` thinking nearly doubled token usage (`5,003 → 9,298`) for `+0.00 pp` `pass@1` and `-6.16 pp` `pass@4` due to budget truncation. This motivated running V5 in non-thinking mode; adaptive thinking under larger budgets remains future work.
+- **Naive `PPO-Clip` (single-seed control)**: Without engine-trainer TIS calibration, BF16 vLLM↔PyTorch logprob tails (`0.8–4.8 nats`) degraded L1 accuracy (`-6.95 pp`, overall `-0.77 pp`), motivating V5's Dual-Ratio `Dr.GRPO × TIS-Clip`.
+- **Tool-Efficiency Reward (`Binary Only`)**: Removing `eff_w` still lifted accuracy (`+6.15 pp`) but increased common-solved token usage by `+6.5%`, motivating V5's light joint turn/token efficiency bonus (`eff_w=0.05`).
+
+*(Superseded V4 claims regarding 128-module cross-harness weight orthogonality and 1+1>2 Super-Adapter synergy were re-tested with seed controls in V5 and are superseded by the V5 findings above.)*
+
+</details>
+
+---
+
+## Quick Start (V5)
+
+### 1. Clone & Local CPU Verification (Win11 / macOS / Linux)
 
 ```bash
 git clone https://github.com/XDE10/opencode-harness-adapter.git
 cd opencode-harness-adapter
 pip install -e .
 
-# Verify all 11 unit tests (L1/L2/L3 dataset isolation, prefix-merge packing, proxy, 10/10 anti-hack, SVG plots)
+# Verify all 26 unit tests (domain/repo isolation, prefix-merge packing, SafeProxy, Dr.GRPO/TIS/GSPO/CISPO, SWE helpers)
 python -m unittest discover -s tests -v
 python -m oca.adversarial
 ```
 
-### 2. Single-GPU Reproduction (Linux / Colab G4 96 GB)
+### 2. Single-GPU V5 Reproduction (Linux / Colab G4 96 GB or A100 80 GB)
 
 ```bash
 pip install -e ".[gpu]"
 
-# 1) Provision vLLM, FLA, OpenCode 2.2.7, Pi CLI 0.73.1 & Qwen/Qwen3.5-9B weights
+# 1) Provision vLLM, FLA, OpenCode 2.2.7, Pi CLI 0.73.1, mini-swe-agent v2 & Qwen/Qwen3.5-9B
 python -m oca.colab.probe_env
 
-# 2) (Optional) Re-run 4-seed difficulty screening (frozen summary already in protocol/screen_qwen35_9b.json)
-python -m oca.train --mode screen --harness opencode --out-dir /content/runs/screen_oc --k 4 --concurrency 32
+# 2) Rebuild exact frozen 60-task pure-Python SWE-bench_Verified subset (no Docker required)
+python -u -m oca.benchmarks.swe_verified --protocol protocol/swe_verified_60.json
 
-# 3) 50-step colocated LoRA GRPO (rank 32, Prefix-Merged, Chunked LM-Head, Dual-Ratio TIS x Clip)
-python -m oca.train --mode train --harness opencode --out-dir /content/runs/oc_main \
-  --task-ids-file protocol/screen_qwen35_9b.json --steps 50 --concurrency 32
+# 3) 50-step colocated 248-module LoRA RL (Dr.GRPO + Dual-Ratio TIS-Clip + Early-Cutoff)
+python -u -m oca.train --config protocol/oca-v5.json --mode train --harness pi \
+  --task-ids-file protocol/screen_v5_multifile.json --out-dir /content/runs/v5_pi_s1 \
+  --loss-mode tis_clip --adv-mode dr_grpo --use-deltanet-lora --dynamic-sampling --curriculum
 
-# 4) Train Pi adapter & merge via exact Rank-2r QR-SVD into a single Super-Adapter (~1s CPU)
-python -m oca.train --mode train --harness pi --out-dir /content/runs/pi_main \
-  --task-ids-file protocol/screen_qwen35_9b.json --steps 50 --concurrency 32
-python -m oca.merge --method qr_svd \
-  --adapter opencode=/content/runs/oc_main/checkpoints/step_050:0.5 \
-  --adapter pi=/content/runs/pi_main/checkpoints/step_050:0.5 \
-  --out-dir /content/runs/super_adapter_svd
+# 4) Merge two adapters on CPU (~1s, supports qr_svd / concat_2r / ties)
+python -u -m oca.merge --method qr_svd \
+  --adapter pi_s1=/content/runs/v5_pi_s1/checkpoints/step_050:0.5 \
+  --adapter pi_s2=/content/runs/v5_pi_s2/checkpoints/step_050:0.5 \
+  --out-dir /content/runs/soup_v5_pi_qr_svd
 
-# 5) Multi-seed paired evaluation & SVG plots
-python -m oca.eval --harness pi --split heldout --out-dir /content/runs/eval_pi \
-  --lora super=/content/runs/super_adapter_svd
-python -m oca.plots --history /content/runs/pi_main/history.jsonl \
-  --eval-report /content/runs/eval_pi/eval_report.json --out-dir docs/figures
+# 5) Multi-seed paired evaluation (supports --harness pi | opencode | mini_swe and --split heldout | swe_verified)
+python -u -m oca.eval --config protocol/oca-v5.json --harness mini_swe --split heldout \
+  --seeds 101 102 --out-dir /content/eval_mini \
+  --lora soup=/content/runs/soup_v5_pi_qr_svd
+
+# 6) Trajectory behavioral & integrity audit
+python -u -m oca.audit_trajectories --eval-dir /content/eval_mini
 ```
 
 ---
@@ -178,24 +158,27 @@ python -m oca.plots --history /content/runs/pi_main/history.jsonl \
 ```text
 opencode-harness-adapter/
 ├── oca/
-│   ├── harnesses/        # Pluggable OpenCode 2.2.7 & Pi 0.73.1 CLI adapters
-│   ├── colab/            # G4 probe, Phase 0/1 diagnostic, job runner & LF tarball packer
-│   ├── proxy.py          # Engine-boundary CaptureProxy (token IDs + processed logprobs + SSE)
-│   ├── rollout.py        # Isolated trial runner (single_file + repo_pytest + LF guard)
-│   ├── grade.py          # Unprivileged hidden grader (single_file + pytest multi-file)
-│   ├── reward.py         # Correctness + tool efficiency + static/bash anti-hack zeroing
-│   ├── train.py          # Colocated GRPO (Sleep/HotSwap + Prefix-Merged + Chunked LM-Head + TIS x Clip)
-│   ├── eval.py           # Cluster Bootstrap CI, task-level permutation test & failure taxonomy
-│   ├── merge.py          # Exact Rank-2r QR-SVD & PEFT TIES/DARE-TIES Super-Adapter merger
-│   ├── plots.py          # Zero-dependency SVG charts & BF16/GGUF merge helper
-│   ├── clean_data.py     # Validation, AST/slug dedup & strict domain-disjoint splitter
-│   ├── gen_repo_tasks.py # Multi-file repo_pytest generator with automated pytest triple-control
-│   ├── build_ood_oss.py  # Real pure-Python OSS historical bugfix OOD benchmark miner
-│   └── adversarial.py    # 10-exploit reward-hacking regression suite
-├── protocol/             # Experiment config (oca-v4.json), frozen screening & final results JSON
-├── data/                 # Cleaned L1 single-file, L2 repo_pytest, L3 OSS OOD benchmarks (166 tasks)
-├── docs/figures/         # Publication-grade SVG plots (transfer matrix, curves, divergence, taxonomy)
-└── tests/                # Fast local unit test suite (11/11 passing)
+│   ├── harnesses/              # Pluggable CLI adapters: opencode.py, pi.py, mini_swe.py
+│   ├── benchmarks/             # Zero-Docker swe_verified.py (60-task pure-Python) & swe_smith_train.py
+│   ├── colab/                  # GPU env probe, launch/job runner & LF tarball packer
+│   ├── verl_bridge/            # verl AgentLoop integration bridge & GRPO YAML config
+│   ├── proxy.py                # Engine-boundary CaptureProxy (token IDs, logprobs, SSE replay, SafeProxy)
+│   ├── rollout.py              # Isolated trial runner (agent UID, bwrap sandbox, LF guard, early-cutoff cleanup)
+│   ├── grade.py                # Unprivileged nobody hidden grader (single_file + repo_pytest + rlimits)
+│   ├── reward.py               # Correctness + joint turn/token efficiency + anti-hack zeroing + turn credit
+│   ├── train.py                # Colocated V5 RL/RFT (Sleep/HotSwap, Prefix-Merge, Chunked LM-Head, TIS/GSPO/CISPO)
+│   ├── eval.py                 # Cluster bootstrap CI, task-level permutation test, Holm-Bonferroni & failure taxonomy
+│   ├── merge.py                # Exact CPU QR-SVD, lossless Concat-2r & TIES LoRA merging + weight/activation cosine
+│   ├── audit_trajectories.py   # Error-recovery rate, tool-share & thinking-leakage trajectory auditor
+│   ├── adversarial.py          # 10-exploit reward-hacking regression suite
+│   ├── clean_data.py           # Dataset validation, dedup & domain-disjoint splitter
+│   ├── gen_repo_tasks.py       # L2 multi-file repo_pytest task generator with triple-control verification
+│   ├── build_ood_oss.py        # L3 real pure-Python OSS historical bugfix benchmark miner
+│   └── plots.py / profile_step.py
+├── protocol/                   # Frozen V5 config (oca-v5.json), 54-task pool, 60-task SWE subset & V4 records
+├── data/                       # Cleaned L1 single-file, L2 repo_pytest & L3 OSS OOD suites
+├── docs/                       # V5_EXPLAINER_ZH.md, V5_REPORT_EN.md & editorial visual explainers
+└── tests/                      # 26 local CPU unit tests (test_oca_v4.py + test_oca_v5.py)
 ```
 
 ## License
